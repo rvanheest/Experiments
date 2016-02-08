@@ -4,7 +4,6 @@
 /SDK/*SDK
 /*.bat
 *.iml
-*.sc
 /lib
 
 # Eclipse
