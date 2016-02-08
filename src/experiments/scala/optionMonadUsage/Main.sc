@@ -1,6 +1,6 @@
-import experiments.scala.monads.OldStyle.{Foo, Bar, Baz}
-import experiments.scala.monads.{OldStyle, WithMonads}
-import experiments.scala.monads.WithMonads.{Foo2, Bar2, Baz2}
+import experiments.scala.optionMonadUsage.OldStyle.{Foo, Bar, Baz}
+import experiments.scala.optionMonadUsage.{OldStyle, WithMonads}
+import experiments.scala.optionMonadUsage.WithMonads.{Foo2, Bar2, Baz2}
 
 val baz = Baz()
 val bar = Bar(baz)
