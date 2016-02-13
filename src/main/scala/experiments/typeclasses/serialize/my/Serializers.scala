@@ -16,6 +16,7 @@ object Serializers {
 			def serialize(expr: Expression): String = {
 				expr match {
 					case Number(value) => value.toString
+					// can't use lhs.serialize here, since Serializable[Expression] doesn't exist yet at this point
 					case Plus(lhs, rhs) => s"${serialize(lhs)} + ${serialize(rhs)}"
 					case Minus(lhs, rhs) => s"${serialize(lhs)} - ${serialize(rhs)}"
 				}
@@ -26,7 +27,7 @@ object Serializers {
 	implicit def listOfExprIsSerializable = {
 		new Serializable[List[Expression]] {
 			override def serialize(exprs: List[Expression]): String = {
-				exprs.map(implicitly[Serializable[Expression]].serialize).mkString("List(", ", ", ")")
+				exprs.map(_.serialize).mkString("List(", ", ", ")")
 			}
 		}
 	}
