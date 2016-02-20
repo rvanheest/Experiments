@@ -87,7 +87,77 @@ char c = item `satisfy` (c ==)
 space :: StringParser Char
 space = char ' '
 
+spaces :: StringParser ()
+spaces = skipMany space
+
 string :: String -> StringParser String
 string s = case s of
     [] -> return ""
     (x:xs) -> (char x) >> (string xs) >> (return s)
+
+type AttrName = String
+type AttrVal = String
+
+data Attribute = Attribute (AttrName, AttrVal) deriving (Show)
+
+data XML = Element String [Attribute] [XML]
+         | SelfClosingTag String [Attribute]
+         | Decl String
+         | Body String
+        deriving (Show)
+
+-- The top level document, used in parsing
+document :: StringParser [XML]
+document = do
+  spaces
+  y <- xmlDecl <|> tag
+  spaces
+  x <- many tag
+  spaces
+  return (y : x)
+
+-- XML declaration eg. <?xml version="1.0" encoding="UTF-8"?>
+xmlDecl :: StringParser XML
+xmlDecl = do string "<?xml"
+             decl <- many (noneOf item "?>")
+             string "?>"
+             return (Decl decl)
+
+tag :: StringParser XML
+tag = do char '<'
+         spaces
+         name <- many (letter <|> digit)
+         spaces
+         attr <- many attribute
+         spaces
+         close <- string "/>" <|> string ">"
+         if (length close) == 2
+         then return (SelfClosingTag name attr)
+         else do elementBody <- many elementBody
+                 endTag name
+                 spaces
+                 return (Element name attr elementBody)
+
+elementBody :: StringParser XML
+elementBody = spaces *> tag <|> text
+
+endTag :: String -> StringParser String
+endTag str = string "</" *> string str <* char '>'
+
+text :: StringParser XML
+text = Body <$> some (noneOf item "><")
+
+attribute :: StringParser Attribute
+attribute = do name <- many (noneOf item "= />")
+               spaces
+               char '='
+               spaces
+               char '"'
+               value <- many (noneOf item ['"'])
+               char '"'
+               spaces
+               return (Attribute (name, value))
+
+-- testing the xml parser
+testString1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\">foobar</rss>"
+testString2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <rss version=\"2.0\">   <channel>     <title>The Register</title>     <link>http://www.theregister.co.uk/</link>     <description>Biting the hand that feeds IT</description>     <copyright>Copyright 2012, Situation Publishing</copyright>     <image>       <title>The Register</title>       <width>88</width>       <height>31</height>       <url>http://www.theregister.co.uk/Design/graphics/Reg_default/The_Register_RSS.png</url>       <link>http://www.theregister.co.uk/</link>     </image>     <language>en-GB</language>     <webMaster>webmaster@theregister.co.uk</webMaster>     <lastBuildDate>Fri, 12 Oct 2012 18:58:41 GMT</lastBuildDate>     <ttl>120</ttl>  <item><guid isPermaLink=\"false\">tag:theregister.co.uk,2005:story/2012/10/12/rbs_santander_incompatible_it_systems_collapse/</guid><title>Incompatible IT systems blamed for bank sale collapse</title><link>http://go.theregister.com/feed/www.theregister.co.uk/2012/10/12/rbs_santander_incompatible_it_systems_collapse/</link><description><h4>RBS £1.7bn branch sale to Santander is off</h4> <p><strong>Brief</strong> Royal Bank of Scotland's $1.7bn sale of 318 branches to Santander has gone titsup.…</p></description><pubDate>Fri, 12 Oct 2012 18:51:54 GMT</pubDate></item>   </channel> </rss>"
