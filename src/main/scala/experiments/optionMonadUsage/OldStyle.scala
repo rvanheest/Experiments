@@ -1,4 +1,4 @@
-package experiments.scala.optionMonadUsage
+package experiments.optionMonadUsage
 
 object OldStyle {
 
@@ -17,7 +17,7 @@ object OldStyle {
 		val baz = bar.baz
 		if (baz == null)
 			return null
-		return baz.compute
+		baz.compute
 	}
 
 	def compute2(foo: Foo): Integer = {

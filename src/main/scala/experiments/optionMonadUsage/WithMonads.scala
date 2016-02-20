@@ -1,4 +1,4 @@
-package experiments.scala.optionMonadUsage
+package experiments.optionMonadUsage
 
 object WithMonads {
 
