@@ -39,6 +39,9 @@ instance MonadPlus (Parser s) where
 satisfy :: Parser s a -> (a -> Bool) -> Parser s a
 satisfy parser pred = parser >>= \x -> if pred x then return x else empty
 
+noneOf :: (Eq a) => Parser s a -> [a] -> Parser s a
+noneOf parser xs = satisfy parser (\x -> not (elem x xs))
+
 maybe :: Parser s a -> Parser s (Maybe a)
 maybe parser = fmap Just parser <|> return Nothing
 
@@ -47,6 +50,9 @@ takeUntil parser pred = many $ satisfy parser (not . pred)
 
 takeWhile :: Parser s a -> (a -> Bool) -> Parser s [a]
 takeWhile parser pred = many $ satisfy parser pred
+
+skipMany :: Parser s a -> Parser s ()
+skipMany parser = (parser >> skipMany parser) <|> return ()
 
 -- operators and stuff on Parser
 
