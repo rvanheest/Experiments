@@ -1,4 +1,4 @@
-import experiments.scala.parsec.StringParser._
+import experiments.parsec.StringParser._
 
 val itemParser1 = item
 itemParser1.parse("foo")
@@ -17,3 +17,10 @@ digitParser.parse("a")
 val numberParser = number
 numberParser.parse("345")
 numberParser.parse("45a6")
+
+val patternParser = for {
+	s1 <- number
+	s2 <- letter.atLeastOnce
+	s3 <- number
+} yield (s1, s2.mkString("[", "-", "]"), s3)
+patternParser.parse("45abc6")
