@@ -1,5 +1,7 @@
-import experiments.scala.typeclasses.serialize.my._
-import experiments.scala.typeclasses.serialize.my.Serializers._
+import experiments.typeclasses.serialize.my._
+import experiments.typeclasses.serialize.my.Serializers._
+
+import scala.language.reflectiveCalls
 
 val expr1: Expression = Number(5)
 val expr2: Expression = Plus(expr1, Number(2))

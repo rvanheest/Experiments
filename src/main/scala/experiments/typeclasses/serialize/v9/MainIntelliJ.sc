@@ -1,4 +1,6 @@
-import experiments.scala.typeclasses.serialize.v9.Serialization.Person
+import experiments.typeclasses.serialize.v9.Serialization.Person
+
+import scala.language.reflectiveCalls
 
 val p1 = Person("Foo", 40)
 val p2 = Person("Bar", 30)

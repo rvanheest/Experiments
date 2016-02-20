@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.serialize.v2
+package experiments.typeclasses.serialize.v2
 
 object Serialization {
 
@@ -11,6 +11,4 @@ object Serialization {
 	case class Restaurant(name: String, brunch: Boolean) extends Serializable {
 		def serialize: String = s"Restaurant($name, $brunch)"
 	}
-
-	
 }

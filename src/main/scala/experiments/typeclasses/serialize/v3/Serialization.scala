@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.serialize.v3
+package experiments.typeclasses.serialize.v3
 
 object Serialization {
 
@@ -12,6 +12,4 @@ object Serialization {
 			case _ => ???
 		}
 	}
-	
-	def serializeToJSON(x: Any) = ???
 }

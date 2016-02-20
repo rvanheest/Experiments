@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.serialize.v8
+package experiments.typeclasses.serialize.v8
 
 object Serialization {
 
@@ -17,7 +17,7 @@ object Serialization {
 		}
 	}
 
-	implicit def RestaurantIsSerializable {
+	implicit def RestaurantIsSerializable() {
 		new Serializable[Restaurant] {  
 			def ser(r: Restaurant): String = s"Restaurant(${r.name}, ${r.brunch})"
 		}

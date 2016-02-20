@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.serialize.v5
+package experiments.typeclasses.serialize.v5
 
 object Serialization {
 

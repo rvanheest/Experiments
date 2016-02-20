@@ -1,11 +1,13 @@
-package experiments.scala.typeclasses.serialize.my
+package experiments.typeclasses.serialize.my
+
+import scala.language.reflectiveCalls
 
 trait Serializable[T] {
 	def serialize(t: T): String
 }
 
 object Serializers {
-	implicit def addSerializable[T : Serializable](t: T) = {
+	implicit def addSerializable[T : Serializable](t: T): Object {def serialize: String} = {
 		new {
 			def serialize: String = implicitly[Serializable[T]].serialize(t)
 		}

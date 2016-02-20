@@ -1,8 +1,9 @@
-package experiments.scala.typeclasses.serialize.v9
+package experiments.typeclasses.serialize.v9
 
 object Serialization {
 
 	case class Person(name: String, age: Int)
+
 	case class Restaurant(name: String, brunch: Boolean)
 
 	def serialize[T](t: T)(implicit s: Serializable[T]) = s.ser(t)
@@ -17,13 +18,13 @@ object Serialization {
 		}
 	}
 
-	implicit def RestaurantIsSerializable {
-		new Serializable[Restaurant] {  
+	implicit def RestaurantIsSerializable() {
+		new Serializable[Restaurant] {
 			def ser(r: Restaurant): String = s"Restaurant(${r.name}, ${r.brunch})"
 		}
 	}
-	
-	implicit def ListIsSerializable[T : Serializable] = {
+
+	implicit def ListIsSerializable[T: Serializable] = {
 		new Serializable[List[T]] {
 			def ser(xs: List[T]) = {
 				xs.map(x => serialize(x)).mkString("List(", ", ", ")")
@@ -31,7 +32,7 @@ object Serialization {
 		}
 	}
 
-	implicit def addSerializable[T : Serializable](t: T) = {
+	implicit def addSerializable[T: Serializable](t: T): Object {def serialize: String} = {
 		new {
 			def serialize: String = implicitly[Serializable[T]].ser(t)
 		}

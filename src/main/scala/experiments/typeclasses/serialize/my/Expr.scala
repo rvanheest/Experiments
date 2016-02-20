@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.serialize.my
+package experiments.typeclasses.serialize.my
 
 sealed trait Expression
 case class Number(value: Int) extends Expression
