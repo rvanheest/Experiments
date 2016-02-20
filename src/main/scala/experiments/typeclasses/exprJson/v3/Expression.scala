@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.exprJson.v3
+package experiments.typeclasses.exprJson.v3
 
 sealed trait Expression
 case class Number(value: Int) extends Expression

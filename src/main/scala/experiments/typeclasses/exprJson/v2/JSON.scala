@@ -1,4 +1,4 @@
-package experiments.scala.typeclasses.exprJson.v2
+package experiments.typeclasses.exprJson.v2
 
 sealed trait JsonValue
 case class JsonObject(entries: Map[String, JsonValue]) extends JsonValue
@@ -11,17 +11,15 @@ case object JsonNull extends JsonValue
 object JsonWriter {
 	def write(value: JsonValue): String = {
 		value match {
-			case JsonObject(entries) => {
+			case JsonObject(entries) =>
 				val serializedEntries = for ((key, value) <- entries) yield key + ": " + write(value)
 				s"{ ${serializedEntries.mkString(", ")} }"
-			}
-			case JsonArray(entries) => {
+			case JsonArray(entries) =>
 				val serializedEntries = entries.map(write)
 				s"[ ${serializedEntries.mkString(",")} ]"
-			}
-			case JsonString(value) => "\"" + value + "\""
-			case JsonNumber(value) => value.toString
-			case JsonBoolean(value) => value.toString
+			case JsonString(s) => "\"" + s + "\""
+			case JsonNumber(n) => n.toString
+			case JsonBoolean(b) => b.toString
 			case JsonNull => "null"
 		}
 	}
