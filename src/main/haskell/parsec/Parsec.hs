@@ -11,30 +11,30 @@ parse (Prsr f) = f
 
 run :: Parser s a -> s -> a
 run parser input = case parse parser input of
-	Nothing -> undefined
-	Just (out, _) -> out
+    Nothing -> undefined
+    Just (out, _) -> out
 
 instance Functor (Parser s) where
-    fmap f parser = Prsr $ \s -> fmap \(a, s2) -> (f a, s2) $ parse parser s
+    fmap f parser = Prsr $ \s -> fmap (\(a, s2) -> (f a, s2)) $ parse parser s
 
 instance Applicative (Parser s) where
-	pure a = Prsr(\s -> Just (a, s))
-	parser1 <*> parser2 = Prsr $ \s ->
-		do (aToB, out) <- parse parser1 s
-		   (v, out2) <- parse parser2 out
-		   return (aToB v, out2)
+    pure a = Prsr(\s -> Just (a, s))
+    parser1 <*> parser2 = Prsr $ \s ->
+        do (aToB, out) <- parse parser1 s
+           (v, out2) <- parse parser2 out
+           return (aToB v, out2)
 
 instance Alternative (Parser s) where
-	empty = Prsr(\_ -> Nothing)
-	parser1 <|> parser2 = Prsr $ \s -> parse parser1 s <|> parse parser2 s
+    empty = Prsr(\_ -> Nothing)
+    parser1 <|> parser2 = Prsr $ \s -> parse parser1 s <|> parse parser2 s
 
 instance Monad (Parser s) where
-	return = pure
-	parser >>= f = Prsr $ \s -> parse parser s >>= \(v, out) -> parse (f v) out
+    return = pure
+    parser >>= f = Prsr $ \s -> parse parser s >>= \(v, out) -> parse (f v) out
 
 instance MonadPlus (Parser s) where
-	mzero = empty
-	mplus = (<|>)
+    mzero = empty
+    mplus = (<|>)
 
 satisfy :: Parser s a -> (a -> Bool) -> Parser s a
 satisfy parser pred = parser >>= \x -> if pred x then return x else empty
@@ -54,8 +54,8 @@ type StringParser a = Parser String a
 
 item :: StringParser Char
 item = Prsr(\s -> case s of
-	[] -> Nothing
-	(x:xs) -> Just (x, xs))
+    [] -> Nothing
+    (x:xs) -> Just (x, xs))
 
 digit :: StringParser Char
 digit = item `satisfy` isDigit
@@ -83,5 +83,5 @@ space = char ' '
 
 string :: String -> StringParser String
 string s = case s of
-	[] -> return ""
-	(x:xs) -> (char x) >> (string xs) >> (return s)
+    [] -> return ""
+    (x:xs) -> (char x) >> (string xs) >> (return s)
