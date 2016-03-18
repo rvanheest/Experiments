@@ -5,7 +5,11 @@ object Expr {
   trait Expr[E] {
     def eval(e: E): Int
   }
-  def evaluate[A : Expr](expr: A) = implicitly[Expr[A]].eval(expr)
+  implicit def addEvaluate[E : Expr](expr: E): Object {def evaluate: Int} = {
+    new {
+      def evaluate: Int = implicitly[Expr[E]].eval(expr)
+    }
+  }
 
   case class Number(value: Int)
   case class Plus[A : Expr, B : Expr](left: A, right: B)
@@ -34,7 +38,11 @@ object PrettyPrintExpr {
   trait PrettyPrint[E] {
     def format(e: E): String
   }
-  def format[E: PrettyPrint](expr: E) = implicitly[PrettyPrint[E]].format(expr)
+  implicit def addFormat[E: PrettyPrint](expr: E): Object {def format: String} = {
+    new {
+      def format: String = implicitly[PrettyPrint[E]].format(expr)
+    }
+  }
 
   implicit def prettyPrintNumber = new PrettyPrint[Number] {
     def format(e: Number) = e.value.toString
