@@ -1,5 +1,7 @@
 package experiments.typeclasses.serialize.v9
 
+import scala.language.implicitConversions
+
 object Serialization {
 
 	case class Person(name: String, age: Int)

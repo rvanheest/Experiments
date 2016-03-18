@@ -16,7 +16,7 @@ object JsonWriter {
 				s"{ ${serializedEntries.mkString(", ")} }"
 			case JsonArray(entries) =>
 				val serializedEntries = entries.map(write)
-				s"[ ${serializedEntries.mkString(",")} }"
+				s"[ ${serializedEntries.mkString(",")} ]"
 			case JsonString(s) => "\"" + s + "\""
 			case JsonNumber(n) => n.toString
 			case JsonBoolean(b) => b.toString
