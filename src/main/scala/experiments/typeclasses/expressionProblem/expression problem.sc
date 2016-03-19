@@ -1,7 +1,7 @@
-import experiments.typeclasses.expressionProblem.Expr._
-import experiments.typeclasses.expressionProblem.ExprWithNegate._
-import experiments.typeclasses.expressionProblem.PrettyPrintExpr._
-import experiments.typeclasses.expressionProblem.PrettyPrintExprWithNegate._
+import experiments.typeclasses.expressionProblem.base.{Number, Plus}
+import experiments.typeclasses.expressionProblem.withNegate.Negate
+import experiments.typeclasses.expressionProblem.prettyprint._
+import experiments.typeclasses.expressionProblem.withNegatePrettyPrint._
 
 import scala.language.reflectiveCalls
 

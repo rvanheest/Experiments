@@ -1,18 +1,11 @@
 package experiments.typeclasses.expressionProblem
 
-object Expr {
-
-  trait Expr[E] {
-    def eval(e: E): Int
-  }
+package object base {
   implicit def addEvaluate[E: Expr](expr: E): Object {def evaluate: Int} = {
     new {
       def evaluate: Int = implicitly[Expr[E]].eval(expr)
     }
   }
-
-  case class Number(value: Int)
-  case class Plus[A: Expr, B: Expr](left: A, right: B)
 
   implicit def evalNumber = new Expr[Number] {
     def eval(e: Number) = e.value
