@@ -56,7 +56,7 @@ package object instances {
   }
 
   implicit def stateIsMonad[A, S] = new Monad[A, ({ type s[x] = State[S, x] })#s] {
-    override def fmap[B](state: State[S, A], f: A => B): State[S, B] = {
+    def fmap[B](state: State[S, A], f: A => B): State[S, B] = {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         (f(a), s2)
@@ -86,7 +86,7 @@ package object instances {
       })
     }
 
-    override def flatMap[B](state: State[S, A], f: A => State[S, B]): State[S, B] = {
+    def flatMap[B](state: State[S, A], f: A => State[S, B]): State[S, B] = {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         f(a).state(s2)
