@@ -19,6 +19,7 @@ j1.map(i => j2.map(j => j + i))
 j1.map(i => n)
 n.map(i => i + 10)
 n.map(i => j1)
+jf.map(f => j1.map(j => f(j)))
 
 // applicative
 jf <*> j1
@@ -31,6 +32,8 @@ j1.flatMap(i => j2.map(j => j + i))
 j1.flatMap(i => n.map(j => j + i))
 n.flatMap(i => j2.map(j => j + i))
 for { i <- j1; j <- j2 } yield j + i
+jf.flatMap(f => j1.map(j => f(j)))
+for { f <- jf; j <- j1 } yield f(j)
 
 // monadplus
 j1.mplus(j2)
