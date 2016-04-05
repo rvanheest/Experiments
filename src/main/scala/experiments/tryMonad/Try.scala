@@ -27,6 +27,8 @@ sealed trait Try[+T] {
   def doOnSuccess(f: T => Unit): Try[T]
 
   def doOnError(f: Throwable => Unit): Try[T]
+
+  def eventually[Ignore](effect: => Ignore): Try[T]
 }
 
 object Try {
@@ -80,6 +82,8 @@ private final case class Success[+T](value: T) extends Try[T] {
   }
 
   def doOnError(f: Throwable => Unit): Try[T] = this
+
+  def eventually[Ignore](effect: => Ignore): Try[T] = this.doOnSuccess(_ => effect)
 }
 
 private final case class Failure[+T](exception: Throwable) extends Try[T] {
@@ -140,4 +144,6 @@ private final case class Failure[+T](exception: Throwable) extends Try[T] {
       case e if NonFatal(e) => Failure(e)
     }
   }
+
+  def eventually[Ignore](effect: => Ignore): Try[T] = this.doOnError(_ => effect)
 }
