@@ -21,23 +21,23 @@ package object instances {
       }
     }
 
-    def <*>[B](appA: Maybe[A], appAB: Maybe[A => B]): Maybe[B] = {
-      appAB match {
-        case Just(fab) => fmap(appA, fab)
+    def <*>[B](maybeA: Maybe[A], maybeAB: Maybe[A => B]): Maybe[B] = {
+      maybeAB match {
+        case Just(fab) => fmap(maybeA, fab)
         case None() => None()
       }
     }
 
-    def *>[B](appA: Maybe[A], appB: Maybe[B]): Maybe[B] = {
-      appA match {
-        case Just(a) => appB
+    def *>[B](maybeA: Maybe[A], maybeB: Maybe[B]): Maybe[B] = {
+      maybeA match {
+        case Just(a) => maybeB
         case None() => None()
       }
     }
 
-    def <*[B](appA: Maybe[A], appB: Maybe[B]): Maybe[A] = {
-      appA match {
-        case Just(a) => appB match {
+    def <*[B](maybeA: Maybe[A], maybeB: Maybe[B]): Maybe[A] = {
+      maybeA match {
+        case Just(a) => maybeB match {
           case Just(b) => Just(a)
           case None() => None()
         }
