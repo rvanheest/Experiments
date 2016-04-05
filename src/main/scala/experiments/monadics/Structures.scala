@@ -3,7 +3,7 @@ package experiments.monadics
 import scala.language.higherKinds
 
 trait Monoid[T, M[_]] {
-  def mappend(a: M[T], b: M[T]): M[T]
+  def mappend[S >: T](a: M[T], b: M[S]): M[S]
 }
 
 trait Functor[A, F[_]] {
@@ -15,5 +15,5 @@ trait Monad[A, M[_]] extends Functor[A, M] {
 }
 
 trait MonadPlus[A, MP[_]] extends Monad[A, MP] {
-  def mplus(mpa: MP[A], other: MP[A]): MP[A]
+  def mplus[B >: A](mpa: MP[A], other: MP[B]): MP[B]
 }

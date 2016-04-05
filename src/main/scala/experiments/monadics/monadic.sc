@@ -2,15 +2,12 @@ import experiments.monadics.instances.Maybe
 import experiments.monadics.instances._
 import experiments.monadics._
 
-def maybe[A](empty: Boolean)(value: => A): Maybe[A] = {
-  if (empty) Maybe.empty
-  else Maybe.apply(value)
-}
+val j1 = Maybe(1)
+val j2 = Maybe(2)
+val jf = Maybe((a: Int) => a.toDouble)
+val n = Maybe.empty[Int]
 
-val j1 = maybe(empty = false)(1)
-val j2 = maybe(empty = false)(2)
-val n = maybe(empty = true)(1)
-
+// monoid
 j1.mappend(j2)
 j1.mappend(n)
 n.mappend(j2)
@@ -21,6 +18,7 @@ j1.map(i => i + 10)
 j1.map(i => j2.map(j => j + i))
 j1.map(i => n)
 n.map(i => i + 10)
+n.map(i => j1)
 
 // monad
 j1.flatMap(i => j2.map(j => j + i))

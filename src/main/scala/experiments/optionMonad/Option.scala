@@ -50,7 +50,7 @@ object Option {
       Some(x)
   }
 
-  def empty[A]: Option[A] = None()
+  def empty: Option[Nothing] = None[Nothing]()
 }
 
 private final case class Some[+A](value: A) extends Option[A] {

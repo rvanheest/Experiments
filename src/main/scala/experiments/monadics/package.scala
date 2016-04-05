@@ -5,7 +5,7 @@ import scala.language.higherKinds
 package object monadics {
   implicit def addMonoid[T, M[_]](monoid: M[T])(implicit ev: Monoid[T, M]) = {
     new {
-      def mappend: M[T] => M[T] = other => ev.mappend(monoid, other)
+      def mappend[S >: T]: M[S] => M[S] = other => ev.mappend(monoid, other)
     }
   }
 
@@ -23,7 +23,7 @@ package object monadics {
 
   implicit def addMonadPlus[A, MP[_]](monadPlus: MP[A])(implicit ev: MonadPlus[A, MP]) = {
     new {
-      def mplus: MP[A] => MP[A] = other => ev.mplus(monadPlus, other)
+      def mplus[B >: A]: MP[B] => MP[B] = other => ev.mplus(monadPlus, other)
     }
   }
 }
