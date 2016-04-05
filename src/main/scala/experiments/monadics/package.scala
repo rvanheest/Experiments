@@ -1,5 +1,7 @@
 package experiments
 
+import scala.language.higherKinds
+
 package object monadics {
   implicit def addMonoid[T, M[_]](monoid: M[T])(implicit ev: Monoid[T, M]) = {
     new {

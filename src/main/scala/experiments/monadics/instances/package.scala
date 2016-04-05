@@ -1,5 +1,7 @@
 package experiments.monadics
 
+import scala.language.reflectiveCalls
+
 package object instances {
 
   implicit def maybeIsMonoid[T] = new Monoid[T, Maybe] {

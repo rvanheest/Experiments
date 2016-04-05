@@ -2,6 +2,8 @@ package experiments.typeclasses.expressionProblem
 
 import experiments.typeclasses.expressionProblem.base.Plus
 
+import scala.language.implicitConversions
+
 package object prettyprint {
 
   implicit def addFormat[E: PrettyPrint](expr: E): Object {def format: String} = {

@@ -1,5 +1,7 @@
 package experiments.typeclasses.expressionProblem
 
+import scala.language.implicitConversions
+
 package object base {
   implicit def addEvaluate[E: Expr](expr: E): Object {def evaluate: Int} = {
     new {

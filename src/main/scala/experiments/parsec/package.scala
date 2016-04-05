@@ -107,7 +107,7 @@ package object parsec {
 		}
 
 		def takeWhile(predicate: A => Boolean): Parser[S, List[A]] = {
-			satisfy(predicate) many
+			satisfy(predicate).many
 		}
 
 		def separatedBy[Sep](sep: Parser[S, Sep]): Parser[S, List[A]] = {

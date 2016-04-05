@@ -1,5 +1,7 @@
 package experiments.monadics
 
+import scala.language.higherKinds
+
 trait Monoid[T, M[_]] {
   def mappend(a: M[T], b: M[T]): M[T]
 }

@@ -1,5 +1,7 @@
 package experiments.optionMonad
 
+import scala.language.implicitConversions
+
 sealed trait Option[+A] {
 
   def getOrElse[B >: A](default: => B): B
