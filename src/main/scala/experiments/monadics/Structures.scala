@@ -10,7 +10,13 @@ trait Functor[A, F[_]] {
   def fmap[B](fa: F[A], f: A => B): F[B]
 }
 
-trait Monad[A, M[_]] extends Functor[A, M] {
+trait Applicative[A, App[_]] extends Functor[A, App] {
+  def <*>[B](appA: App[A], appAB: App[A => B]): App[B]
+  def *>[B](appA: App[A], appB: App[B]): App[B]
+  def <*[B](appA: App[A], appB: App[B]): App[A]
+}
+
+trait Monad[A, M[_]] extends Applicative[A, M] {
   def flatMap[B](ma: M[A], f: A => M[B]): M[B]
 }
 

@@ -15,6 +15,20 @@ package object monadics {
     }
   }
 
+  implicit def addApplicative2[A, B, App[_]](appAB: App[A => B])(implicit ev: Applicative[A, App]) = {
+    new {
+      def <*> : App[A] => App[B] = appA => ev.<*>(appA, appAB)
+    }
+  }
+
+  implicit def addApplicative[A, App[_]](appA: App[A])(implicit ev: Applicative[A, App]) = {
+    new {
+      def *>[B]: App[B] => App[B] = appB => ev.*>(appA, appB)
+
+      def <*[B]: App[B] => App[A] = appB => ev.<*(appA, appB)
+    }
+  }
+
   implicit def addMonad[A, M[_]](monad: M[A])(implicit ev: Monad[A, M]) = {
     new {
       def flatMap[B](f: A => M[B]): M[B] = ev.flatMap(monad, f)

@@ -20,6 +20,12 @@ j1.map(i => n)
 n.map(i => i + 10)
 n.map(i => j1)
 
+// applicative
+jf <*> j1
+jf <*> n
+j1 *> j2
+j1 <* j2
+
 // monad
 j1.flatMap(i => j2.map(j => j + i))
 j1.flatMap(i => n.map(j => j + i))

@@ -21,6 +21,30 @@ package object instances {
       }
     }
 
+    def <*>[B](appA: Maybe[A], appAB: Maybe[A => B]): Maybe[B] = {
+      appAB match {
+        case Just(fab) => fmap(appA, fab)
+        case None() => None()
+      }
+    }
+
+    def *>[B](appA: Maybe[A], appB: Maybe[B]): Maybe[B] = {
+      appA match {
+        case Just(a) => appB
+        case None() => None()
+      }
+    }
+
+    def <*[B](appA: Maybe[A], appB: Maybe[B]): Maybe[A] = {
+      appA match {
+        case Just(a) => appB match {
+          case Just(b) => Just(a)
+          case None() => None()
+        }
+        case None() => None()
+      }
+    }
+
     def flatMap[B](maybe: Maybe[A], f: A => Maybe[B]): Maybe[B] = {
       maybe match {
         case Just(a) => f(a)
@@ -36,6 +60,29 @@ package object instances {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         (f(a), s2)
+      })
+    }
+
+    def <*>[B](stateA: State[S, A], stateAB: State[S, A => B]): State[S, B] = {
+      new State[S, B](s => {
+        val (aToB, s2) = stateAB.state(s)
+        val (a, s3) = stateA.state(s2)
+        (aToB(a), s3)
+      })
+    }
+
+    def *>[B](stateA: State[S, A], stateB: State[S, B]): State[S, B] = {
+      new State[S, B](s => {
+        val (_, s2) = stateA.state(s)
+        stateB.state(s2)
+      })
+    }
+
+    def <*[B](stateA: State[S, A], stateB: State[S, B]): State[S, A] = {
+      new State[S, A](s => {
+        val (a, s2) = stateA.state(s)
+        val (_, s3) = stateB.state(s2)
+        (a, s3)
       })
     }
 
