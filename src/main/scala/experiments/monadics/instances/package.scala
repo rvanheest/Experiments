@@ -8,7 +8,7 @@ package object instances {
     def mappend[S >: T](monoid: Maybe[T], other: Maybe[S]): Maybe[S] = {
       monoid match {
         case Just(x) => Just(x)
-        case None() => other
+        case None => other
       }
     }
   }
@@ -17,21 +17,21 @@ package object instances {
     def fmap[B](maybe: Maybe[A], f: A => B): Maybe[B] = {
       maybe match {
         case Just(a) => Just(f(a))
-        case None() => None()
+        case None => None
       }
     }
 
     def <*>[B](maybeA: Maybe[A], maybeAB: Maybe[A => B]): Maybe[B] = {
       maybeAB match {
         case Just(fab) => fmap(maybeA, fab)
-        case None() => None()
+        case None => None
       }
     }
 
     def *>[B](maybeA: Maybe[A], maybeB: Maybe[B]): Maybe[B] = {
       maybeA match {
         case Just(a) => maybeB
-        case None() => None()
+        case None => None
       }
     }
 
@@ -39,16 +39,16 @@ package object instances {
       maybeA match {
         case Just(a) => maybeB match {
           case Just(b) => Just(a)
-          case None() => None()
+          case None => None
         }
-        case None() => None()
+        case None => None
       }
     }
 
     def flatMap[B](maybe: Maybe[A], f: A => Maybe[B]): Maybe[B] = {
       maybe match {
         case Just(a) => f(a)
-        case None() => None()
+        case None => None
       }
     }
 

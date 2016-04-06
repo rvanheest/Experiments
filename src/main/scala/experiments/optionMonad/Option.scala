@@ -39,18 +39,18 @@ object Option {
     xo.map(List(_)).getOrElse(Nil)
   }
 
-  implicit def old2NewOption[A](xo: scala.Option[A]): Option[A] = {
+  implicit def scala2MyOption[A](xo: scala.Option[A]): Option[A] = {
     xo.map(Option(_)).getOrElse(Option.empty)
   }
 
   def apply[A](x: A): Option[A] = {
     if (x == null)
-      None()
+      None
     else
       Some(x)
   }
 
-  def empty: Option[Nothing] = None[Nothing]()
+  def empty: Option[Nothing] = None
 }
 
 private final case class Some[+A](value: A) extends Option[A] {
@@ -73,14 +73,14 @@ private final case class Some[+A](value: A) extends Option[A] {
     if (p(value))
       this
     else
-      None()
+      None
   }
 
   def filterNot(p: A => Boolean): Option[A] = {
     if (!p(value))
       this
     else
-      None()
+      None
   }
 
   def collect[B](pf: PartialFunction[A, B]): Option[B] = {
@@ -101,35 +101,35 @@ private final case class Some[+A](value: A) extends Option[A] {
   def doOnEmpty(f: () => Unit): Option[A] = this
 }
 
-private final case class None[A]() extends Option[A] {
+private case object None extends Option[Nothing] {
 
-  def getOrElse[B >: A](default: => B): B = default
+  def getOrElse[B >: Nothing](default: => B): B = default
 
-  def orElse[B >: A](default: => Option[B]): Option[B] = default
+  def orElse[B >: Nothing](default: => Option[B]): Option[B] = default
 
-  def foreach[U](f: A => U): Unit = ()
+  def foreach[U](f: Nothing => U): Unit = ()
 
-  def flatMap[B](f: A => Option[B]): Option[B] = None()
+  def flatMap[B](f: Nothing => Option[B]): Option[B] = None
 
-  def flatten[B](implicit ev: A <:< Option[B]): Option[B] = None()
+  def flatten[B](implicit ev: Nothing <:< Option[B]): Option[B] = None
 
-  def map[B](f: A => B): Option[B] = None()
+  def map[B](f: Nothing => B): Option[B] = None
 
-  def filter(p: A => Boolean): Option[A] = None()
+  def filter(p: Nothing => Boolean): Option[Nothing] = None
 
-  def filterNot(p: A => Boolean): Option[A] = None()
+  def filterNot(p: Nothing => Boolean): Option[Nothing] = None
 
-  def collect[B](pf: PartialFunction[A, B]): Option[B] = None()
+  def collect[B](pf: PartialFunction[Nothing, B]): Option[B] = None
 
-  def exist(p: A => Boolean): Boolean = false
+  def exist(p: Nothing => Boolean): Boolean = false
 
-  def forall(p: A => Boolean): Boolean = true
+  def forall(p: Nothing => Boolean): Boolean = true
 
-  def contains[B >: A](elem: B): Boolean = false
+  def contains[B >: Nothing](elem: B): Boolean = false
 
-  def doOnDefined(f: A => Unit): Option[A] = this
+  def doOnDefined(f: Nothing => Unit): Option[Nothing] = this
 
-  def doOnEmpty(f: () => Unit): Option[A] = {
+  def doOnEmpty(f: () => Unit): Option[Nothing] = {
     f()
     this
   }
