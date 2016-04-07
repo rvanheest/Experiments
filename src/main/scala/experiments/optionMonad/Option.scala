@@ -8,7 +8,7 @@ sealed trait Option[+A] {
 
   def orElse[B >: A](default: => Option[B]): Option[B]
 
-  def foreach[U](f: A => U): Unit
+  def ifPresent[U](f: A => U): Unit
 
   def flatMap[B](f: A => Option[B]): Option[B]
 
@@ -18,7 +18,7 @@ sealed trait Option[+A] {
 
   def filter(p: A => Boolean): Option[A]
 
-  def filterNot(p: A => Boolean): Option[A]
+  def filterNot(p: A => Boolean): Option[A] = filter(!p(_))
 
   def collect[B](pf: PartialFunction[A, B]): Option[B]
 
@@ -59,13 +59,11 @@ private final case class Some[+A](value: A) extends Option[A] {
 
   def orElse[B >: A](default: => Option[B]): Option[B] = this
 
-  def foreach[U](f: A => U): Unit = f(value)
+  def ifPresent[U](f: A => U): Unit = f(value)
 
   def flatMap[B](f: A => Option[B]): Option[B] = f(value)
 
-  def flatten[B](implicit ev: A <:< Option[B]): Option[B] = {
-    ev(value)
-  }
+  def flatten[B](implicit ev: A <:< Option[B]): Option[B] = ev(value)
 
   def map[B](f: A => B): Option[B] = Some(f(value))
 
@@ -76,16 +74,7 @@ private final case class Some[+A](value: A) extends Option[A] {
       None
   }
 
-  def filterNot(p: A => Boolean): Option[A] = {
-    if (!p(value))
-      this
-    else
-      None
-  }
-
-  def collect[B](pf: PartialFunction[A, B]): Option[B] = {
-    pf.lift(value)
-  }
+  def collect[B](pf: PartialFunction[A, B]): Option[B] = pf.lift(value)
 
   def exist(p: A => Boolean): Boolean = p(value)
 
@@ -107,7 +96,7 @@ private case object None extends Option[Nothing] {
 
   def orElse[B >: Nothing](default: => Option[B]): Option[B] = default
 
-  def foreach[U](f: Nothing => U): Unit = ()
+  def ifPresent[U](f: Nothing => U): Unit = ()
 
   def flatMap[B](f: Nothing => Option[B]): Option[B] = None
 
@@ -117,7 +106,7 @@ private case object None extends Option[Nothing] {
 
   def filter(p: Nothing => Boolean): Option[Nothing] = None
 
-  def filterNot(p: Nothing => Boolean): Option[Nothing] = None
+  override def filterNot(p: Nothing => Boolean): Option[Nothing] = None
 
   def collect[B](pf: PartialFunction[Nothing, B]): Option[B] = None
 

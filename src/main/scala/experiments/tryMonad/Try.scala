@@ -14,7 +14,7 @@ sealed trait Try[+T] {
 
   def recover[U >: T](f: PartialFunction[Throwable, U]): Try[U]
 
-  def foreach[U](f: T => U): Unit
+  def ifSuccess[U](f: T => U): Unit
 
   def flatMap[U](f: T => Try[U]): Try[U]
 
@@ -23,6 +23,8 @@ sealed trait Try[+T] {
   def map[U](f: T => U): Try[U]
 
   def filter(predicate: T => Boolean): Try[T]
+
+  def filterNot(predicate: T => Boolean): Try[T] = filter(!predicate(_))
 
   def doOnSuccess(f: T => Unit): Try[T]
 
@@ -56,7 +58,7 @@ private final case class Success[+T](value: T) extends Try[T] {
 
   def recover[U >: T](f: PartialFunction[Throwable, U]): Try[U] = this
 
-  def foreach[U](f: T => U): Unit = f(value)
+  def ifSuccess[U](f: T => U): Unit = f(value)
 
   def flatMap[U](f: T => Try[U]): Try[U] = f(value)
 
@@ -123,7 +125,7 @@ private final case class Failure[+T](exception: Throwable) extends Try[T] {
     }
   }
 
-  def foreach[U](f: T => U): Unit = ()
+  def ifSuccess[U](f: T => U): Unit = ()
 
   def flatMap[U](f: T => Try[U]): Try[U] = this.asInstanceOf[Try[U]]
 
@@ -132,6 +134,8 @@ private final case class Failure[+T](exception: Throwable) extends Try[T] {
   def map[U](f: T => U): Try[U] = this.asInstanceOf[Try[U]]
 
   def filter(predicate: T => Boolean): Try[T] = this
+
+  override def filterNot(predicate: T => Boolean): Try[T] = this
 
   def doOnSuccess(f: T => Unit): Try[T] = this
 
