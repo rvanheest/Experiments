@@ -3,41 +3,69 @@ package experiments
 import scala.language.higherKinds
 
 package object monadics {
-  implicit def addMonoid[T, M[_]](monoid: M[T])(implicit ev: Monoid[T, M]) = {
+  implicit def addMonoid[T, M[_]](monoid: M[T])(implicit ev: Monoid[M]) = {
     new {
-      def mappend[S >: T]: M[S] => M[S] = other => ev.mappend(monoid, other)
+      def mappend[S >: T]: M[S] => M[S] = ev.mappend(monoid, _)
     }
   }
 
-  implicit def addFunctor[A, F[_]](functor: F[A])(implicit ev: Functor[A, F]) = {
+  implicit def addFunctor[A, F[_]](functor: F[A])(implicit ev: Functor[F]) = {
     new {
-      def map[B](f: A => B): F[B] = ev.fmap(functor, f)
+      def map[B](f: A => B): F[B] = ev.map(f, functor)
     }
   }
 
-  implicit def addApplicative2[A, B, App[_]](appAB: App[A => B])(implicit ev: Applicative[A, App]) = {
+  implicit def addApplicativeFunc[A, B, App[_]](applicative: App[A => B])(implicit ev: Applicative[App]) = {
     new {
-      def <*> : App[A] => App[B] = appA => ev.<*>(appA, appAB)
+      def <*> : App[A] => App[B] = ev.<*>(applicative, _)
     }
   }
 
-  implicit def addApplicative[A, App[_]](appA: App[A])(implicit ev: Applicative[A, App]) = {
+  implicit def addApplicative[A, App[_]](applicative: App[A])(implicit ev: Applicative[App]) = {
     new {
-      def *>[B]: App[B] => App[B] = appB => ev.*>(appA, appB)
+      def *>[B]: App[B] => App[B] = ev.*>(applicative, _)
 
-      def <*[B]: App[B] => App[A] = appB => ev.<*(appA, appB)
+      def <*[B]: App[B] => App[A] = ev.<*(applicative, _)
+
+      def <**>[B]: App[A => B] => App[B] = ev.<**>(applicative, _)
+
+      def liftA[B](f: A => B): App[B] = ev.liftA(f, applicative)
+
+      def liftA2[B, C]: App[B] => ((A, B) => C) => App[C] = {
+        appB => f => ev.liftA2(f.curried, applicative, appB)
+      }
+
+      def liftA3[B, C, D]: App[B] => App[C] => ((A, B, C) => D) => App[D] = {
+        appB => appC => f => ev.liftA3(f.curried, applicative, appB, appC)
+      }
     }
   }
 
-  implicit def addMonad[A, M[_]](monad: M[A])(implicit ev: Monad[A, M]) = {
+  implicit def addAlternative[A, Alt[_]](alternative: Alt[A])(implicit ev: Alternative[Alt]) = {
     new {
-      def flatMap[B](f: A => M[B]): M[B] = ev.flatMap(monad, f)
+      def <|> : Alt[A] => Alt[A] = ev.<|>(alternative, _)
+
+      def some: Alt[List[A]] = ev.some(alternative)
+
+      def many: Alt[List[A]] = ev.many(alternative)
     }
   }
 
-  implicit def addMonadPlus[A, MP[_]](monadPlus: MP[A])(implicit ev: MonadPlus[A, MP]) = {
+  implicit def addMonad[A, M[_]](monad: M[A])(implicit ev: Monad[M]) = {
     new {
-      def mplus[B >: A]: MP[B] => MP[B] = other => ev.mplus(monadPlus, other)
+      def >>=[B](f: A => M[B]): M[B] = ev.>>=(monad, f)
+
+      def flatMap[B](f: A => M[B]): M[B] = >>=(f)
+
+      def >>[B]: M[B] => M[B] = ev.>>(monad, _)
+
+      def andThen[B]: M[B] => M[B] = >>
+    }
+  }
+
+  implicit def addMonadPlus[A, MP[_]](monadPlus: MP[A])(implicit ev: MonadPlus[MP]) = {
+    new {
+      def mplus: MP[A] => MP[A] = ev.mplus(monadPlus, _)
     }
   }
 }
