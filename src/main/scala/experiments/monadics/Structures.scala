@@ -25,7 +25,9 @@ trait Applicative[App[_]] extends Functor[App] {
     liftA2[A, A => B, B](a => f => f(a), appA, appFunc)
   }
 
-  def liftA[A, B](f: A => B, appA: App[A]): App[B] = <*>(apply(f), appA)
+  def liftA[A, B](f: A => B, appA: App[A]): App[B] = {
+    <*>(apply(f), appA)
+  }
 
   def liftA2[A, B, C](f: A => B => C, appA: App[A], appB: App[B]): App[C] = {
     <*>(map(f, appA), appB)
@@ -39,7 +41,9 @@ trait Applicative[App[_]] extends Functor[App] {
 trait Monad[M[_]] extends Applicative[M] {
   def >>=[A, B](monad: M[A], f: A => M[B]): M[B]
 
-  def >>[A, B](mA: M[A], mB: M[B]): M[B] = >>=[A, B](mA, a => mB)
+  def >>[A, B](mA: M[A], mB: M[B]): M[B] = {
+    >>=[A, B](mA, a => mB)
+  }
 }
 
 trait Alternative[Alt[_]] extends Applicative[Alt] {
@@ -69,5 +73,7 @@ trait Alternative[Alt[_]] extends Applicative[Alt] {
 }
 
 trait MonadPlus[MP[_]] extends Monad[MP] with Alternative[MP] {
-  def mplus[A](mp1: MP[A], mp2: MP[A]): MP[A] = <|>[A](mp1, mp2)
+  def mplus[A](mp1: MP[A], mp2: MP[A]): MP[A] = {
+    <|>[A](mp1, mp2)
+  }
 }
