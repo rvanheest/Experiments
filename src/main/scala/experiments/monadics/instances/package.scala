@@ -25,13 +25,6 @@ package object instances {
       }
     }
 
-    def <*>[A, B](appFunc: Maybe[A => B], appA: Maybe[A]): Maybe[B] = {
-      appFunc match {
-        case Just(f) => map(f, appA)
-        case None => None
-      }
-    }
-
     def <|>[A](alt1: Maybe[A], alt2: Maybe[A]): Maybe[A] = {
       alt1 match {
         case None => alt2
@@ -58,7 +51,7 @@ package object instances {
       })
     }
 
-    def <*>[A, B](stateAB: State[S, A => B], stateA: State[S, A]): State[S, B] = {
+    override def <*>[A, B](stateAB: State[S, A => B], stateA: State[S, A]): State[S, B] = {
       new State[S, B](s => {
         val (aToB, s2) = stateAB.state(s)
         val (a, s3) = stateA.state(s2)

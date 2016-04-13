@@ -41,6 +41,18 @@ trait Applicative[App[_]] extends Functor[App] {
 }
 
 trait Monad[M[_]] extends Applicative[M] {
+  override def <*>[A, B](mFunc: M[A => B], mA: M[A]): M[B] = {
+    liftM2[A => B, A, B](f => f(_), mFunc, mA)
+  }
+
+  override def *>[A, B](mA: M[A], mB: M[B]): M[B] = {
+    >>(mA, mB)
+  }
+
+  override def <*[A, B](mA: M[A], mB: M[B]): M[A] = {
+    <<(mA, mB)
+  }
+
   def >>=[A, B](monad: M[A], f: A => M[B]): M[B]
 
   def >>[A, B](mA: M[A], mB: M[B]): M[B] = {
