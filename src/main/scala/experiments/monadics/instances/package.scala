@@ -1,6 +1,6 @@
 package experiments.monadics
 
-import scala.language.reflectiveCalls
+import scala.language.{implicitConversions, reflectiveCalls}
 
 package object instances {
 

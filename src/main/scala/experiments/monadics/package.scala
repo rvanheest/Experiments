@@ -60,6 +60,20 @@ package object monadics {
       def >>[B]: M[B] => M[B] = ev.>>(monad, _)
 
       def andThen[B]: M[B] => M[B] = >>
+
+      def <<[B]: M[B] => M[A] = ev.<<(monad, _)
+
+      def thenAnd[B]: M[B] => M[A] = <<
+
+      def liftM[B](f: A => B): M[B] = ev.liftM(f, monad)
+
+      def liftM2[B, C]: M[B] => ((A, B) => C) => M[C] = {
+        mB => f => ev.liftM2(f.curried, monad, mB)
+      }
+
+      def liftM3[B, C, D]: (M[B], M[C]) => ((A, B, C) => D) => M[D] = {
+        (mB, mC) => f => ev.liftM3(f.curried, monad, mB, mC)
+      }
     }
   }
 

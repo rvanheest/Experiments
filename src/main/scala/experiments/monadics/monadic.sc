@@ -2,6 +2,8 @@ import experiments.monadics.instances.Maybe
 import experiments.monadics.instances._
 import experiments.monadics._
 
+import scala.language.postfixOps
+
 val j1 = Maybe(1)
 val j2 = Maybe(2)
 val jf = Maybe((a: Int) => a.toDouble)
@@ -49,6 +51,36 @@ j1 >>= (i => n.map(i +))
 n >>= (i => j2.map(i +))
 n >>= (i => n.map(i +))
 jf >>= (f => j1.map(f(_)))
+
+j1 >> j2
+j1 >> n
+j1 >> jf
+n >> j1
+n >> n
+
+j1 << j2
+j1 << n
+j1 << jf
+n << j1
+n << n
+
+j1.liftM(10 +)
+jf.liftM(_(2))
+n.liftM(10 +)
+
+j1.liftM2(j2)(_ + _)
+j1.liftM2(n)(_ + _)
+n.liftM2(j1)(_ + _)
+n.liftM2(n)(_ + _)
+
+j1.liftM3(j2, jf)((a, b, f) => f(a + b))
+j1.liftM3(n, jf)((a, b, f) => f(a + b))
+n.liftM3(j2, jf)((a, b, f) => f(a + b))
+n.liftM3(n, jf)((a, b, f) => f(a + b))
+j1.liftM3(j2, n)((a, b, c) => a + b + c)
+n.liftM3(j2, n)((a, b, c) => a + b + c)
+j1.liftM3(n, n)((a, b, c) => a + b + c)
+n.liftM3(n, n)((a, b, c) => a + b + c)
 
 // monad for-comprehension
 for { i <- j1; j <- j2 } yield i + j

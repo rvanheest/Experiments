@@ -1,5 +1,7 @@
 package experiments.monadics
 
+import scala.language.higherKinds
+
 trait Monoid[M[_]] {
   def mappend[T, S >: T](a: M[T], b: M[S]): M[S]
 }
@@ -44,6 +46,22 @@ trait Monad[M[_]] extends Applicative[M] {
   def >>[A, B](mA: M[A], mB: M[B]): M[B] = {
     >>=[A, B](mA, a => mB)
   }
+
+  def <<[A, B](mA: M[A], mB: M[B]): M[A] = {
+    >>=[A, A](mA, a => >>=[B, A](mB, _ => apply(a)))
+  }
+
+  def liftM[A, B](f: A => B, mA: M[A]): M[B] = {
+    map[A, B](f(_), mA)
+  }
+
+  def liftM2[A, B, C](f: A => B => C, mA: M[A], mB: M[B]): M[C] = {
+    >>=[A, C](mA, a => map[B, C](f(a)(_), mB))
+  }
+
+  def liftM3[A, B, C, D](f: A => B => C => D, mA: M[A], mB: M[B], mC: M[C]): M[D] = {
+    >>=[A, D](mA, a => >>=[B, D](mB, b => map[C, D](f(a)(b)(_), mC)))
+  }
 }
 
 trait Alternative[Alt[_]] extends Applicative[Alt] {
@@ -51,24 +69,14 @@ trait Alternative[Alt[_]] extends Applicative[Alt] {
 
   def <|>[A](alt1: Alt[A], alt2: Alt[A]): Alt[A]
 
-  def some[A](alt: Alt[A]): Alt[List[A]] = {
-    def many_v: Alt[List[A]] = <|>(some_v, apply(Nil))
+  def some[A](alt: Alt[A]): Alt[List[A]] = some_v(alt)
 
-    def some_v: Alt[List[A]] = {
-      <*>(map[A, List[A] => List[A]](a => a :: _, alt), many_v)
-    }
+  def many[A](alt: Alt[A]): Alt[List[A]] = many_v(alt)
 
-    some_v
-  }
+  private def many_v[A](alt: Alt[A]): Alt[List[A]] = <|>(some_v(alt), apply(Nil))
 
-  def many[A](alt: Alt[A]): Alt[List[A]] = {
-    def many_v: Alt[List[A]] = <|>(some_v, apply(Nil))
-
-    def some_v: Alt[List[A]] = {
-      <*>(map[A, List[A] => List[A]](a => a :: _, alt), many_v)
-    }
-
-    many_v
+  private def some_v[A](alt: Alt[A]): Alt[List[A]] = {
+    <*>(map[A, List[A] => List[A]](a => a :: _, alt), many_v(alt))
   }
 }
 
