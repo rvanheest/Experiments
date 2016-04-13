@@ -25,7 +25,7 @@ object XmlParser {
 		} yield y :: x
 	}
 
-	def xmlDecl: Parser[String, XML] = {
+	def xmlDecl: StringParser[XML] = {
 		for {
 			_ <- string("<?xml")
 			_ <- spaces
@@ -35,12 +35,12 @@ object XmlParser {
 		} yield Decl(attr)
 	}
 
-	def debug: Parser[String, String] = Parser(xs => {
+	def debug: StringParser[String] = Parser(xs => {
 		println(s"debug = $xs")
 		Option(("", xs))
 	})
 
-	def tag: Parser[String, XML] = {
+	def tag: StringParser[XML] = {
 		for {
 			_ <- char('<')
 			_ <- spaces
@@ -60,13 +60,13 @@ object XmlParser {
 		} yield result
 	}
 
-	def elementBody: Parser[String, XML] = spaces *> tag <|> text
+	def elementBody: StringParser[XML] = spaces *> tag <|> text
 
-	def endTag(str: String): Parser[String, String] = string("</") *> string(str) <* char('>')
+	def endTag(str: String): StringParser[String] = string("</") *> string(str) <* char('>')
 
-	def text: Parser[String, XML] = item.noneOf("><").atLeastOnce.map(cs => Body(cs.mkString))
+	def text: StringParser[XML] = item.noneOf("><").atLeastOnce.map(cs => Body(cs.mkString))
 
-	def attribute: Parser[String, Attribute] = {
+	def attribute: StringParser[Attribute] = {
 		for {
 			name <- item.noneOf("= />").many.map(_.mkString)
 			_ <- spaces
