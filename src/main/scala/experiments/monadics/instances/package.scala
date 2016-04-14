@@ -4,6 +4,18 @@ import scala.language.{implicitConversions, reflectiveCalls}
 
 package object instances {
 
+  implicit def identityIsMonad = new Monad[Identity] {
+    implicit def apply[A](a: A): Identity[A] = new Identity[A](a)
+
+    def map[A, B](f: A => B, functor: Identity[A]): Identity[B] = {
+      new Identity[B](f(functor.id))
+    }
+
+    def >>=[A, B](monad: Identity[A], f: (A) => Identity[B]): Identity[B] = {
+      f(monad.id)
+    }
+  }
+
   implicit def maybeIsMonoid = new Monoid[Maybe] {
     def mappend[T, S >: T](monoid: Maybe[T], other: Maybe[S]): Maybe[S] = {
       monoid match {
@@ -13,7 +25,7 @@ package object instances {
     }
   }
 
-  implicit def maybeIsMonad = new MonadPlus[Maybe] {
+  implicit def maybeIsMonadPlus = new MonadPlus[Maybe] {
     implicit def apply[A](a: A): Maybe[A] = Maybe.apply(a)
 
     implicit def empty[A]: Maybe[A] = Maybe.empty

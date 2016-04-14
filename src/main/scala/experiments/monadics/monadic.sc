@@ -95,3 +95,10 @@ j2.mplus(j1)
 j1.mplus(n)
 n.mplus(j1)
 n.mplus(n)
+
+val id1 = new Identity(5)
+val id2 = new Identity(3.0)
+
+id1.map(2 *)
+id1.flatMap(i => id2.map(i +))
+for { i <- id1; j <- id2 } yield i * j
