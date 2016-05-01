@@ -11,7 +11,7 @@ package object instances {
       new Identity[B](f(functor.id))
     }
 
-    def >>=[A, B](monad: Identity[A], f: (A) => Identity[B]): Identity[B] = {
+    def flatMap[A, B](monad: Identity[A], f: (A) => Identity[B]): Identity[B] = {
       f(monad.id)
     }
   }
@@ -30,6 +30,20 @@ package object instances {
 
     implicit def empty[A]: Maybe[A] = Maybe.empty
 
+    def getOrElse[A, B >: A](alt: Maybe[A], default: => B): B = {
+      alt match {
+        case Just(a) => a
+        case None => default
+      }
+    }
+
+    def orElse[A, B >: A](alt1: Maybe[A], alt2: => Maybe[B]): Maybe[B] = {
+      alt1 match {
+        case None => alt2
+        case _ => alt1
+      }
+    }
+
     def map[A, B](f: A => B, functor: Maybe[A]): Maybe[B] = {
       functor match {
         case Just(a) => Just(f(a))
@@ -37,14 +51,7 @@ package object instances {
       }
     }
 
-    def <|>[A](alt1: Maybe[A], alt2: Maybe[A]): Maybe[A] = {
-      alt1 match {
-        case None => alt2
-        case _ => alt1
-      }
-    }
-
-    def >>=[A, B](monad: Maybe[A], f: A => Maybe[B]): Maybe[B] = {
+    def flatMap[A, B](monad: Maybe[A], f: A => Maybe[B]): Maybe[B] = {
       monad match {
         case Just(a) => f(a)
         case None => None
@@ -86,7 +93,7 @@ package object instances {
       })
     }
 
-    def >>=[A, B](state: State[S, A], f: A => State[S, B]): State[S, B] = {
+    def flatMap[A, B](state: State[S, A], f: A => State[S, B]): State[S, B] = {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         f(a).state(s2)

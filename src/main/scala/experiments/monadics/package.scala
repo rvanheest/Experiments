@@ -1,5 +1,7 @@
 package experiments
 
+import experiments.monadics.instances.Maybe
+
 import scala.language.higherKinds
 
 package object monadics {
@@ -28,58 +30,46 @@ package object monadics {
       def <*[B]: App[B] => App[A] = ev.<*(applicative, _)
 
       def <**>[B]: App[A => B] => App[B] = ev.<**>(applicative, _)
-
-      def liftA[B](f: A => B): App[B] = ev.liftA(f, applicative)
-
-      def liftA2[B, C]: App[B] => ((A, B) => C) => App[C] = {
-        appB => f => ev.liftA2(f.curried, applicative, appB)
-      }
-
-      def liftA3[B, C, D]: App[B] => App[C] => ((A, B, C) => D) => App[D] = {
-        appB => appC => f => ev.liftA3(f.curried, applicative, appB, appC)
-      }
     }
   }
 
   implicit def addAlternative[A, Alt[_]](alternative: Alt[A])(implicit ev: Alternative[Alt]) = {
     new {
-      def <|> : Alt[A] => Alt[A] = ev.<|>(alternative, _)
+      def getOrElse[B >: A](default: => B): B = ev.getOrElse(alternative, default)
+
+      def orElse : Alt[A] => Alt[A] = ev.orElse(alternative, _)
 
       def some: Alt[List[A]] = ev.some(alternative)
 
       def many: Alt[List[A]] = ev.many(alternative)
+
+      def maybe: Alt[Maybe[A]] = ev.maybe(alternative)
     }
   }
 
   implicit def addMonad[A, M[_]](monad: M[A])(implicit ev: Monad[M]) = {
     new {
-      def >>=[B](f: A => M[B]): M[B] = ev.>>=(monad, f)
+      def >>=[B](f: A => M[B]): M[B] = ev.flatMap(monad, f)
 
       def flatMap[B](f: A => M[B]): M[B] = >>=(f)
 
-      def >>[B]: M[B] => M[B] = ev.>>(monad, _)
+      def >>[B]: M[B] => M[B] = ev.andThen(monad, _)
 
       def andThen[B]: M[B] => M[B] = >>
 
-      def <<[B]: M[B] => M[A] = ev.<<(monad, _)
+      def <<[B]: M[B] => M[A] = ev.thenAnd(monad, _)
 
       def thenAnd[B]: M[B] => M[A] = <<
 
-      def liftM[B](f: A => B): M[B] = ev.liftM(f, monad)
-
-      def liftM2[B, C]: M[B] => ((A, B) => C) => M[C] = {
-        mB => f => ev.liftM2(f.curried, monad, mB)
-      }
-
-      def liftM3[B, C, D]: (M[B], M[C]) => ((A, B, C) => D) => M[D] = {
-        (mB, mC) => f => ev.liftM3(f.curried, monad, mB, mC)
-      }
+      def flatten[B](implicit ev2: A <:< M[B]): M[B] = ev.flatten(monad)
     }
   }
 
   implicit def addMonadPlus[A, MP[_]](monadPlus: MP[A])(implicit ev: MonadPlus[MP]) = {
     new {
       def mplus: MP[A] => MP[A] = ev.mplus(monadPlus, _)
+
+      def filter(predicate: A => Boolean): MP[A] = ev.filter(predicate, monadPlus)
     }
   }
 }
