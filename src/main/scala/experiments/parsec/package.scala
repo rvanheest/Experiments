@@ -82,7 +82,7 @@ package object parsec {
 		def orElse[B >: A](other: => Parser[S, B]): Parser[S, B] = <|> (other)
 		def mplus[B >: A](other: => Parser[S, B]): Parser[S, B] = <|> (other)
 		def <|>[B >: A](other: => Parser[S, B]): Parser[S, B] = {
-			Parser(input => parser parse input orElse other.parse(input))
+			Parser(input => (parser parse input) orElse (other parse input))
 		}
 
 		def filter(predicate: A => Boolean): Parser[S, A] = parser satisfy predicate
