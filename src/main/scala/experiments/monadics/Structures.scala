@@ -13,7 +13,7 @@ trait Functor[F[_]] {
 }
 
 trait Applicative[App[_]] extends Functor[App] {
-  implicit def apply[A](a: A): App[A]
+  def create[A](a: A): App[A]
 
   def <*>[A, B](appFunc: App[A => B], appA: App[A]): App[B]
 
@@ -49,7 +49,7 @@ trait Monad[M[_]] extends Applicative[M] {
 }
 
 trait Alternative[Alt[_]] extends Applicative[Alt] {
-  implicit def empty[A]: Alt[A]
+  def empty[A]: Alt[A]
 
   def getOrElse[A, B >: A](alt: Alt[A], default: => B): B
 
@@ -59,14 +59,14 @@ trait Alternative[Alt[_]] extends Applicative[Alt] {
 
   def many[A](alt: Alt[A]): Alt[List[A]] = many_v(alt)
 
-  private def many_v[A](alt: Alt[A]): Alt[List[A]] = orElse(some_v(alt), apply(Nil))
+  private def many_v[A](alt: Alt[A]): Alt[List[A]] = orElse(some_v(alt), create(Nil))
 
   private def some_v[A](alt: Alt[A]): Alt[List[A]] = {
     <*>(map[A, List[A] => List[A]](a => a :: _, alt), many_v(alt))
   }
 
   def maybe[A](alt: Alt[A]): Alt[Maybe[A]] = {
-    orElse(map[A, Maybe[A]](Just(_), alt), apply[Maybe[A]](None))
+    orElse(map[A, Maybe[A]](Just(_), alt), create[Maybe[A]](None))
   }
 }
 
@@ -76,6 +76,6 @@ trait MonadPlus[MP[_]] extends Monad[MP] with Alternative[MP] {
   }
 
   def filter[A](predicate: A => Boolean, mp: MP[A]): MP[A] = {
-    flatMap[A, A](mp, a => if (predicate(a)) apply(a) else empty[A])
+    flatMap[A, A](mp, a => if (predicate(a)) create(a) else empty[A])
   }
 }

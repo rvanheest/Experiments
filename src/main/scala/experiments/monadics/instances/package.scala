@@ -5,7 +5,9 @@ import scala.language.{implicitConversions, reflectiveCalls}
 package object instances {
 
   implicit def identityIsMonad = new Monad[Identity] {
-    implicit def apply[A](a: A): Identity[A] = new Identity[A](a)
+    implicit val m: Monad[Identity] = this
+
+    def create[A](a: A): Identity[A] = new Identity[A](a)
 
     def map[A, B](f: A => B, functor: Identity[A]): Identity[B] = {
       new Identity[B](f(functor.id))
@@ -16,19 +18,12 @@ package object instances {
     }
   }
 
-  implicit def maybeIsMonoid = new Monoid[Maybe] {
-    def mappend[T, S >: T](monoid: Maybe[T], other: Maybe[S]): Maybe[S] = {
-      monoid match {
-        case Just(x) => Just(x)
-        case None => other
-      }
-    }
-  }
+  implicit def maybeIsMonadPlus: MonadPlus[Maybe] = new MonadPlus[Maybe] {
+    implicit val m: MonadPlus[Maybe] = this
 
-  implicit def maybeIsMonadPlus = new MonadPlus[Maybe] {
-    implicit def apply[A](a: A): Maybe[A] = Maybe.apply(a)
+    def create[A](a: A): Maybe[A] = Maybe.apply(a)
 
-    implicit def empty[A]: Maybe[A] = Maybe.empty
+    def empty[A]: Maybe[A] = Maybe.empty
 
     def getOrElse[A, B >: A](alt: Maybe[A], default: => B): B = {
       alt match {
@@ -59,9 +54,9 @@ package object instances {
     }
   }
 
-  implicit def stateIsMonad[S] = new Monad[({ type s[x] = State[S, x] })#s] {
+  implicit def stateIsMonad[S]: Monad[({ type s[x] = State[S, x] })#s] = new Monad[({ type s[x] = State[S, x] })#s] {
 
-    implicit def apply[B](b: B): State[S, B] = new State(s => (b, s))
+    def create[B](b: B): State[S, B] = new State(s => (b, s))
 
     def map[A, B](f: A => B, state: State[S, A]): State[S, B] = {
       new State[S, B](s => {

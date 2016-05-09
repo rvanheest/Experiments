@@ -1,7 +1,8 @@
 package experiments.monadics.tests
 
 import experiments.monadics.instances.Maybe
-import experiments.monadics._
+
+import scala.language.postfixOps
 
 object MaybeTest extends App {
 
@@ -23,10 +24,6 @@ object MaybeTest extends App {
   println("\nAPPLICATIVE")
   println(jf <*> j1)
   println(jf <*> n)
-  println(j1 *> j2)
-  println(j1 *> n)
-  println(j1 <* j2)
-  println(j1 <* n)
   println(j1 <**> jf)
 
   // alternative
@@ -69,11 +66,6 @@ object MaybeTest extends App {
 
   // monadplus
   println("\nMONADPLUS")
-  println(j1.mplus(j2))
-  println(j2.mplus(j1))
-  println(j1.mplus(n))
-  println(n.mplus(j1))
-  println(n.mplus(n))
   println(j1.filter(_ % 2 == 0))
   println(j2.filter(_ % 2 == 0))
   println(n.filter(_ % 2 == 0))
