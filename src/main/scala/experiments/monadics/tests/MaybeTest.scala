@@ -45,16 +45,6 @@ object MaybeTest extends App {
   println(n >>= (i => j2.map(i +)))
   println(n >>= (i => n.map(i +)))
   println(jf >>= (f => j1.map(f(_))))
-  println(j1 >> j2)
-  println(j1 >> n)
-  println(j1 >> jf)
-  println(n >> j1)
-  println(n >> n)
-  println(j1 << j2)
-  println(j1 << n)
-  println(j1 << jf)
-  println(n << j1)
-  println(n << n)
 
   // monad for-comprehension
   println("\nMONAD FOR-COMPREHENSION")

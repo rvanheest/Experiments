@@ -55,13 +55,13 @@ trait Alternative[Alt[_]] extends Applicative[Alt] {
 
   def orElse[A, B >: A](alt1: Alt[A], alt2: => Alt[B]): Alt[B]
 
-  def some[A](alt: Alt[A]): Alt[List[A]] = some_v(alt)
+  def atLeastOnce[A](alt: Alt[A]): Alt[List[A]] = atLeastOnce_v(alt)
 
   def many[A](alt: Alt[A]): Alt[List[A]] = many_v(alt)
 
-  private def many_v[A](alt: Alt[A]): Alt[List[A]] = orElse(some_v(alt), create(Nil))
+  private def many_v[A](alt: Alt[A]): Alt[List[A]] = orElse(atLeastOnce_v(alt), create(Nil))
 
-  private def some_v[A](alt: Alt[A]): Alt[List[A]] = {
+  private def atLeastOnce_v[A](alt: Alt[A]): Alt[List[A]] = {
     <*>(map[A, List[A] => List[A]](a => a :: _, alt), many_v(alt))
   }
 
@@ -77,5 +77,17 @@ trait MonadPlus[MP[_]] extends Monad[MP] with Alternative[MP] {
 
   def filter[A](predicate: A => Boolean, mp: MP[A]): MP[A] = {
     flatMap[A, A](mp, a => if (predicate(a)) create(a) else empty[A])
+  }
+
+  def filterNot[A](predicate: A => Boolean, mp: MP[A]): MP[A] = {
+    filter(!predicate(_), mp)
+  }
+
+  def takeUntil[A](predicate: A => Boolean, mp: MP[A]): MP[List[A]] = {
+    many(filterNot(predicate, mp))
+  }
+
+  def takeWhile[A](predicate: A => Boolean, mp: MP[A]): MP[List[A]] = {
+    many(filter(predicate, mp))
   }
 }
