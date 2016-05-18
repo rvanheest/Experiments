@@ -9,11 +9,11 @@ package object instances {
 
     def create[A](a: A): Identity[A] = new Identity[A](a)
 
-    def map[A, B](f: A => B, functor: Identity[A]): Identity[B] = {
+    def map[A, B](functor: Identity[A])(f: A => B): Identity[B] = {
       new Identity[B](f(functor.id))
     }
 
-    def flatMap[A, B](monad: Identity[A], f: (A) => Identity[B]): Identity[B] = {
+    def flatMap[A, B](monad: Identity[A])(f: (A) => Identity[B]): Identity[B] = {
       f(monad.id)
     }
   }
@@ -39,14 +39,14 @@ package object instances {
       }
     }
 
-    def map[A, B](f: A => B, functor: Maybe[A]): Maybe[B] = {
+    def map[A, B](functor: Maybe[A])(f: A => B): Maybe[B] = {
       functor match {
         case Just(a) => Just(f(a))
         case None => None
       }
     }
 
-    def flatMap[A, B](monad: Maybe[A], f: A => Maybe[B]): Maybe[B] = {
+    def flatMap[A, B](monad: Maybe[A])(f: A => Maybe[B]): Maybe[B] = {
       monad match {
         case Just(a) => f(a)
         case None => None
@@ -58,7 +58,7 @@ package object instances {
 
     def create[B](b: B): State[S, B] = new State(s => (b, s))
 
-    def map[A, B](f: A => B, state: State[S, A]): State[S, B] = {
+    def map[A, B](state: State[S, A])(f: A => B): State[S, B] = {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         (f(a), s2)
@@ -88,7 +88,7 @@ package object instances {
       })
     }
 
-    def flatMap[A, B](state: State[S, A], f: A => State[S, B]): State[S, B] = {
+    def flatMap[A, B](state: State[S, A])(f: A => State[S, B]): State[S, B] = {
       new State[S, B](s => {
         val (a, s2) = state.state(s)
         f(a).state(s2)

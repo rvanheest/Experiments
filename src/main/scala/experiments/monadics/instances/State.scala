@@ -12,7 +12,7 @@ class State[S, A](val state: S => (A, S))(implicit m: Monad[({ type s[x] = State
 
   def execute(s: S): S = state(s)._2
 
-  def map[B](f: A => B): State[S, B] = m.map(f, this)
+  def map[B](f: A => B): State[S, B] = m.map(this)(f)
 
   def <*>[B, C](other: State[S, B])(implicit ev: A <:< (B => C)): State[S, C] = {
     m.<*>(this.map(ev), other)
@@ -20,7 +20,7 @@ class State[S, A](val state: S => (A, S))(implicit m: Monad[({ type s[x] = State
 
   def <**>[B](other: State[S, A => B]): State[S, B] = m.<**>(this, other)
 
-  def flatMap[B](f: A => State[S, B]): State[S, B] = m.flatMap(this, f)
+  def flatMap[B](f: A => State[S, B]): State[S, B] = m.flatMap(this)(f)
   def >>=[B](f: A => State[S, B]): State[S, B] = flatMap(f)
 
   def andThen[B](other: State[S, B]): State[S, B] = m.andThen(this, other)

@@ -4,7 +4,7 @@ import experiments.monadics.MonadPlus
 
 sealed abstract class Maybe[+A](implicit m: MonadPlus[Maybe]) {
 
-  def map[B](f: A => B): Maybe[B] = m.map(f, this)
+  def map[B](f: A => B): Maybe[B] = m.map(this)(f)
 
   def <*>[B, C](other: Maybe[B])(implicit ev: A <:< (B => C)): Maybe[C] = {
     m.<*>(this.map(ev), other)
@@ -12,7 +12,7 @@ sealed abstract class Maybe[+A](implicit m: MonadPlus[Maybe]) {
 
   def <**>[B](other: Maybe[A => B]): Maybe[B] = m.<**>(this, other)
 
-  def flatMap[B](f: A => Maybe[B]): Maybe[B] = m.flatMap(this, f)
+  def flatMap[B](f: A => Maybe[B]): Maybe[B] = m.flatMap(this)(f)
   def >>=[B](f: A => Maybe[B]): Maybe[B] = flatMap(f)
 
   def flatten[B](implicit ev: A <:< Maybe[B]): Maybe[B] = m.flatten(this)(ev)
@@ -23,9 +23,9 @@ sealed abstract class Maybe[+A](implicit m: MonadPlus[Maybe]) {
 
   def maybe = m.maybe(this)
 
-  def filter(predicate: A => Boolean): Maybe[A] = m.filter(predicate, this)
+  def filter(predicate: A => Boolean): Maybe[A] = m.filter(this)(predicate)
 
-  def filterNot(predicate: A => Boolean): Maybe[A] = m.filterNot(predicate, this)
+  def filterNot(predicate: A => Boolean): Maybe[A] = m.filterNot(this)(predicate)
 
   def ifPresent[U](f: A => U): Unit
 
@@ -33,6 +33,7 @@ sealed abstract class Maybe[+A](implicit m: MonadPlus[Maybe]) {
 
   def doOnEmpty(f: () => Unit): Maybe[A]
 }
+
 object Maybe {
   def apply[A](a: A): Maybe[A] = Just(a)
   def empty[A]: Maybe[A] = None
@@ -48,6 +49,7 @@ case class Just[+A](a: A) extends Maybe[A] {
 
   def doOnEmpty(f: () => Unit): Maybe[A] = this
 }
+
 case object None extends Maybe[Nothing] {
   def ifPresent[U](f: Nothing => U) = ()
 

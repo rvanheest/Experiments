@@ -4,7 +4,7 @@ import experiments.monadics.Monad
 
 case class Identity[A](id: A)(implicit m: Monad[Identity]) {
 
-  def map[B](f: A => B): Identity[B] = m.map(f, this)
+  def map[B](f: A => B): Identity[B] = m.map(this)(f)
 
   def <*>[B, C](other: Identity[B])(implicit ev: A <:< (B => C)): Identity[C] = {
     m.<*>(this.map(ev), other)
@@ -16,7 +16,7 @@ case class Identity[A](id: A)(implicit m: Monad[Identity]) {
 
   def <**>[B](other: Identity[A => B]): Identity[B] = m.<**>(this, other)
 
-  def flatMap[B](f: A => Identity[B]): Identity[B] = m.flatMap(this, f)
+  def flatMap[B](f: A => Identity[B]): Identity[B] = m.flatMap(this)(f)
   def >>=[B](f: A => Identity[B]): Identity[B] = flatMap(f)
 
   def andThen[B](other: Identity[B]): Identity[B] = m.andThen(this, other)
