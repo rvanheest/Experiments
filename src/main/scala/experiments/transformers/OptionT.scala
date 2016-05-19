@@ -1,10 +1,10 @@
 package experiments.transformers
 
-import experiments.monadics.Monad
+import experiments.monadics.MonadPlus
 
 import scala.language.higherKinds
 
-case class OptionT[M[_], A](run: M[Option[A]])(implicit m: Monad[M]) {
+case class OptionT[M[_], A](run: M[Option[A]])(implicit m: MonadPlus[M]) {
   import OptionT.lift
 
   def map[B](f: A => B): OptionT[M, B] = {
@@ -12,13 +12,13 @@ case class OptionT[M[_], A](run: M[Option[A]])(implicit m: Monad[M]) {
   }
 
   def flatMap[B](f: A => OptionT[M, B]): OptionT[M, B] = {
-    lift(m.flatMap(run)(_ map f.andThen(_.run) getOrElse m.create(None)))
+    lift(m.flatMap(run)(_ map f.andThen(_.run) getOrElse m.create(Option.empty)))
   }
 
   def filter(predicate: A => Boolean): OptionT[M, A] = {
-    lift(m.map(run)(_ filter predicate))
+    lift(m.filter(run)(_ filter predicate exists (_ => true)))
   }
 }
 object OptionT {
-  def lift[M[_], A](x: M[Option[A]])(implicit m: Monad[M]): OptionT[M, A] = new OptionT[M, A](x)
+  def lift[M[_], A](x: M[Option[A]])(implicit m: MonadPlus[M]): OptionT[M, A] = new OptionT[M, A](x)
 }
