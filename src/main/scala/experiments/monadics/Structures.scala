@@ -61,6 +61,7 @@ trait Monad[M[_]] extends Applicative[M] {
 trait Alternative[Alt[_]] extends Applicative[Alt] {
   def empty[A]: Alt[A]
 
+  // TODO this method needs to go to another type class, maybe Foldable???
   def getOrElse[A, B >: A](alt: Alt[A], default: => B): B
 
   def orElse[A, B >: A](alt1: Alt[A], alt2: => Alt[B]): Alt[B]
