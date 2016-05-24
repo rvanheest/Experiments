@@ -1,10 +1,10 @@
 package experiments.dependencyInjection.deadSimple
 
 import experiments.dependencyInjection.deadSimple.DependecyInjectionFramework.Reader
-import experiments.dependencyInjection.deadSimple.DependecyInjectionFramework.Reader._
 import experiments.monadics.Functor
 
 import scala.annotation.tailrec
+import scala.language.higherKinds
 
 object InitialSetup {
 
@@ -16,8 +16,8 @@ object InitialSetup {
 
 	def modify(key: String, f: String => String): Reader[KeyValueStore, Unit] = {
 		for {
-			v <- reader[KeyValueStore, String](_.get(key))
-			_ <- reader[KeyValueStore, Unit](_.put(key, f(v)))
+			v <- (kvs: KeyValueStore) => kvs.get(key)
+			_ <- (kvs: KeyValueStore) => kvs.put(key, f(v))
 		} yield ()
 	}
 }

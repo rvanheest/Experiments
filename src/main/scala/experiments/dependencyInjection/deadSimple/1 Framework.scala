@@ -15,7 +15,5 @@ object DependecyInjectionFramework {
 	}
 	object Reader {
 		def apply[T, S](s: => S): Reader[T, S] = Reader(_ => s)
-
-		implicit def reader[T, S](f: T => S): Reader[T, S] = Reader(f)
 	}
 }
