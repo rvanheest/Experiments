@@ -4,8 +4,18 @@ import experiments.monadics.instances.{Just, Maybe, None}
 
 import scala.language.higherKinds
 
-trait Monoid[M[_]] {
-  def mappend[T, S >: T](a: M[T], b: M[S]): M[S]
+trait Semigroup[S] {
+  def append(a1: S, a2: S): S
+}
+
+trait Monoid[M] extends Semigroup[M] {
+  def empty: M
+}
+
+trait Foldable[F[_]] {
+  def fold[M](fM: F[M])(implicit ev: M <:< Monoid[M]): M
+
+  def foldMap[A, M](fA: F[A])(f: A => M)(implicit ev: M <:< Monoid[M]): M
 }
 
 trait Functor[F[_]] {
