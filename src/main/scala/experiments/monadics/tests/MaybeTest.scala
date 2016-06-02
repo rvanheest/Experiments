@@ -1,6 +1,6 @@
 package experiments.monadics.tests
 
-import experiments.monadics.instances.Maybe
+import experiments.monadics.instances.{Maybe, Sum}
 
 import scala.language.postfixOps
 
@@ -11,8 +11,18 @@ object MaybeTest extends App {
   val jf = Maybe((a: Int) => a.toDouble)
   val n = Maybe.empty[Int]
 
+  val sum1 = Sum(5)
+  val sum2 = Sum(3)
+  val sum3 = Sum.empty[Int]
+
+  println("MONOID")
+  println(Maybe(sum3).append(Maybe(sum3)))
+  println(Maybe(sum2).append(Maybe(sum3)))
+  println(Maybe(sum3).append(Maybe(sum1)))
+  println(Maybe(sum1).append(Maybe(sum2)))
+
   // functor
-  println("FUNCTOR")
+  println("\nFUNCTOR")
   println(j1.map(10 +))
   println(j1.map(i => j2.map(i +)))
   println(j1.map(_ => n))

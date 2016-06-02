@@ -38,6 +38,18 @@ package object instances {
 		}
 	}
 
+	implicit def maybeIsMonoid[A: Monoid]: Monoid[Maybe[A]] = new Monoid[Maybe[A]] {
+		override def empty: Maybe[A] = Maybe.empty
+
+		override def append(m1: Maybe[A], m2: Maybe[A]): Maybe[A] = {
+			(m1, m2) match {
+				case (None, m) => m
+				case (m, None) => m
+				case (Just(a1), Just(a2)) => Just(implicitly[Monoid[A]].append(a1, a2))
+			}
+		}
+	}
+
 	implicit def maybeIsMonadPlus: MonadPlus[Maybe] = new MonadPlus[Maybe] {
 		implicit val m: MonadPlus[Maybe] = this
 

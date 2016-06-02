@@ -1,31 +1,35 @@
 package experiments.monadics.instances
 
-import experiments.monadics.MonadPlus
+import experiments.monadics.{MonadPlus, Semigroup}
 
-sealed abstract class Maybe[+A](implicit m: MonadPlus[Maybe]) {
+sealed abstract class Maybe[+A](implicit mp: MonadPlus[Maybe]) {
 
-  def map[B](f: A => B): Maybe[B] = m.map(this)(f)
-
-  def <*>[B, C](other: Maybe[B])(implicit ev: A <:< (B => C)): Maybe[C] = {
-    m.<*>(this.map(ev), other)
+  def append[B >: A](other: Maybe[B])(implicit semigroup: Semigroup[Maybe[B]]): Maybe[B] = {
+    semigroup.append(this, other)
   }
 
-  def <**>[B](other: Maybe[A => B]): Maybe[B] = m.<**>(this, other)
+  def map[B](f: A => B): Maybe[B] = mp.map(this)(f)
 
-  def flatMap[B](f: A => Maybe[B]): Maybe[B] = m.flatMap(this)(f)
+  def <*>[B, C](other: Maybe[B])(implicit ev: A <:< (B => C)): Maybe[C] = {
+    mp.<*>(this.map(ev), other)
+  }
+
+  def <**>[B](other: Maybe[A => B]): Maybe[B] = mp.<**>(this, other)
+
+  def flatMap[B](f: A => Maybe[B]): Maybe[B] = mp.flatMap(this)(f)
   def >>=[B](f: A => Maybe[B]): Maybe[B] = flatMap(f)
 
-  def flatten[B](implicit ev: A <:< Maybe[B]): Maybe[B] = m.flatten(this)(ev)
+  def flatten[B](implicit ev: A <:< Maybe[B]): Maybe[B] = mp.flatten(this)(ev)
 
-  def getOrElse[B >: A](default: => B): B = m.getOrElse(this, default)
+  def getOrElse[B >: A](default: => B): B = mp.getOrElse(this, default)
 
-  def orElse[B >: A](other: => Maybe[B]): Maybe[B] = m.orElse(this, other)
+  def orElse[B >: A](other: => Maybe[B]): Maybe[B] = mp.orElse(this, other)
 
-  def maybe = m.maybe(this)
+  def maybe = mp.maybe(this)
 
-  def filter(predicate: A => Boolean): Maybe[A] = m.filter(this)(predicate)
+  def filter(predicate: A => Boolean): Maybe[A] = mp.filter(this)(predicate)
 
-  def filterNot(predicate: A => Boolean): Maybe[A] = m.filterNot(this)(predicate)
+  def filterNot(predicate: A => Boolean): Maybe[A] = mp.filterNot(this)(predicate)
 
   def ifPresent[U](f: A => U): Unit
 
