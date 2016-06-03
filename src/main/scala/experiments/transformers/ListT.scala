@@ -12,7 +12,7 @@ case class ListT[M[_], A](run: M[List[A]])(implicit m: MonadPlus[M]) {
 	def flatMap[B](f: A => ListT[M, B]): ListT[M, B] = {
 		val res = m.flatMap(run) {
 			case Nil => m.create(List[B]())
-			case list => list.map(f.andThen(_.run)).fold(m.empty)((a, b) => m.flatMap(a)(bs1 => m.map(b)(bs1 ++ _)))
+			case list => list.map(f.andThen(_.run)).reduce((a, b) => m.flatMap(a)(bs1 => m.map(b)(bs1 ++ _)))
 		}
 
 		lift(res)
