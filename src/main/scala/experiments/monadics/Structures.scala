@@ -2,7 +2,7 @@ package experiments.monadics
 
 import experiments.monadics.instances.{Just, Maybe, None}
 
-import scala.language.higherKinds
+import scala.language.{higherKinds, reflectiveCalls}
 
 trait Semigroup[S] {
   def append(a1: S, a2: S): S
@@ -116,5 +116,70 @@ trait MonadPlus[MP[_]] extends Monad[MP] with Alternative[MP] {
 
   def takeWhile[A](mp: MP[A])(predicate: A => Boolean): MP[List[A]] = {
     many(filter(mp)(predicate))
+  }
+}
+
+// TODO MonadTrans
+
+trait Category[Cat[_, _]] {
+  def id[A]: Cat[A, A]
+
+  def compose[A, B, C](bc: Cat[B, C], ab: Cat[A, B]): Cat[A, C]
+
+  def >>>[A, B, C](ab: Cat[A, B], bc: Cat[B, C]): Cat[A, C] = compose(bc, ab)
+}
+
+trait Arrow[Arr[_, _]] extends Category[Arr] {
+
+  def create[A, B](f: A => B): Arr[A, B]
+
+  def first[A, B, C](arr: Arr[A, B]): Arr[(A, C), (B, C)]
+
+  def second[A, B, C](arr: Arr[A, B]): Arr[(C, A), (C, B)] = {
+    val f = first[A, B, C](arr)
+    val swap1 = create[(C, A), (A, C)](_.swap)
+    val swap2 = create[(B, C), (C, B)](_.swap)
+
+    >>>(>>>(swap1, f), swap2)
+  }
+
+  def ***[A, B, C, D](arr1: Arr[A, B], arr2: Arr[C, D]): Arr[(A, C), (B, D)] = {
+    val a1 = first[A, B, C](arr1)
+    val a2 = second[C, D, B](arr2)
+
+    >>>(a1, a2)
+  }
+
+  def &&&[A, B, C](arr1: Arr[A, B], arr2: Arr[A, C]): Arr[A, (B, C)] = {
+    val f = create[A, (A, A)](a => (a, a))
+    val g = ***(arr1, arr2)
+
+    >>>(f, g)
+  }
+
+  def liftA2[A, B, C, D](arr1: Arr[A, B], arr2: Arr[A, C])(f: (B, C) => D): Arr[A, D] = {
+    val g = &&&(arr1, arr2)
+
+    >>>(g, create(f.tupled))
+  }
+}
+
+trait ArrowApply[Arr[_, _]] extends Arrow[Arr] {
+  def app[A, B]: Arr[(Arr[A, B], A), B]
+
+  def app2[B, C]: Arr[B, Arr[Arr[B, C], C]]
+}
+
+trait ArrowLoop[Arr[_, _]] extends Arrow[Arr] {
+  def loop[B, C, D](arr: Arr[(B, D), (C, D)]): Arr[B, C]
+}
+
+trait ArrowApplicative[A, Arr[_, _]] extends Arrow[Arr] with Applicative[({type s[x] = Arr[A, x]})#s] {
+  def map[B, C](arr: Arr[A, B])(f: B => C): Arr[A, C] = {
+    >>>(arr, create(f))
+  }
+
+  def <*>[B, C](arrF: Arr[A, B => C], arr: Arr[A, B]): Arr[A, C] = {
+    liftA2(arrF, arr)((f, b) => f(b))
   }
 }

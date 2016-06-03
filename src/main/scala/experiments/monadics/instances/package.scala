@@ -127,4 +127,18 @@ package object instances {
 			})
 		}
 	}
+
+	implicit def functionIsCategory: Category[Function] = new Category[Function] {
+		def id[A]: Function[A, A] = Function(identity)
+
+		def compose[A, B, C](bc: Function[B, C], ab: Function[A, B]): Function[A, C] = {
+			Function(bc.f.compose(ab.f))
+		}
+	}
+
+	implicit def functionIsFunctor[S]: Functor[({type s[x] = Function[S, x]})#s] = new Functor[({type s[x] = Function[S, x]})#s] {
+		override def map[A, B](functor: Function[S, A])(f: (A) => B): Function[S, B] = {
+			Function(f compose functor.apply)
+		}
+	}
 }
