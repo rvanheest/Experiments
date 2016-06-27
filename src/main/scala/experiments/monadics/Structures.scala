@@ -133,22 +133,15 @@ trait Arrow[Arr[_, _]] extends Category[Arr] {
 
   def create[A, B](f: A => B): Arr[A, B]
 
-  def first[A, B, C](arr: Arr[A, B]): Arr[(A, C), (B, C)]
+  def first[A, B, C](arr: Arr[A, B]): Arr[(A, C), (B, C)] = {
+    ***(arr, id)
+  }
 
   def second[A, B, C](arr: Arr[A, B]): Arr[(C, A), (C, B)] = {
-    val f = first[A, B, C](arr)
-    val swap1 = create[(C, A), (A, C)](_.swap)
-    val swap2 = create[(B, C), (C, B)](_.swap)
-
-    >>>(>>>(swap1, f), swap2)
+    ***(id, arr)
   }
 
-  def ***[A, B, C, D](arr1: Arr[A, B], arr2: Arr[C, D]): Arr[(A, C), (B, D)] = {
-    val a1 = first[A, B, C](arr1)
-    val a2 = second[C, D, B](arr2)
-
-    >>>(a1, a2)
-  }
+  def ***[A, B, C, D](arr1: Arr[A, B], arr2: Arr[C, D]): Arr[(A, C), (B, D)]
 
   def &&&[A, B, C](arr1: Arr[A, B], arr2: Arr[A, C]): Arr[A, (B, C)] = {
     val f = create[A, (A, A)](a => (a, a))
@@ -164,22 +157,44 @@ trait Arrow[Arr[_, _]] extends Category[Arr] {
   }
 }
 
+trait ArrowZero[Arr[_, _]] extends Arrow[Arr] {
+  def empty[B, C]: Arr[B, C]
+}
+
+trait ArrowPlus[Arr[_, _]] extends ArrowZero[Arr] {
+  def <+>[B, C](arrow: Arr[B, C], other: Arr[B, C]): Arr[B, C]
+}
+
+trait ArrowChoice[Arr[_, _]] extends Arrow[Arr] {
+  def left[B, C, D](arr: Arr[B, C]): Arr[Either[B, D], Either[C, D]] = {
+    +++(arr, id)
+  }
+
+  def right[B, C, D](arr: Arr[B, C]): Arr[Either[D, B], Either[D, C]] = {
+    +++(id, arr)
+  }
+
+  def +++[B, C, D, E](arr: Arr[B, C], other: Arr[D, E]): Arr[Either[B, D], Either[C, E]]
+
+  def |||[B, C, D](arr: Arr[B, D], other: Arr[C, D]): Arr[Either[B, C], D] = {
+    >>>(+++(arr, other), create[Either[D, D], D](_.fold(identity, identity)))
+  }
+}
+
 trait ArrowApply[Arr[_, _]] extends Arrow[Arr] {
   def app[A, B]: Arr[(Arr[A, B], A), B]
-
-  def app2[B, C]: Arr[B, Arr[Arr[B, C], C]]
 }
 
 trait ArrowLoop[Arr[_, _]] extends Arrow[Arr] {
   def loop[B, C, D](arr: Arr[(B, D), (C, D)]): Arr[B, C]
 }
 
-trait ArrowApplicative[A, Arr[_, _]] extends Arrow[Arr] with Applicative[({type s[x] = Arr[A, x]})#s] {
-  def map[B, C](arr: Arr[A, B])(f: B => C): Arr[A, C] = {
+trait ArrowApplicative[X, Arr[_, _]] extends Arrow[Arr] with Applicative[({type s[x] = Arr[X, x]})#s] {
+  def map[B, C](arr: Arr[X, B])(f: B => C): Arr[X, C] = {
     >>>(arr, create(f))
   }
 
-  def <*>[B, C](arrF: Arr[A, B => C], arr: Arr[A, B]): Arr[A, C] = {
+  def <*>[B, C](arrF: Arr[X, B => C], arr: Arr[X, B]): Arr[X, C] = {
     liftA2(arrF, arr)((f, b) => f(b))
   }
 }

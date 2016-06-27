@@ -128,17 +128,33 @@ package object instances {
 		}
 	}
 
-	implicit def functionIsCategory: Category[Function] = new Category[Function] {
+	implicit def functionIsArrow: Arrow[Function] = new Arrow[Function] {
 		def id[A]: Function[A, A] = Function(identity)
+
+		def create[A, B](f: A => B): Function[A, B] = {
+			Function(f)
+		}
 
 		def compose[A, B, C](bc: Function[B, C], ab: Function[A, B]): Function[A, C] = {
 			Function(bc.f.compose(ab.f))
 		}
+
+		def ***[A, B, C, D](ab: Function[A, B], cd: Function[C, D]): Function[(A, C), (B, D)] = {
+			Function { case (a, c) => (ab(a), cd(c)) }
+		}
 	}
 
-	implicit def functionIsFunctor[S]: Functor[({type s[x] = Function[S, x]})#s] = new Functor[({type s[x] = Function[S, x]})#s] {
-		override def map[A, B](functor: Function[S, A])(f: (A) => B): Function[S, B] = {
+	implicit def functionIsMonad[S]: Monad[({type s[x] = Function[S, x]})#s] = new Monad[({type s[x] = Function[S, x]})#s] {
+		def map[A, B](functor: Function[S, A])(f: (A) => B): Function[S, B] = {
 			Function(f compose functor.apply)
+		}
+
+		def create[A](a: A): Function[S, A] = {
+			Function(_ => a)
+		}
+
+		def flatMap[A, B](monad: Function[S, A])(f: (A) => Function[S, B]): Function[S, B] = {
+			Function(s => f(monad(s))(s))
 		}
 	}
 }
