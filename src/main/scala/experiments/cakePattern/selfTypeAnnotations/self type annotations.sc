@@ -38,10 +38,16 @@ object inheritance {
 }
 
 object selfTypeAnnotation {
-	trait Database {}
-	trait UserDB { this: Database => }
+	trait Database {
+		def query(/* parameters */): Any = ???
+	}
+	trait UserDB { this: Database =>
+		def getUserData(/* parameters */): Any = ???
+	}
 	trait EmailService {
 		this: UserDB =>
+
 		// Can only access UserDb methods, cannot access Database methods
+		val userData = getUserData()
 	}
 }
