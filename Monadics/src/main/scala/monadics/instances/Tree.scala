@@ -16,7 +16,7 @@ sealed abstract class Tree[A](implicit monad: Monad[Tree]) {
 case class Leaf[A](a: A)(implicit monad: Monad[Tree]) extends Tree[A] {
 	def zipTree[B](other: Tree[B]): Option[Tree[(A, B)]] = {
 		other match {
-			case Leaf(b: B) => Option(Leaf(a, b))
+			case Leaf(b) => Option(Leaf(a, b))
 			case _ => Option.empty
 		}
 	}

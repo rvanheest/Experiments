@@ -27,6 +27,8 @@ case class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
 package object identityMonad {
 	implicit def identityIsMonad = new Monad[Identity] {
+		implicit val m: Monad[Identity] = this
+
 		def create[A](a: A): Identity[A] = Identity(a)
 
 		def fail[A](e: Throwable): Identity[A] = throw e
