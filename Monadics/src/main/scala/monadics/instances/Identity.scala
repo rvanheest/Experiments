@@ -29,6 +29,8 @@ package object identityMonad {
 	implicit def identityIsMonad = new Monad[Identity] {
 		def create[A](a: A): Identity[A] = Identity(a)
 
+		def fail[A](e: Throwable): Identity[A] = throw e
+
 		def map[A, B](identity: Identity[A])(f: A => B): Identity[B] = {
 			Identity(f(identity.id))
 		}

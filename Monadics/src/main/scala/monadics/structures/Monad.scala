@@ -3,6 +3,10 @@ package monadics.structures
 import scala.language.higherKinds
 
 trait Monad[M[_]] extends Applicative[M] {
+	def fail[A](s: String): M[A] = fail(new Exception(s))
+
+	def fail[A](e: Throwable): M[A]
+
 	override def <*>[A, B](appFunc: M[(A) => B], appA: M[A]): M[B] = {
 		flatMap(appA)(a => map(appFunc)(_(a)))
 	}

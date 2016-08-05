@@ -49,6 +49,8 @@ package object treeMonad {
 	implicit def treeIsMonad: Monad[Tree] = new Monad[Tree] {
 		def create[A](a: A) = Leaf(a)
 
+		def fail[A](e: Throwable): Tree[A] = throw e
+
 		def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
 			tree match {
 				case Leaf(a) => Leaf(f(a))

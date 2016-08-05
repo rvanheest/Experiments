@@ -42,6 +42,8 @@ package object stateMonad {
 	implicit def stateIsMonad[S]: StateMonad[S] = new StateMonad[S] {
 		def create[B](b: B): State[S, B] = new State(s => (b, s))
 
+		def fail[A](e: Throwable): State[S, A] = new State(_ => throw e)
+
 		def map[A, B](state: State[S, A])(f: A => B): State[S, B] = {
 			new State[S, B](s => {
 				val (a, s2) = state.run(s)
