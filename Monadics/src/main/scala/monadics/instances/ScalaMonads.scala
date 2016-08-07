@@ -5,7 +5,7 @@ import monadics.structures.{Monad, MonadPlus}
 import scala.language.reflectiveCalls
 import scala.util.{Failure, Try}
 
-package object scalamonads {
+package object ScalaMonads {
 	implicit def optionIsMonadPlus: MonadPlus[Option] = new MonadPlus[Option] {
 		def empty[A]: Option[A] = Option.empty
 
@@ -26,7 +26,9 @@ package object scalamonads {
 		}
 	}
 
-	implicit def tryIsMonadPlus: Monad[Try] = new Monad[Try] {
+	implicit def tryIsMonadPlus: MonadPlus[Try] = new MonadPlus[Try] {
+		def empty[A]: Try[A] = Failure(new NoSuchElementException("empty"))
+
 		def create[A](a: A): Try[A] = Try(a)
 
 		def fail[A](e: Throwable): Try[A] = Failure(e)
@@ -37,6 +39,10 @@ package object scalamonads {
 
 		def flatMap[A, B](monad: Try[A])(f: A => Try[B]): Try[B] = {
 			monad.flatMap(f)
+		}
+
+		def orElse[A, B >: A](try1: Try[A], try2: => Try[B]): Try[B] = {
+			try1.orElse(try2)
 		}
 	}
 
@@ -70,5 +76,11 @@ package object scalamonads {
 		def flatMap[A, B](monad: Function[S, A])(f: A => Function[S, B]): Function[S, B] = {
 			s => f(monad(s))(s)
 		}
+	}
+
+	implicit class FunctionExtension[S, A](val f: S => A)(implicit monad: FunctionMonad[S]) {
+		def map[B](g: A => B): S => B = monad.map(f)(g)
+
+		def flatMap[B](g: A => (S => B)): S => B = monad.flatMap(f)(g)
 	}
 }
