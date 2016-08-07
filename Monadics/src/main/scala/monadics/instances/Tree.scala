@@ -34,6 +34,7 @@ case class Branch[A](left: Tree[A], right: Tree[A])(implicit monad: Monad[Tree])
 					ll <- left.zipTree(l)
 					rr <- right.zipTree(r)
 				} yield Branch(ll, rr)
+			case _ => Option.empty
 		}
 	}
 

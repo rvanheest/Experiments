@@ -5,7 +5,7 @@ import monadics.structures.{Monad, MonadPlus}
 import scala.language.reflectiveCalls
 import scala.util.{Failure, Try}
 
-package object instances {
+package object scalamonads {
 	implicit def optionIsMonadPlus: MonadPlus[Option] = new MonadPlus[Option] {
 		def empty[A]: Option[A] = Option.empty
 
