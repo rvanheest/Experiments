@@ -127,13 +127,13 @@ object StateT {
 		}
 	}
 
-	implicit def stateTIsMonadTrans[S]: StateTMonadTrans[S] = new StateTMonadTrans[S] {
-
-		def lift[M[+ _], A](ma: M[A])(implicit monad: Monad[M]): StateT[S, A, M] = {
-			implicit val mp: StateTMonadPlus[S, M] = stateTIsMonadPlus[S, M]
-			new StateT(s => monad.map(ma)(a => (a, s)))
-		}
-	}
+//	implicit def stateTIsMonadTrans[S]: StateTMonadTrans[S] = new StateTMonadTrans[S] {
+//
+//		def lift[M[+ _], A](ma: M[A])(implicit monad: Monad[M]): StateT[S, A, M] = {
+//			implicit val mp: StateTMonadPlus[S, M] = stateTIsMonadPlus[S, M]
+//			new StateT(s => monad.map(ma)(a => (a, s)))
+//		}
+//	}
 }
 
 package object stateTMonadPlus {
