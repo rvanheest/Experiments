@@ -1,7 +1,7 @@
 import monadics.instances.OptionT
 import monadics.ScalaMonads.tryIsMonadPlus
-import monadics.instances.optionTMonad.optionTIsMonadPlus
-import monadics.instances.optionTMonad.optionTIsMonadTrans
+import monadics.instances.OptionT.optionTIsMonadPlus
+import monadics.instances.OptionT.optionTIsMonadTrans
 
 import scala.util.{Failure, Try}
 
