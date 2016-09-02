@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.instances.optionTMonad.{OptionTMonadPlus, OptionTMonadTrans}
+import monadics.instances.OptionT.OptionTMonadPlus
 import monadics.structures.{Monad, MonadPlus, MonadTrans}
 
 import scala.language.{higherKinds, reflectiveCalls}
@@ -23,6 +23,9 @@ class OptionT[M[+_], A](trans: M[Option[A]])(implicit m: OptionTMonadPlus[M]) {
 }
 
 object OptionT {
+	type OptionTMonadPlus[M[+_]] = MonadPlus[OptionT[M, ?]]
+	type OptionTMonadTrans = MonadTrans[Lambda[(`X[+_]`, Y) => OptionT[X, Y]]]
+
 	def empty[M[+_], A](implicit monad: OptionTMonadPlus[M]): OptionT[M, A] = {
 		monad.empty
 	}
@@ -38,11 +41,6 @@ object OptionT {
 	def apply[M[+_], A](trans: M[Option[A]])(implicit monad: OptionTMonadPlus[M]) = {
 		new OptionT(trans)
 	}
-}
-
-package object optionTMonad {
-	type OptionTMonadPlus[M[+_]] = MonadPlus[({type s[x] = OptionT[M, x]})#s]
-	type OptionTMonadTrans = MonadTrans[({type s[x[+_], y] = OptionT[x, y]})#s]
 
 	implicit def optionTIsMonadPlus[M[+_]](implicit monad: Monad[M]): OptionTMonadPlus[M] = new OptionTMonadPlus[M] {
 		def empty[A]: OptionT[M, A] = new OptionT(monad.create(Option.empty))

@@ -60,9 +60,7 @@ package object ScalaMonads {
 		def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
 	}
 
-	type FunctionMonad[S] = Monad[({type s[x] = S => x})#s]
-
-	implicit def functionIsMonadPlus[S]: FunctionMonad[S] = new FunctionMonad[S] {
+	implicit def functionIsMonadPlus[S]: Monad[S => ?] = new Monad[S => ?] {
 		def create[A](a: A): Function[S, A] = {
 			_ => a
 		}
@@ -78,7 +76,7 @@ package object ScalaMonads {
 		}
 	}
 
-	implicit class FunctionExtension[S, A](val f: S => A)(implicit monad: FunctionMonad[S]) {
+	implicit class FunctionExtension[S, A](val f: S => A)(implicit monad: Monad[S => ?]) {
 		def map[B](g: A => B): S => B = monad.map(f)(g)
 
 		def flatMap[B](g: A => (S => B)): S => B = monad.flatMap(f)(g)

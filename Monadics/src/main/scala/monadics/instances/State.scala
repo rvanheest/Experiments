@@ -1,11 +1,10 @@
 package monadics.instances
 
-import monadics.instances.stateMonad.StateMonad
 import monadics.structures.Monad
 
 import scala.language.reflectiveCalls
 
-class State[S, A](state: S => (A, S))(implicit monad: StateMonad[S]) {
+class State[S, A](state: S => (A, S))(implicit monad: Monad[State[S, ?]]) {
 
 	def run(s: S): (A, S) = state(s)
 
@@ -29,17 +28,11 @@ class State[S, A](state: S => (A, S))(implicit monad: StateMonad[S]) {
 }
 
 object State {
-	import monadics.instances.stateMonad.stateIsMonad
-
 	def get[S]: State[S, S] = new State(s => (s, s))
 
 	def put[S](newState: S): State[S, Unit] = new State(_ => ((), newState))
-}
 
-package object stateMonad {
-	type StateMonad[S] = Monad[({type s[x] = State[S, x]})#s]
-
-	implicit def stateIsMonad[S]: StateMonad[S] = new StateMonad[S] {
+	implicit def stateIsMonad[S]: Monad[State[S, ?]] = new Monad[State[S, ?]] {
 		def create[B](b: B): State[S, B] = new State(s => (b, s))
 
 		def fail[A](e: Throwable): State[S, A] = new State(_ => throw e)

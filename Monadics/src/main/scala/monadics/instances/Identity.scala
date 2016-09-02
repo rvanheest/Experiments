@@ -1,8 +1,9 @@
 package monadics.instances
 
+import monadics.instances.Identity.IdentityMonad
 import monadics.structures.Monad
 
-class Identity[A](id: => A)(implicit monad: Monad[Identity]) {
+class Identity[A](id: A)(implicit monad: IdentityMonad) {
 
 	def run: A = id
 
@@ -27,16 +28,21 @@ class Identity[A](id: => A)(implicit monad: Monad[Identity]) {
 	def flatten[B](implicit ev: A <:< Identity[B]): Identity[B] = monad.flatten(this)(ev)
 }
 
-package object identityMonad {
-	implicit def identityIsMonad = new Monad[Identity] {
-		implicit val m: Monad[Identity] = this
+object Identity {
+	type IdentityMonad = Monad[Identity]
 
-		def create[A](a: A): Identity[A] = new Identity(a)
+	def apply[A](a: A)(implicit monad: IdentityMonad): Identity[A] = {
+		new Identity(a)
+	}
+
+	implicit def identityIsMonad = new IdentityMonad { self =>
+
+		def create[A](a: A): Identity[A] = new Identity(a)(self)
 
 		def fail[A](e: Throwable): Identity[A] = throw e
 
 		def map[A, B](identity: Identity[A])(f: A => B): Identity[B] = {
-			new Identity(f(identity.run))
+			new Identity(f(identity.run))(self)
 		}
 
 		def flatMap[A, B](identity: Identity[A])(f: A => Identity[B]): Identity[B] = {
