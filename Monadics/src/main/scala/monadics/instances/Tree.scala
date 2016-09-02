@@ -44,7 +44,9 @@ case class Leaf[A](a: A)(implicit monad: Monad[Tree]) extends Tree[A] {
 	}
 
 	def number(implicit stateMonad: Monad[State[Int, ?]]): State[Int, Tree[Int]] = {
-		State.get[Int].map(n => Leaf(n + 1))
+		def tick = new State[Int, Int](s => (s, s + 1))
+
+		tick.map(Leaf(_))
 	}
 }
 

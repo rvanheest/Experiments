@@ -1,5 +1,5 @@
-import monadics.instances.treeMonad.treeIsMonad
-import monadics.instances.stateMonad.stateIsMonad
+import monadics.instances.Tree.treeIsMonad
+import monadics.instances.State.stateIsMonad
 import monadics.instances.{Branch, Leaf}
 
 val tree = Branch(
