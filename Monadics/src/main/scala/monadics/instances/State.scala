@@ -16,6 +16,10 @@ class State[S, A](state: S => (A, S))(implicit monad: Monad[State[S, ?]]) {
 
 	def <*>[B, C](other: State[S, B])(implicit ev: A <:< (B => C)): State[S, C] = monad.<*>(this.map(ev), other)
 
+	def *>[B](other: State[S, B]) = monad.*>(this, other)
+
+	def <*[B](other: State[S, B]) = monad.<*(this, other)
+
 	def <**>[B](other: State[S, A => B]): State[S, B] = monad.<**>(this, other)
 
 	def flatMap[B](f: A => State[S, B]): State[S, B] = monad.flatMap(this)(f)
