@@ -1,6 +1,6 @@
 package monadics.laws
 
-import monadics.structures.{Applicative, Functor}
+import monadics.structures.Applicative
 
 import scala.language.higherKinds
 
