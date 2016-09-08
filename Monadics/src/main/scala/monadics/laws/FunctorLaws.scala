@@ -8,12 +8,14 @@ trait FunctorLaws[F[_]] {
 
 	implicit def functor: Functor[F]
 
+	// fmap id == id
 	def identity[A](fa: F[A]) = {
 		functor.map(fa)(a => a) == fa
 	}
 
+	// fmap (g . h) == (fmap g) . (fmap h)
 	def composition[A, B, C](fa: F[A], f: A => B, g: B => C) = {
-		functor.map(functor.map(fa)(f))(g) == functor.map(fa)(g compose f)
+		functor.map(fa)(g compose f) == functor.map(functor.map(fa)(f))(g)
 	}
 }
 
