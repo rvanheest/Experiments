@@ -60,7 +60,7 @@ package object ScalaMonads {
 		def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
 	}
 
-	implicit def functionIsMonadPlus[S]: Monad[S => ?] = new Monad[S => ?] {
+	implicit def functionIsMonad[S]: Monad[S => ?] = new Monad[S => ?] {
 		def create[A](a: A): Function[S, A] = {
 			_ => a
 		}

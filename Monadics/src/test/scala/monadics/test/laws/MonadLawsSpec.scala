@@ -1,6 +1,6 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{functionIsMonadPlus, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
+import monadics.ScalaMonads.{functionIsMonad, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
 import monadics.instances._
 import monadics.laws.MonadLaws
 import monadics.structures.Monad

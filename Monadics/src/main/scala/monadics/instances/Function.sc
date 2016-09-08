@@ -1,4 +1,4 @@
-import monadics.ScalaMonads.{FunctionExtension, functionIsMonadPlus}
+import monadics.ScalaMonads.{FunctionExtension, functionIsMonad}
 
 val x: Int => String = i => i.toString
 val y: Int => String = x.flatMap(s => i => s"$s$i")
