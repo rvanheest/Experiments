@@ -19,25 +19,25 @@ abstract class ApplicativeLawsSpec[App[_]](name: String)
 
 	val laws = ApplicativeLaws[App]
 
-	property(s"$name - identity") {
+	property(s"$name - applicative identity") {
 		forAll { (xs: App[Int]) =>
 			laws.applicativeIdentity(xs)
 		}
 	}
 
-	property(s"$name - homomorphism") {
+	property(s"$name - applicative homomorphism") {
 		forAll { (a: Int, f: Int => String) =>
 			laws.applicativeHomomorphism(a, f)
 		}
 	}
 
-	property(s"$name - interchange") {
+	property(s"$name - applicative interchange") {
 		forAll { (a: Int, appF: App[Int => String]) =>
 			laws.applicativeInterchange(a, appF)
 		}
 	}
 
-	property(s"$name - map") {
+	property(s"$name - applicative map") {
 		forAll { (appA: App[Int], f: Int => String) =>
 			laws.applicativeMap(appA, f)
 		}
