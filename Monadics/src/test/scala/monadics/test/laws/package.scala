@@ -3,9 +3,8 @@ package monadics.test
 import monadics.instances.OptionT.OptionTMonadPlus
 import monadics.instances.StateT.StateTMonadPlus
 import monadics.instances._
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary._
-import org.scalacheck.Gen._
+import org.scalacheck.{Arbitrary, Gen}
 
 package object laws {
 
