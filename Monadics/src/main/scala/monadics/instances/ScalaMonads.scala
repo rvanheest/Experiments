@@ -13,7 +13,7 @@ package object ScalaMonads {
 
 		def fail[A](e: Throwable): Option[A] = Option.empty
 
-		def map[A, B](option: Option[A])(f: A => B): Option[B] = {
+		override def map[A, B](option: Option[A])(f: A => B): Option[B] = {
 			option.map(f)
 		}
 
@@ -33,7 +33,7 @@ package object ScalaMonads {
 
 		def fail[A](e: Throwable): Try[A] = Failure(e)
 
-		def map[A, B](functor: Try[A])(f: A => B): Try[B] = {
+		override def map[A, B](functor: Try[A])(f: A => B): Try[B] = {
 			functor.map(f)
 		}
 
@@ -53,7 +53,7 @@ package object ScalaMonads {
 
 		def fail[A](e: Throwable): List[A] = throw e
 
-		def map[A, B](list: List[A])(f: A => B): List[B] = list.map(f)
+		override def map[A, B](list: List[A])(f: A => B): List[B] = list.map(f)
 
 		def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list.flatMap(f)
 
@@ -67,7 +67,7 @@ package object ScalaMonads {
 
 		def fail[A](e: Throwable): Function[S, A] = throw e
 
-		def map[A, B](functor: Function[S, A])(f: A => B): Function[S, B] = {
+		override def map[A, B](functor: Function[S, A])(f: A => B): Function[S, B] = {
 			f.compose(functor)
 		}
 

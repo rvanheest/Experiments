@@ -7,6 +7,10 @@ trait Applicative[App[_]] extends Functor[App] {
 
 	def <*>[A, B](appFunc: App[A => B], appA: App[A]): App[B]
 
+	override def map[A, B](functor: App[A])(f: A => B): App[B] = {
+		<**>(functor, create(f))
+	}
+
 	def *>[A, B](appA: App[A], appB: App[B]): App[B] = {
 		<*>(map[A, B => B](appA)(_ => identity[B]), appB)
 	}

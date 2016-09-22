@@ -114,7 +114,7 @@ object StateT {
 
 		def fail[A](e: Throwable): StateT[S, A, M] = new StateT(_ => mp.fail(e))
 
-		def map[A, B](functor: StateT[S, A, M])(f: A => B): StateT[S, B, M] = {
+		override def map[A, B](functor: StateT[S, A, M])(f: A => B): StateT[S, B, M] = {
 			new StateT(s => mp.map(functor.run(s)) { case (a, ss) => (f(a), ss) })
 		}
 

@@ -49,7 +49,7 @@ object OptionT {
 
 		def fail[A](e: Throwable): OptionT[M, A] = new OptionT(monad.fail(e))
 
-		def map[A, B](optionT: OptionT[M, A])(f: A => B): OptionT[M, B] = {
+		override def map[A, B](optionT: OptionT[M, A])(f: A => B): OptionT[M, B] = {
 			new OptionT(monad.map(optionT.get)(_.map(f)))
 		}
 

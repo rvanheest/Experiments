@@ -19,7 +19,7 @@ object Tree {
 
 		def fail[A](e: Throwable): Tree[A] = throw e
 
-		def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
+		override def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
 			tree match {
 				case Leaf(a) => Leaf(f(a))
 				case Branch(l, r) => Branch[B](map(l)(f), map(r)(f))

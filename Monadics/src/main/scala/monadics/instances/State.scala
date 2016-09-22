@@ -41,7 +41,7 @@ object State {
 
 		def fail[A](e: Throwable): State[S, A] = new State(_ => throw e)
 
-		def map[A, B](state: State[S, A])(f: A => B): State[S, B] = {
+		override def map[A, B](state: State[S, A])(f: A => B): State[S, B] = {
 			new State[S, B](s => {
 				val (a, s2) = state.run(s)
 				(f(a), s2)
