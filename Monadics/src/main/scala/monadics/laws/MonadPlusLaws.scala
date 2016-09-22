@@ -4,38 +4,38 @@ import monadics.structures.MonadPlus
 
 import scala.language.higherKinds
 
-trait MonadPlusLaws[MP[_]] {
+trait MonadPlusLaws[MP[_]] extends MonadLaws[MP] {
 
-	implicit def monadPlus: MonadPlus[MP]
+	implicit val instance: MonadPlus[MP]
 
 	// empty <|> x == x
 	def monadPlusLeftEmpty[A](mpA: MP[A]) = {
-		monadPlus.orElse(monadPlus.empty, mpA) == mpA
+		instance.orElse(instance.empty, mpA) == mpA
 	}
 
 	// x <|> empty == x
 	def monadPlusRightEmpty[A](mpA: MP[A]) = {
-		monadPlus.orElse(mpA, monadPlus.empty) == mpA
+		instance.orElse(mpA, instance.empty) == mpA
 	}
 
 	// (x <|> y) <|> z == x <|> (y <|> z)
 	def monadPlusAssociativity[A, B >: A, C >: B](mpA: MP[A], mpB: MP[B], mpC: MP[C]) = {
-		monadPlus.orElse(monadPlus.orElse(mpA, mpB), mpC) == monadPlus.orElse(mpA, monadPlus.orElse(mpB, mpC))
+		instance.orElse(instance.orElse(mpA, mpB), mpC) == instance.orElse(mpA, instance.orElse(mpB, mpC))
 	}
 
 	// mzero >>= f == mzero
 	def monadPlusEmptyFlatMap[A, B](f: A => MP[B]) = {
-		monadPlus.flatMap(monadPlus.empty)(f) == monadPlus.empty[B]
+		instance.flatMap(instance.empty)(f) == instance.empty[B]
 	}
 
 	// v >> mzero == mzero
 	def monadPlusAndThenEmpty[A](mpA: MP[A]) = {
-		monadPlus.andThen(mpA, monadPlus.empty) == monadPlus.empty
+		instance.andThen(mpA, instance.empty) == instance.empty
 	}
 }
 
 object MonadPlusLaws {
 	def apply[MP[_]](implicit mp: MonadPlus[MP]): MonadPlusLaws[MP] = new MonadPlusLaws[MP] {
-		def monadPlus: MonadPlus[MP] = mp
+		val instance: MonadPlus[MP] = mp
 	}
 }

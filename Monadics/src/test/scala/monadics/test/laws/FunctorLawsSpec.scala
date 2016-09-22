@@ -5,15 +5,14 @@ import monadics.instances._
 import monadics.laws.FunctorLaws
 import monadics.structures.Functor
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
 
 import scala.language.higherKinds
 import scala.util.Try
 
-abstract class FunctorLawsSpec[F[_]](name: String)
-																		(implicit functor: Functor[F], arbFInt: Arbitrary[F[Int]])
-	extends PropSpec with PropertyChecks with Matchers {
+trait FunctorLawsSpec[F[_]] extends LawSpec {
+
+	implicit val instance: Functor[F]
+	implicit val arbIntInstance: Arbitrary[F[Int]]
 
 	val laws = FunctorLaws[F]
 
@@ -30,12 +29,17 @@ abstract class FunctorLawsSpec[F[_]](name: String)
 	}
 }
 
-class ListFunctorSpec extends FunctorLawsSpec[List]("List")
-class OptionFunctorSpec extends FunctorLawsSpec[Option]("Option")
-class TryFunctorSpec extends FunctorLawsSpec[Try]("Try")
-class FunctionFunctorSpec extends FunctorLawsSpec[Int => ?]("Int => ?")
-class IdentityFunctorSpec extends FunctorLawsSpec[Identity]("Identity")
-class OptionTFunctorSpec extends FunctorLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
-class StateFunctorSpec extends FunctorLawsSpec[State[Int, ?]]("State[Int, ?]")
-class StateTFunctorSpec extends FunctorLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
-class TreeFunctorSpec extends FunctorLawsSpec[Tree]("Tree")
+abstract class AbstractFunctorLawsSpec[F[_]](override val name: String)
+																		(implicit override val instance: Functor[F],
+																		 override val arbIntInstance: Arbitrary[F[Int]])
+	extends FunctorLawsSpec[F]
+
+class ListFunctorSpec extends AbstractFunctorLawsSpec[List]("List")
+class OptionFunctorSpec extends AbstractFunctorLawsSpec[Option]("Option")
+class TryFunctorSpec extends AbstractFunctorLawsSpec[Try]("Try")
+class FunctionFunctorSpec extends AbstractFunctorLawsSpec[Int => ?]("Int => ?")
+class IdentityFunctorSpec extends AbstractFunctorLawsSpec[Identity]("Identity")
+class OptionTFunctorSpec extends AbstractFunctorLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
+class StateFunctorSpec extends AbstractFunctorLawsSpec[State[Int, ?]]("State[Int, ?]")
+class StateTFunctorSpec extends AbstractFunctorLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
+class TreeFunctorSpec extends AbstractFunctorLawsSpec[Tree]("Tree")

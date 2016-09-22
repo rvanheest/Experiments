@@ -5,19 +5,15 @@ import monadics.instances._
 import monadics.laws.ApplicativeLaws
 import monadics.structures.Applicative
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
 
 import scala.language.higherKinds
 import scala.util.Try
 
-abstract class ApplicativeLawsSpec[App[_]](name: String)
-																					(implicit applicative: Applicative[App],
-																					 arbAppInt: Arbitrary[App[Int]],
-																					 arbAppIntToString: Arbitrary[App[Int => String]])
-	extends PropSpec with PropertyChecks with Matchers {
+trait ApplicativeLawsSpec[App[_]] extends FunctorLawsSpec[App] {
 
-	val laws = ApplicativeLaws[App]
+	override val laws = ApplicativeLaws[App]
+	implicit val instance: Applicative[App]
+	implicit val arbIntToStringInstance: Arbitrary[App[Int => String]]
 
 	property(s"$name - applicative identity") {
 		forAll { (xs: App[Int]) =>
@@ -44,12 +40,18 @@ abstract class ApplicativeLawsSpec[App[_]](name: String)
 	}
 }
 
-class ListApplicativeSpec extends ApplicativeLawsSpec[List]("List")
-class OptionApplicativeSpec extends ApplicativeLawsSpec[Option]("Option")
-class TryApplicativeSpec extends ApplicativeLawsSpec[Try]("Try")
-class FunctionApplicativeSpec extends ApplicativeLawsSpec[Int => ?]("Int => ?")
-class IdentityApplicativeSpec extends ApplicativeLawsSpec[Identity]("Identity")
-class OptionTApplicativeSpec extends ApplicativeLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
-class StateApplicativeSpec extends ApplicativeLawsSpec[State[Int, ?]]("State[Int, ?]")
-class StateTApplicativeSpec extends ApplicativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
-class TreeApplicativeSpec extends ApplicativeLawsSpec[Tree]("Tree")
+abstract class AbstractApplicativeLawsSpec[App[_]](override val name: String)
+																					(implicit override val instance: Applicative[App],
+																					 override val arbIntInstance: Arbitrary[App[Int]],
+																					 override val arbIntToStringInstance: Arbitrary[App[Int => String]])
+	extends ApplicativeLawsSpec[App]
+
+class ListApplicativeSpec extends AbstractApplicativeLawsSpec[List]("List")
+class OptionApplicativeSpec extends AbstractApplicativeLawsSpec[Option]("Option")
+class TryApplicativeSpec extends AbstractApplicativeLawsSpec[Try]("Try")
+class FunctionApplicativeSpec extends AbstractApplicativeLawsSpec[Int => ?]("Int => ?")
+class IdentityApplicativeSpec extends AbstractApplicativeLawsSpec[Identity]("Identity")
+class OptionTApplicativeSpec extends AbstractApplicativeLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
+class StateApplicativeSpec extends AbstractApplicativeLawsSpec[State[Int, ?]]("State[Int, ?]")
+class StateTApplicativeSpec extends AbstractApplicativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
+class TreeApplicativeSpec extends AbstractApplicativeLawsSpec[Tree]("Tree")

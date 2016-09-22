@@ -5,20 +5,16 @@ import monadics.instances._
 import monadics.laws.MonadLaws
 import monadics.structures.Monad
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
 
 import scala.language.higherKinds
 import scala.util.Try
 
-abstract class MonadLawsSpec[M[_]](name: String)
-																	(implicit monad: Monad[M],
-																	 arbMonadInt: Arbitrary[M[Int]],
-																	 arbIntToMonadString: Arbitrary[Int => M[String]],
-																	 arbStringToMonadLong: Arbitrary[String => M[Long]])
-	extends PropSpec with PropertyChecks with Matchers {
+trait MonadLawsSpec[M[_]] extends ApplicativeLawsSpec[M] {
 
-	val laws = MonadLaws[M]
+	override val laws = MonadLaws[M]
+	implicit val instance: Monad[M]
+	implicit val arbIntToMonadStringInstance: Arbitrary[Int => M[String]]
+	implicit val arbStringToMonadLongInstance: Arbitrary[String => M[Long]]
 
 	property(s"$name - monad left identity") {
 		forAll { (a: Int, f: Int => M[String]) =>
@@ -39,12 +35,20 @@ abstract class MonadLawsSpec[M[_]](name: String)
 	}
 }
 
-class ListMonadSpec extends MonadLawsSpec[List]("List")
-class OptionMonadSpec extends MonadLawsSpec[Option]("Option")
-class TryMonadSpec extends MonadLawsSpec[Try]("Try")
-class FunctionMonadSpec extends MonadLawsSpec[Int => ?]("Int => ?")
-class IdentityMonadSpec extends MonadLawsSpec[Identity]("Identity")
-class OptionTMonadSpec extends MonadLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
-class StateMonadSpec extends MonadLawsSpec[State[Int, ?]]("State[Int, ?]")
-class StateTMonadSpec extends MonadLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
-class TreeMonadSpec extends MonadLawsSpec[Tree]("Tree")
+abstract class AbstractMonadLawsSpec[M[_]](override val name: String)
+																	(implicit override val instance: Monad[M],
+																	 override val arbIntInstance: Arbitrary[M[Int]],
+																	 override val arbIntToStringInstance: Arbitrary[M[Int => String]],
+																	 override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
+																	 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]])
+	extends MonadLawsSpec[M]
+
+class ListMonadSpec extends AbstractMonadLawsSpec[List]("List")
+class OptionMonadSpec extends AbstractMonadLawsSpec[Option]("Option")
+class TryMonadSpec extends AbstractMonadLawsSpec[Try]("Try")
+class FunctionMonadSpec extends AbstractMonadLawsSpec[Int => ?]("Int => ?")
+class IdentityMonadSpec extends AbstractMonadLawsSpec[Identity]("Identity")
+class OptionTMonadSpec extends AbstractMonadLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
+class StateMonadSpec extends AbstractMonadLawsSpec[State[Int, ?]]("State[Int, ?]")
+class StateTMonadSpec extends AbstractMonadLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
+class TreeMonadSpec extends AbstractMonadLawsSpec[Tree]("Tree")

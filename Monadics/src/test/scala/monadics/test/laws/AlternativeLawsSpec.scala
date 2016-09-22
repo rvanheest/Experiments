@@ -5,18 +5,14 @@ import monadics.instances._
 import monadics.laws.AlternativeLaws
 import monadics.structures.Alternative
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
 
 import scala.language.higherKinds
 import scala.util.Try
 
-abstract class AlternativeLawsSpec[Alt[_]](name: String)
-																					(implicit alternative: Alternative[Alt],
-																					 arbAltInt: Arbitrary[Alt[Int]])
-	extends PropSpec with PropertyChecks with Matchers {
+trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] {
 
-	val laws = AlternativeLaws[Alt]
+	override val laws = AlternativeLaws[Alt]
+	implicit val instance: Alternative[Alt]
 
 	property(s"$name - alternative left empty") {
 		forAll { (alt: Alt[Int]) =>
@@ -37,8 +33,14 @@ abstract class AlternativeLawsSpec[Alt[_]](name: String)
 	}
 }
 
-class ListAlternativeSpec extends AlternativeLawsSpec[List]("List")
-class OptionAlternativeSpec extends AlternativeLawsSpec[Option]("Option")
-class TryAlternativeSpec extends AlternativeLawsSpec[Try]("Try")
-class OptionTAlternativeSpec extends AlternativeLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
-class StateTAlternativeSpec extends AlternativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
+abstract class AbstractAlternativeLawsSpec[Alt[_]](override val name: String)
+																					(implicit override val instance: Alternative[Alt],
+																					 override val arbIntInstance: Arbitrary[Alt[Int]],
+																					 override val arbIntToStringInstance: Arbitrary[Alt[Int => String]])
+	extends AlternativeLawsSpec[Alt]
+
+class ListAlternativeSpec extends AbstractAlternativeLawsSpec[List]("List")
+class OptionAlternativeSpec extends AbstractAlternativeLawsSpec[Option]("Option")
+class TryAlternativeSpec extends AbstractAlternativeLawsSpec[Try]("Try")
+class OptionTAlternativeSpec extends AbstractAlternativeLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
+class StateTAlternativeSpec extends AbstractAlternativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
