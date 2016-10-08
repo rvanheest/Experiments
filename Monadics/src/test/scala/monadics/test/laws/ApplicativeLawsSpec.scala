@@ -55,3 +55,4 @@ class OptionTApplicativeSpec extends AbstractApplicativeLawsSpec[OptionT[List, ?
 class StateApplicativeSpec extends AbstractApplicativeLawsSpec[State[Int, ?]]("State[Int, ?]")
 class StateTApplicativeSpec extends AbstractApplicativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
 class TreeApplicativeSpec extends AbstractApplicativeLawsSpec[Tree]("Tree")
+class NonEmptyListApplicativeSpec extends AbstractApplicativeLawsSpec[NonEmptyList]("NonEmptyList")

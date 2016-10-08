@@ -43,3 +43,4 @@ class OptionTFunctorSpec extends AbstractFunctorLawsSpec[OptionT[List, ?]]("Opti
 class StateFunctorSpec extends AbstractFunctorLawsSpec[State[Int, ?]]("State[Int, ?]")
 class StateTFunctorSpec extends AbstractFunctorLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
 class TreeFunctorSpec extends AbstractFunctorLawsSpec[Tree]("Tree")
+class NonEmptyListFunctorSpec extends AbstractFunctorLawsSpec[NonEmptyList]("NonEmptyList")

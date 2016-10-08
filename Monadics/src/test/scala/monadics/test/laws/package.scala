@@ -43,4 +43,19 @@ package object laws {
 
 		Arbitrary(Gen.sized { size => genTree(size) })
 	}
+
+	implicit def arbSum[T](implicit numeric: Numeric[T], a: Arbitrary[T]): Arbitrary[Sum[T]] = {
+		Arbitrary(arbitrary[T].map(Sum(_)))
+	}
+
+	implicit def arbProduct[T](implicit numeric: Numeric[T], a: Arbitrary[T]): Arbitrary[Product[T]] = {
+		Arbitrary(arbitrary[T].map(Product(_)))
+	}
+
+	implicit def arbNonEmptyList[T](implicit a: Arbitrary[T], as: Arbitrary[List[T]]): Arbitrary[NonEmptyList[T]] = {
+		Arbitrary(for {
+			t <- arbitrary[T]
+			ts <- arbitrary[List[T]]
+		} yield NonEmptyList(t, ts))
+	}
 }

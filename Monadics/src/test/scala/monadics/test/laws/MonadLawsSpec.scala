@@ -52,3 +52,4 @@ class OptionTMonadSpec extends AbstractMonadLawsSpec[OptionT[List, ?]]("OptionT[
 class StateMonadSpec extends AbstractMonadLawsSpec[State[Int, ?]]("State[Int, ?]")
 class StateTMonadSpec extends AbstractMonadLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
 class TreeMonadSpec extends AbstractMonadLawsSpec[Tree]("Tree")
+class NonEmptyListMonadSpec extends AbstractMonadLawsSpec[NonEmptyList]("NonEmptyList")
