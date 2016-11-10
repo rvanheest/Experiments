@@ -31,7 +31,7 @@ object BackwardsListView extends View[List[Int], BackwardsListView] {
   }
 }
 
-object BackwardsList extends App {
+object BackwardsListDemo extends App {
 
   import BackwardsListView._
 

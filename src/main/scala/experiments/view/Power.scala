@@ -33,7 +33,7 @@ object OddEven extends View[Int, OddEven] {
   }
 }
 
-object Power extends App {
+object PowerDemo extends App {
 
   import OddEven._
 

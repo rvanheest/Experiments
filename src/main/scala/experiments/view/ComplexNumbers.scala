@@ -23,7 +23,7 @@ object Cartesian extends View[Pole, Cartesian] {
   }
 }
 
-object ComplexNumbers extends App {
+object ComplexNumbersDemo extends App {
 
   import Cartesian._
 

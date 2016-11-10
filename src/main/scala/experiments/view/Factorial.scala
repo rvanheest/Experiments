@@ -26,7 +26,7 @@ object Peano extends View[Int, Peano] {
   }
 }
 
-object Factorial extends App {
+object FactorialDemo extends App {
 
   import Peano._
 
