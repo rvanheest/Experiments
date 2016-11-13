@@ -1,6 +1,6 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{functionIsMonad, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
+import monadics.ScalaMonads.{listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
 import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.laws.ApplicativeLaws
@@ -50,7 +50,6 @@ abstract class AbstractApplicativeLawsSpec[App[_]](override val name: String)
 class ListApplicativeSpec extends AbstractApplicativeLawsSpec[List]("List")
 class OptionApplicativeSpec extends AbstractApplicativeLawsSpec[Option]("Option")
 class TryApplicativeSpec extends AbstractApplicativeLawsSpec[Try]("Try")
-class FunctionApplicativeSpec extends AbstractApplicativeLawsSpec[Int => ?]("Int => ?")
 class IdentityApplicativeSpec extends AbstractApplicativeLawsSpec[Identity]("Identity")
 class OptionTApplicativeSpec extends AbstractApplicativeLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
 class StateApplicativeSpec extends AbstractApplicativeLawsSpec[State[Int, ?]]("State[Int, ?]")
@@ -58,3 +57,4 @@ class StateTApplicativeSpec extends AbstractApplicativeLawsSpec[StateT[Int, ?, L
 class TreeApplicativeSpec extends AbstractApplicativeLawsSpec[Tree]("Tree")
 class NonEmptyListApplicativeSpec extends AbstractApplicativeLawsSpec[NonEmptyList]("NonEmptyList")
 class WriterApplicativeSpec extends AbstractApplicativeLawsSpec[Writer[String, ?]]("Writer[String, ?]")
+class ReaderApplicativeSpec extends AbstractApplicativeLawsSpec[Reader[Int, ?]]("Reader[Int, ?]")

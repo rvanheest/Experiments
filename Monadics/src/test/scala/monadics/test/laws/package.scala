@@ -66,4 +66,8 @@ package object laws {
 			log <- arbitrary[String]
 		} yield Writer[String, T](t, log))
 	}
+
+	implicit def arbReader[T](implicit a: Arbitrary[T]): Arbitrary[Reader[Int, T]] = {
+		Arbitrary(arbitrary[T].map(t => new Reader(_ => t)))
+	}
 }

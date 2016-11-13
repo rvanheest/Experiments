@@ -1,6 +1,6 @@
 package monadics
 
-import monadics.structures.{Monad, MonadFail, MonadPlus}
+import monadics.structures.{MonadFail, MonadPlus}
 
 import scala.language.reflectiveCalls
 import scala.util.{Failure, Try}
@@ -58,25 +58,5 @@ package object ScalaMonads {
 		def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list.flatMap(f)
 
 		def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
-	}
-
-	implicit def functionIsMonad[S]: Monad[S => ?] = new Monad[S => ?] {
-		def create[A](a: A): Function[S, A] = {
-			_ => a
-		}
-
-		override def map[A, B](functor: Function[S, A])(f: A => B): Function[S, B] = {
-			f.compose(functor)
-		}
-
-		def flatMap[A, B](monad: Function[S, A])(f: A => Function[S, B]): Function[S, B] = {
-			s => f(monad(s))(s)
-		}
-	}
-
-	implicit class FunctionExtension[S, A](val f: S => A)(implicit monad: Monad[S => ?]) {
-		def map[B](g: A => B): S => B = monad.map(f)(g)
-
-		def flatMap[B](g: A => (S => B)): S => B = monad.flatMap(f)(g)
 	}
 }

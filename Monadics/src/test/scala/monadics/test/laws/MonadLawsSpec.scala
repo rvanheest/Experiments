@@ -1,6 +1,6 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{functionIsMonad, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
+import monadics.ScalaMonads.{listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
 import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.laws.MonadLaws
@@ -47,7 +47,6 @@ abstract class AbstractMonadLawsSpec[M[_]](override val name: String)
 class ListMonadSpec extends AbstractMonadLawsSpec[List]("List")
 class OptionMonadSpec extends AbstractMonadLawsSpec[Option]("Option")
 class TryMonadSpec extends AbstractMonadLawsSpec[Try]("Try")
-class FunctionMonadSpec extends AbstractMonadLawsSpec[Int => ?]("Int => ?")
 class IdentityMonadSpec extends AbstractMonadLawsSpec[Identity]("Identity")
 class OptionTMonadSpec extends AbstractMonadLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
 class StateMonadSpec extends AbstractMonadLawsSpec[State[Int, ?]]("State[Int, ?]")
@@ -55,3 +54,4 @@ class StateTMonadSpec extends AbstractMonadLawsSpec[StateT[Int, ?, List]]("State
 class TreeMonadSpec extends AbstractMonadLawsSpec[Tree]("Tree")
 class NonEmptyListMonadSpec extends AbstractMonadLawsSpec[NonEmptyList]("NonEmptyList")
 class WriterMonadSpec extends AbstractMonadLawsSpec[Writer[String, ?]]("Writer[String, ?]")
+class ReaderMonadSpec extends AbstractMonadLawsSpec[Reader[Int, ?]]("Reader[Int, ?]")

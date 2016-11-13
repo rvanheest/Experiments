@@ -1,10 +1,9 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{functionIsMonad, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
-import monadics.ScalaMonoids.stringIsMonoid
+import monadics.ScalaMonads.{listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
 import monadics.instances._
-import monadics.laws.{MonadFailLaws, MonadLaws}
-import monadics.structures.{Monad, MonadFail}
+import monadics.laws.MonadFailLaws
+import monadics.structures.MonadFail
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
