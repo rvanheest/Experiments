@@ -1,6 +1,7 @@
 package monadics.test.laws
 
 import monadics.ScalaMonads.{functionIsMonad, listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
+import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.laws.ApplicativeLaws
 import monadics.structures.Applicative
@@ -56,3 +57,4 @@ class StateApplicativeSpec extends AbstractApplicativeLawsSpec[State[Int, ?]]("S
 class StateTApplicativeSpec extends AbstractApplicativeLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
 class TreeApplicativeSpec extends AbstractApplicativeLawsSpec[Tree]("Tree")
 class NonEmptyListApplicativeSpec extends AbstractApplicativeLawsSpec[NonEmptyList]("NonEmptyList")
+class WriterApplicativeSpec extends AbstractApplicativeLawsSpec[Writer[String, ?]]("Writer[String, ?]")

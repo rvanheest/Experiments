@@ -3,6 +3,7 @@ package monadics.test
 import monadics.instances.OptionT.OptionTMonadPlus
 import monadics.instances.StateT.StateTMonadPlus
 import monadics.instances._
+import monadics.structures.Monoid
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -57,5 +58,12 @@ package object laws {
 			t <- arbitrary[T]
 			ts <- arbitrary[List[T]]
 		} yield NonEmptyList(t, ts))
+	}
+
+	implicit def arbWriter[T](implicit a: Arbitrary[T], monoid: Monoid[String]): Arbitrary[Writer[String, T]] = {
+		Arbitrary(for {
+			t <- arbitrary[T]
+			log <- arbitrary[String]
+		} yield Writer[String, T](t, log))
 	}
 }
