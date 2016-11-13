@@ -2,6 +2,8 @@ package monadics.instances
 
 import monadics.structures.Monad
 
+import scala.language.implicitConversions
+
 class Reader[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]) {
 
   def run(r: R): A = f(r)
@@ -14,6 +16,8 @@ class Reader[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]) {
 }
 
 object Reader {
+
+  implicit def readerIsFunction[R, A](reader: Reader[R, A]): R => A = reader.run
 
   implicit def readerIsMonad[R]: Monad[Reader[R, ?]] = new Monad[Reader[R, ?]] {
     def create[A](a: A): Reader[R, A] = new Reader(_ => a)
