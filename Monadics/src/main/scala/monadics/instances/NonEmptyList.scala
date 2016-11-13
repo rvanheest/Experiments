@@ -25,8 +25,6 @@ object NonEmptyList {
 
   implicit def NELisMonad: Monad[NonEmptyList] = new Monad[NonEmptyList] {
 
-    def fail[A](e: Throwable): NonEmptyList[A] = throw e
-
     def create[A](a: A): NonEmptyList[A] = NonEmptyList(a, Nil)
 
     def flatMap[A, B](monad: NonEmptyList[A])(f: A => NonEmptyList[B]): NonEmptyList[B] = {

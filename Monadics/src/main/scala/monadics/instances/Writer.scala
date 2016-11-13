@@ -28,8 +28,6 @@ object Writer {
   implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] = new Monad[Writer[W, ?]] {
     def create[A](a: A): Writer[W, A] = Writer(a, wIsMonoid.empty)
 
-    def fail[A](e: Throwable): Writer[W, A] = ???
-
     override def map[A, B](writer: Writer[W, A])(f: A => B): Writer[W, B] = {
       val (x, v) = writer.run
 

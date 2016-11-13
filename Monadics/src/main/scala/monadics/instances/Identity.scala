@@ -39,8 +39,6 @@ object Identity {
 
 		def create[A](a: A): Identity[A] = new Identity(a)(self)
 
-		def fail[A](e: Throwable): Identity[A] = throw e
-
 		override def map[A, B](identity: Identity[A])(f: A => B): Identity[B] = {
 			new Identity(f(identity.run))(self)
 		}

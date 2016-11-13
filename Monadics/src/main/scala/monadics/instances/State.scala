@@ -39,8 +39,6 @@ object State {
 	implicit def stateIsMonad[S]: Monad[State[S, ?]] = new Monad[State[S, ?]] {
 		def create[B](b: B): State[S, B] = new State(s => (b, s))
 
-		def fail[A](e: Throwable): State[S, A] = new State(_ => throw e)
-
 		override def map[A, B](state: State[S, A])(f: A => B): State[S, B] = {
 			new State[S, B](s => {
 				val (a, s2) = state.run(s)

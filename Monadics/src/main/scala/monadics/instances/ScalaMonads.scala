@@ -1,12 +1,12 @@
 package monadics
 
-import monadics.structures.{Monad, MonadPlus}
+import monadics.structures.{Monad, MonadFail, MonadPlus}
 
 import scala.language.reflectiveCalls
 import scala.util.{Failure, Try}
 
 package object ScalaMonads {
-	implicit def optionIsMonadPlus: MonadPlus[Option] = new MonadPlus[Option] {
+	implicit def optionIsMonadPlus = new MonadPlus[Option] with MonadFail[Option] {
 		def empty[A]: Option[A] = Option.empty
 
 		def create[A](a: A): Option[A] = Option(a)
@@ -26,7 +26,7 @@ package object ScalaMonads {
 		}
 	}
 
-	implicit def tryIsMonadPlus: MonadPlus[Try] = new MonadPlus[Try] {
+	implicit def tryIsMonadPlus = new MonadPlus[Try] with MonadFail[Try] {
 		def empty[A]: Try[A] = Failure(new NoSuchElementException("empty"))
 
 		def create[A](a: A): Try[A] = Try(a)
@@ -46,12 +46,12 @@ package object ScalaMonads {
 		}
 	}
 
-	implicit def listIsMonadPlus: MonadPlus[List] = new MonadPlus[List] {
+	implicit def listIsMonadPlus = new MonadPlus[List] with MonadFail[List] {
 		def empty[A]: List[A] = List.empty
 
 		def create[A](a: A): List[A] = List(a)
 
-		def fail[A](e: Throwable): List[A] = throw e
+		def fail[A](e: Throwable): List[A] = List.empty
 
 		override def map[A, B](list: List[A])(f: A => B): List[B] = list.map(f)
 
@@ -64,8 +64,6 @@ package object ScalaMonads {
 		def create[A](a: A): Function[S, A] = {
 			_ => a
 		}
-
-		def fail[A](e: Throwable): Function[S, A] = throw e
 
 		override def map[A, B](functor: Function[S, A])(f: A => B): Function[S, B] = {
 			f.compose(functor)

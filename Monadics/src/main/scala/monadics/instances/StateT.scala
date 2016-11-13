@@ -1,7 +1,7 @@
 package monadics.instances
 
 import monadics.instances.StateT.StateTMonadPlus
-import monadics.structures.{Monad, MonadPlus, MonadTrans}
+import monadics.structures.{Monad, MonadFail, MonadPlus, MonadTrans}
 
 import scala.language.{higherKinds, reflectiveCalls}
 
@@ -84,6 +84,7 @@ class StateT[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadP
 }
 
 object StateT {
+	type StateTMonadFail[S, M[+_]] = MonadFail[StateT[S, ?, M]]
 	type StateTMonadPlus[S, M[+_]] = MonadPlus[StateT[S, ?, M]]
 	type StateTMonadTrans[S] = MonadTrans[Lambda[(`x[+_]`, y) => StateT[S, y, x]]]
 
@@ -91,7 +92,7 @@ object StateT {
 		monad.empty
 	}
 
-	def failure[S, A, M[+_]](e: Throwable)(implicit monad: StateTMonadPlus[S, M]): StateT[S, A, M] = {
+	def failure[S, A, M[+_]](e: Throwable)(implicit monad: StateTMonadFail[S, M]): StateT[S, A, M] = {
 		monad.fail(e)
 	}
 
@@ -107,12 +108,12 @@ object StateT {
 		new StateT(state)
 	}
 
-	implicit def stateTIsMonadPlus[S, M[+_]](implicit mp: MonadPlus[M]): StateTMonadPlus[S, M] = new StateTMonadPlus[S, M] {
+	implicit def stateTIsMonadPlus[S, M[+_]](implicit mp: MonadPlus[M] with MonadFail[M]): StateTMonadPlus[S, M] with StateTMonadFail[S, M] = new StateTMonadPlus[S, M] with StateTMonadFail[S, M] {
 		def empty[A]: StateT[S, A, M] = new StateT(_ => mp.empty)
 
-		def create[A](a: A): StateT[S, A, M] = new StateT(mp.create(a, _))
+		def fail[A](e: Throwable): StateT[S, A, M] = new StateT[S, A, M](_ => mp.fail(e))
 
-		def fail[A](e: Throwable): StateT[S, A, M] = new StateT(_ => mp.fail(e))
+		def create[A](a: A): StateT[S, A, M] = new StateT(mp.create(a, _))
 
 		override def map[A, B](functor: StateT[S, A, M])(f: A => B): StateT[S, B, M] = {
 			new StateT(s => mp.map(functor.run(s)) { case (a, ss) => (f(a), ss) })
