@@ -1,6 +1,6 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{listIsMonadPlus, optionIsMonadPlus, tryIsMonadPlus}
+import monadics.ScalaMonads.{eitherIsMonad, listIsMonadPlus, optionIsMonadPlusAndMonadFail, tryIsMonadPlusAndMonadFail}
 import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.laws.FunctorLaws
@@ -38,6 +38,7 @@ abstract class AbstractFunctorLawsSpec[F[_]](override val name: String)
 class ListFunctorSpec extends AbstractFunctorLawsSpec[List]("List")
 class OptionFunctorSpec extends AbstractFunctorLawsSpec[Option]("Option")
 class TryFunctorSpec extends AbstractFunctorLawsSpec[Try]("Try")
+class EitherFunctorSpec extends AbstractFunctorLawsSpec[Either[Int, ?]]("Either")
 class IdentityFunctorSpec extends AbstractFunctorLawsSpec[Identity]("Identity")
 class OptionTFunctorSpec extends AbstractFunctorLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
 class StateFunctorSpec extends AbstractFunctorLawsSpec[State[Int, ?]]("State[Int, ?]")

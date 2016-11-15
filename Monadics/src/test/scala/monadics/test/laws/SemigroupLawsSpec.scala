@@ -1,6 +1,6 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.{listIsMonoid, optionOfSemigroupIsMonoid, stringIsMonoid}
+import monadics.ScalaMonoids.{eitherIsSemiGroup, listIsMonoid, optionOfSemigroupIsMonoid, stringIsMonoid}
 import monadics.instances.{NonEmptyList, Product, Sum}
 import monadics.laws.SemigroupLaws
 import monadics.structures.Semigroup
@@ -31,3 +31,4 @@ class ProductOfIntSemigroupSpec extends AbstractSemigroupLawsSpec[Product[Int]](
 class ListOfIntSemigroupSpec extends AbstractSemigroupLawsSpec[List[Int]]("List of Int")
 class OptionOfSemigroupSpec extends AbstractSemigroupLawsSpec[Option[String]]("Option of Monoid")
 class NonEmptyListSemigroupSpec extends AbstractSemigroupLawsSpec[NonEmptyList[Int]]("NonEmptyList of Int")
+class EitherSemigroupSpec extends AbstractSemigroupLawsSpec[Either[String, Int]]("Either")

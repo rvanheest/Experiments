@@ -38,7 +38,7 @@ object OptionT {
 		trans.lift(ma)
 	}
 
-	def apply[M[+_], A](trans: M[Option[A]])(implicit monad: OptionTMonadPlus[M]) = {
+	def apply[M[+_], A](trans: M[Option[A]])(implicit monad: OptionTMonadPlus[M]): OptionT[M, A] = {
 		new OptionT(trans)
 	}
 
