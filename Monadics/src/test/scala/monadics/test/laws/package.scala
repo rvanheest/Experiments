@@ -70,4 +70,8 @@ package object laws {
 	implicit def arbReader[T](implicit a: Arbitrary[T]): Arbitrary[Reader[Int, T]] = {
 		Arbitrary(arbitrary[T].map(t => new Reader(_ => t)))
 	}
+
+	implicit def arbContinuation[T](implicit a: Arbitrary[T]): Arbitrary[Continuation[Int, T]] = {
+		Arbitrary(arbitrary[T].map(t => new Continuation(f => f(t))))
+	}
 }
