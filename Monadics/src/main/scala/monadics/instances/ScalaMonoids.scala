@@ -34,4 +34,17 @@ package object ScalaMonoids {
   implicit class OptionMonoid[A: Semigroup](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {
     def append(other: => Option[A]): Option[A] = monoid.append(option, other)
   }
+
+  implicit def eitherIsSemiGroup[L, R] = new Semigroup[Either[L, R]] {
+    override def append(a1: Either[L, R], a2: => Either[L, R]): Either[L, R] = {
+      a1 match {
+        case Left(_) => a2
+        case a => a
+      }
+    }
+  }
+
+  implicit class EitherSemigroup[L, R](val either: Either[L, R])(implicit semigroup: Semigroup[Either[L, R]]) {
+    def orElse(other: => Either[L, R]): Either[L, R] = semigroup.append(either, other)
+  }
 }

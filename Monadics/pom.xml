@@ -59,7 +59,7 @@
                         <compilerPlugin>
                             <groupId>org.spire-math</groupId>
                             <artifactId>kind-projector_2.11</artifactId>
-                            <version>0.8.0</version>
+                            <version>0.9.3</version>
                         </compilerPlugin>
                     </compilerPlugins>
                 </configuration>
