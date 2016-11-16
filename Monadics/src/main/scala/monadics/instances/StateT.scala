@@ -104,7 +104,7 @@ object StateT {
 		new StateT(s => m.map(ma)(a => (a, s)))
 	}
 
-	def apply[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadPlus[S, M], mp: Monad[M]) = {
+	def apply[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadPlus[S, M], mp: Monad[M]): StateT[S, A, M] = {
 		new StateT(state)
 	}
 
@@ -135,10 +135,4 @@ object StateT {
 //			new StateT(s => monad.map(ma)(a => (a, s)))
 //		}
 //	}
-}
-
-package object stateTMonadPlus {
-
-
-
 }
