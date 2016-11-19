@@ -2,7 +2,10 @@ import monadics.instances.State
 
 type Stack = List[Int]
 
-def pop: State[Stack, Int] = new State({ case x :: xs => (x, xs) })
+val popFunc: PartialFunction[Stack, (Int, Stack)] = {
+	case x :: xs => (x, xs)
+}
+def pop: State[Stack, Int] = new State(popFunc)
 
 def push(a: Int): State[Stack, Unit] = new State(stack => ((), a :: stack))
 
