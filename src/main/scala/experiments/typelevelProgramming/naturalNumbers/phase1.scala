@@ -26,11 +26,6 @@ object test1 extends phase1 {
   type Nat2 = NatN[Nat1]
   type Nat3 = NatN[Nat2]
 
-  /*
-    println(s"0 + 1 = ${nat0 + nat1}")
-    println(s"1 + 1 = ${nat1 + nat1}")
-    println(s"1 + 2 = ${nat1 + nat2}")
-   */
   implicitly[Nat0 =:= Nat0]
 
   implicitly[Nat0 + Nat1 =:= Nat1]
