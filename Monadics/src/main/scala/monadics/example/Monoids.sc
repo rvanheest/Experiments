@@ -1,4 +1,5 @@
 import monadics.ScalaMonoids._
+import monadics.instances.option._
 import monadics.instances.{NonEmptyList, Product, Sum}
 
 val sum1 = Sum(4)
@@ -24,10 +25,10 @@ val opt1 = Option("foo")
 val opt2 = Option("bar")
 val none = Option.empty[String]
 
-none.append(none)
-opt1.append(none)
-none.append(opt2)
-opt1.append(opt2)
+none.combine(none)
+opt1.combine(none)
+none.combine(opt2)
+opt1.combine(opt2)
 
 val nel1 = NonEmptyList(1, 2, 3, 4)
 val nel2 = NonEmptyList(5)

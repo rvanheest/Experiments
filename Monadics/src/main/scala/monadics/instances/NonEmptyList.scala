@@ -8,7 +8,7 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
 
   def flatMap[B](f: A => NonEmptyList[B]): NonEmptyList[B] = monad.flatMap(this)(f)
 
-  def ++(other: NonEmptyList[A]): NonEmptyList[A] = semigroup.append(this, other)
+  def ++(other: NonEmptyList[A]): NonEmptyList[A] = semigroup.combine(this, other)
 }
 
 object NonEmptyList {
@@ -18,7 +18,7 @@ object NonEmptyList {
   }
 
   implicit def NELisSemigroup[A]: Semigroup[NonEmptyList[A]] = new Semigroup[NonEmptyList[A]] {
-    def append(a1: NonEmptyList[A], a2: => NonEmptyList[A]): NonEmptyList[A] = {
+    def combine(a1: NonEmptyList[A], a2: => NonEmptyList[A]): NonEmptyList[A] = {
       NonEmptyList(a1.head, a1.tail ++ (a2.head :: a2.tail))
     }
   }

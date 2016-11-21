@@ -1,5 +1,7 @@
 import monadics.instances.OptionT
-import monadics.instances.OptionT.{optionTIsMonadPlus, optionTIsMonadTrans}
+import monadics.instances.OptionT.optionTIsMonadTrans
+import monadics.instances.either._
+import monadics.instances.tryMonad._
 
 import scala.util.{Failure, Try}
 
@@ -17,7 +19,6 @@ def theRightEither: Either[String, Int] = Right(2)
 type Foo[+T] = Either[String, T]
 
 val resEitherSuccess = {
-	import monadics.ScalaMonads.eitherIsMonad
 	for {
 		x1 <- OptionT.create[Foo, Int](theVal)
 		x2 <- OptionT.lift[Foo, Int](theRightEither)
@@ -27,7 +28,6 @@ val resEitherSuccess = {
 val resultEitherSuccess: Either[String, Option[(Int, Int, Int)]] = resEitherSuccess.get
 
 val resEitherFail = {
-	import monadics.ScalaMonads.eitherIsMonad
 	for {
 		x1 <- OptionT.create[Foo, Int](theVal)
 		x2 <- OptionT.lift[Foo, Int](theLeftEither)
@@ -37,7 +37,6 @@ val resEitherFail = {
 val resultEitherFail: Either[String, Option[(Int, Int, Int)]] = resEitherFail.get
 
 val res: OptionT[Try, (Int, Int, Int, Int)] = {
-	import monadics.ScalaMonads.tryIsMonadPlusAndMonadFail
 	for {
 		x1 <- OptionT.create(theVal)
 		x2 <- OptionT.lift(theTry)
@@ -48,7 +47,6 @@ val res: OptionT[Try, (Int, Int, Int, Int)] = {
 val result: Try[Option[(Int, Int, Int, Int)]] = res.get
 
 val resFailure = {
-	import monadics.ScalaMonads.tryIsMonadPlusAndMonadFail
 	for {
 		x1 <- OptionT.create(theVal)
 		x2 <- OptionT.lift(theFailure)
@@ -59,7 +57,6 @@ val resFailure = {
 val resultFailure = resFailure.get
 
 val resEmptyTry = {
-	import monadics.ScalaMonads.tryIsMonadPlusAndMonadFail
 	for {
 		x1 <- OptionT.create(theVal)
 		x2 <- OptionT.lift(theTry)

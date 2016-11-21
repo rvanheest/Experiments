@@ -1,7 +1,9 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{listIsMonadPlus, optionIsMonadPlusAndMonadFail, tryIsMonadPlusAndMonadFail}
 import monadics.instances._
+import monadics.instances.list._
+import monadics.instances.option._
+import monadics.instances.tryMonad._
 import monadics.laws.MonadPlusLaws
 import monadics.structures.MonadPlus
 import org.scalacheck.Arbitrary

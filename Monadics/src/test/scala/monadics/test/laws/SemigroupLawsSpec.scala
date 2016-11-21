@@ -1,6 +1,9 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.{eitherIsSemiGroup, listIsMonoid, optionOfSemigroupIsMonoid, stringIsMonoid}
+import monadics.ScalaMonoids.stringIsMonoid
+import monadics.instances.either._
+import monadics.instances.list._
+import monadics.instances.option._
 import monadics.instances.{NonEmptyList, Product, Sum}
 import monadics.laws.SemigroupLaws
 import monadics.structures.Semigroup

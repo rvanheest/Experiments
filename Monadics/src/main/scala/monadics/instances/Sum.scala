@@ -5,7 +5,7 @@ import monadics.structures.Monoid
 case class Sum[A](sum: A)(implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) {
 
   def +(other: Sum[A]): Sum[A] = {
-    monoid.append(this, other)
+    monoid.combine(this, other)
   }
 }
 
@@ -21,7 +21,7 @@ object Sum {
       Sum(numeric.zero)
     }
 
-    def append(a1: Sum[A], a2: => Sum[A]): Sum[A] = {
+    def combine(a1: Sum[A], a2: => Sum[A]): Sum[A] = {
       Sum(numeric.plus(a1.sum, a2.sum))
     }
   }

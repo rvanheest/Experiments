@@ -38,14 +38,14 @@ object Writer {
       val (f, v) = appFunc.run
       val (x, w) = appA.run
 
-      Writer(f(x), wIsMonoid.append(v, w))
+      Writer(f(x), wIsMonoid.combine(v, w))
     }
 
     def flatMap[A, B](writer: Writer[W, A])(f: A => Writer[W, B]): Writer[W, B] = {
       val (x, v) = writer.run
       val (y, w) = f(x).run
 
-      Writer(y, wIsMonoid.append(v, w))
+      Writer(y, wIsMonoid.combine(v, w))
     }
   }
 }

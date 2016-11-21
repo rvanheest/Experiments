@@ -1,8 +1,11 @@
 package monadics.test.laws
 
-import monadics.ScalaMonads.{eitherIsMonad, listIsMonadPlus, optionIsMonadPlusAndMonadFail, tryIsMonadPlusAndMonadFail}
 import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
+import monadics.instances.either._
+import monadics.instances.list._
+import monadics.instances.option._
+import monadics.instances.tryMonad._
 import monadics.laws.ApplicativeLaws
 import monadics.structures.Applicative
 import org.scalacheck.Arbitrary

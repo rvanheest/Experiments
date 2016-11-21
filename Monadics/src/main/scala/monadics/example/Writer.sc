@@ -1,7 +1,6 @@
 import monadics.instances.Writer
-
 import monadics.instances.Writer.tell
-import monadics.ScalaMonoids.listIsMonoid
+import monadics.instances.list._
 
 type Log = List[String]
 def log(s: String): Log = s :: Nil

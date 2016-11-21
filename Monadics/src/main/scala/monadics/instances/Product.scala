@@ -5,7 +5,7 @@ import monadics.structures.Monoid
 case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[Product[A]]) {
 
   def *(other: Product[A]): Product[A] = {
-    monoid.append(this, other)
+    monoid.combine(this, other)
   }
 }
 
@@ -21,7 +21,7 @@ object Product {
       Product(numeric.one)
     }
 
-    def append(a1: Product[A], a2: => Product[A]): Product[A] = {
+    def combine(a1: Product[A], a2: => Product[A]): Product[A] = {
       Product(numeric.times(a1.product, a2.product))
     }
   }
