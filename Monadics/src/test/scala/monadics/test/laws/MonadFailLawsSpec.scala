@@ -11,26 +11,27 @@ import org.scalacheck.Arbitrary
 import scala.language.higherKinds
 import scala.util.Try
 
-trait MonadFailLawsSpec[M[_]] extends MonadLawsSpec[M] {
+trait MonadFailLawsSpec[MF[_]] extends MonadLawsSpec[MF] {
 
-  override val laws = MonadFailLaws[M]
-  implicit val instance: MonadFail[M]
-  implicit val arbIntToMonadStringInstance: Arbitrary[Int => M[String]]
+  override val laws: MonadFailLaws[MF] = MonadFailLaws[MF]
+  implicit val instance: MonadFail[MF]
+  implicit val arbIntToMonadStringInstance: Arbitrary[Int => MF[String]]
 
   property(s"$name - monadfail left zero") {
-    forAll { (s: String, f: Int => M[String]) =>
+    forAll { (s: String, f: Int => MF[String]) =>
       laws.monadFailLeftZero(s, f)
     }
   }
 }
 
-abstract class AbstractMonadFailLawsSpec[M[_]](override val name: String)
-                                              (implicit override val instance: MonadFail[M],
-                                               override val arbIntInstance: Arbitrary[M[Int]],
-                                               override val arbIntToStringInstance: Arbitrary[M[Int => String]],
-                                               override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
-                                               override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]])
-  extends MonadFailLawsSpec[M]
+abstract class AbstractMonadFailLawsSpec[MF[_]](override val name: String)
+                                              (implicit override val instance: MonadFail[MF],
+                                               override val arbIntInstance: Arbitrary[MF[Int]],
+                                               override val arbIntToStringInstance: Arbitrary[MF[Int => String]],
+                                               override val arbIntToMonadStringInstance: Arbitrary[Int => MF[String]],
+                                               override val arbStringToMonadLongInstance: Arbitrary[String => MF[Long]],
+                                               override val arbStringToLongInstance: Arbitrary[MF[String => Long]])
+  extends MonadFailLawsSpec[MF]
 
 class ListMonadFailSpec extends AbstractMonadFailLawsSpec[List]("List")
 class OptionMonadFailSpec extends AbstractMonadFailLawsSpec[Option]("Option")

@@ -1,11 +1,10 @@
 package monadics.instances
 
-import monadics.instances.StateT.StateTMonadPlus
 import monadics.structures.{Monad, MonadFail, MonadPlus, MonadTrans}
 
 import scala.language.{higherKinds, reflectiveCalls}
 
-class StateT[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadPlus[S, M], mp: Monad[M]) {
+class StateT[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: MonadPlus[StateT[S, ?, M]], mp: Monad[M]) {
 
 	def run(s: S): M[(A, S)] = state(s)
 
@@ -84,31 +83,29 @@ class StateT[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadP
 }
 
 object StateT {
-	type StateTMonadFail[S, M[+_]] = MonadFail[StateT[S, ?, M]]
-	type StateTMonadPlus[S, M[+_]] = MonadPlus[StateT[S, ?, M]]
 	type StateTMonadTrans[S] = MonadTrans[Lambda[(`x[+_]`, y) => StateT[S, y, x]]]
 
-	def empty[S, A, M[+_]](implicit monad: StateTMonadPlus[S, M]): StateT[S, A, M] = {
+	def empty[S, A, M[+_]](implicit monad: MonadPlus[StateT[S, ?, M]]): StateT[S, A, M] = {
 		monad.empty
 	}
 
-	def failure[S, A, M[+_]](e: Throwable)(implicit monad: StateTMonadFail[S, M]): StateT[S, A, M] = {
+	def failure[S, A, M[+_]](e: Throwable)(implicit monad: MonadFail[StateT[S, ?, M]]): StateT[S, A, M] = {
 		monad.fail(e)
 	}
 
-	def from[S, A, M[+_]](a: A)(implicit monad: StateTMonadPlus[S, M]): StateT[S, A, M] = {
+	def from[S, A, M[+_]](a: A)(implicit monad: MonadPlus[StateT[S, ?, M]]): StateT[S, A, M] = {
 		monad.create(a)
 	}
 
-	def lift[S, A, M[+_]](ma: M[A])(implicit theState: StateTMonadPlus[S, M], m: Monad[M]): StateT[S, A, M] = {
+	def lift[S, A, M[+_]](ma: M[A])(implicit theState: MonadPlus[StateT[S, ?, M]], m: Monad[M]): StateT[S, A, M] = {
 		new StateT(s => m.map(ma)(a => (a, s)))
 	}
 
-	def apply[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: StateTMonadPlus[S, M], mp: Monad[M]): StateT[S, A, M] = {
+	def apply[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: MonadPlus[StateT[S, ?, M]], mp: Monad[M]): StateT[S, A, M] = {
 		new StateT(state)
 	}
 
-	implicit def stateTIsMonadPlus[S, M[+_]](implicit mp: MonadPlus[M] with MonadFail[M]): StateTMonadPlus[S, M] with StateTMonadFail[S, M] = new StateTMonadPlus[S, M] with StateTMonadFail[S, M] {
+	implicit def stateTIsMonadPlus[S, M[+_]](implicit mp: MonadPlus[M] with MonadFail[M]): MonadPlus[StateT[S, ?, M]] with MonadFail[StateT[S, ?, M]] = new MonadPlus[StateT[S, ?, M]] with MonadFail[StateT[S, ?, M]] {
 		def empty[A]: StateT[S, A, M] = new StateT(_ => mp.empty)
 
 		def fail[A](e: Throwable): StateT[S, A, M] = new StateT[S, A, M](_ => mp.fail(e))

@@ -13,7 +13,7 @@ import scala.util.Try
 
 trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] {
 
-	override val laws = AlternativeLaws[Alt]
+	override val laws: AlternativeLaws[Alt] = AlternativeLaws[Alt]
 	implicit val instance: Alternative[Alt]
 
 	property(s"$name - alternative left empty") {
@@ -38,7 +38,8 @@ trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] {
 abstract class AbstractAlternativeLawsSpec[Alt[_]](override val name: String)
 																					(implicit override val instance: Alternative[Alt],
 																					 override val arbIntInstance: Arbitrary[Alt[Int]],
-																					 override val arbIntToStringInstance: Arbitrary[Alt[Int => String]])
+																					 override val arbIntToStringInstance: Arbitrary[Alt[Int => String]],
+																					 override val arbStringToLongInstance: Arbitrary[Alt[String => Long]])
 	extends AlternativeLawsSpec[Alt]
 
 class ListAlternativeSpec extends AbstractAlternativeLawsSpec[List]("List")

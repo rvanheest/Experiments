@@ -1,11 +1,11 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
+import monadics.instances.values.stringIsMonoid
 import monadics.laws.MonadLaws
 import monadics.structures.Monad
 import org.scalacheck.Arbitrary
@@ -15,7 +15,7 @@ import scala.util.Try
 
 trait MonadLawsSpec[M[_]] extends ApplicativeLawsSpec[M] {
 
-	override val laws = MonadLaws[M]
+	override val laws: MonadLaws[M] = MonadLaws[M]
 	implicit val instance: Monad[M]
 	implicit val arbIntToMonadStringInstance: Arbitrary[Int => M[String]]
 	implicit val arbStringToMonadLongInstance: Arbitrary[String => M[Long]]
@@ -44,7 +44,8 @@ abstract class AbstractMonadLawsSpec[M[_]](override val name: String)
 																	 override val arbIntInstance: Arbitrary[M[Int]],
 																	 override val arbIntToStringInstance: Arbitrary[M[Int => String]],
 																	 override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
-																	 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]])
+																	 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]],
+																	 override val arbStringToLongInstance: Arbitrary[M[String => Long]])
 	extends MonadLawsSpec[M]
 
 class ListMonadSpec extends AbstractMonadLawsSpec[List]("List")

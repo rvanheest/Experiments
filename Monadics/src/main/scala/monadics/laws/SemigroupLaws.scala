@@ -6,7 +6,7 @@ trait SemigroupLaws[S] {
 
   implicit val instance: Semigroup[S]
 
-  def associativity(a: S, b: S, c: S) = {
+  def associativity(a: S, b: S, c: S): Boolean = {
     instance.combine(instance.combine(a, b), c) == instance.combine(a, instance.combine(b, c))
   }
 }

@@ -10,7 +10,7 @@ case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[P
 }
 
 object Product {
-  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Product[A]]) = {
+  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Product[A]]): Product[A] = {
     monoid.empty
   }
 

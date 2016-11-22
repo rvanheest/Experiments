@@ -1,9 +1,8 @@
 package monadics.instances
 
-import monadics.instances.Identity.IdentityMonad
 import monadics.structures.Monad
 
-class Identity[A](id: A)(implicit monad: IdentityMonad) {
+class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
 	def run: A = id
 
@@ -29,13 +28,12 @@ class Identity[A](id: A)(implicit monad: IdentityMonad) {
 }
 
 object Identity {
-	type IdentityMonad = Monad[Identity]
 
-	def apply[A](a: A)(implicit monad: IdentityMonad): Identity[A] = {
+	def apply[A](a: A)(implicit monad: Monad[Identity]): Identity[A] = {
 		new Identity(a)
 	}
 
-	implicit def identityIsMonad = new IdentityMonad { self =>
+	implicit def identityIsMonad = new Monad[Identity] { self =>
 
 		def create[A](a: A): Identity[A] = new Identity(a)(self)
 

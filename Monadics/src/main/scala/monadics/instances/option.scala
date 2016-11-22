@@ -4,15 +4,11 @@ import monadics.structures.{MonadFail, MonadPlus, Monoid, Semigroup}
 
 trait option {
 
-  implicit def optionOfSemigroupIsMonoid[A](implicit monoid: Semigroup[A]): Monoid[Option[A]] = new Monoid[Option[A]] {
-    def empty: Option[A] = Option.empty
-
-    def combine(optA: Option[A], optB: => Option[A]): Option[A] = {
-      optA.map(a =>
-        optB.map(b => Some(monoid.combine(a, b)))
-          .getOrElse(optA))
-        .getOrElse(optB)
-    }
+  implicit def optionOfSemigroupIsMonoid[A](implicit monoid: Semigroup[A]): Monoid[Option[A]] = Monoid.create(Option.empty[A]) {
+    case (None, None) => None
+    case (a@Some(_), None) => a
+    case (None, b@Some(_)) => b
+    case (Some(x), Some(y)) => Some(monoid.combine(x, y))
   }
 
   implicit class OptionMonoid[A: Semigroup](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {

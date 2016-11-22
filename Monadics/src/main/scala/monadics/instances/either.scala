@@ -4,13 +4,9 @@ import monadics.structures.{Monad, Semigroup}
 
 trait either {
 
-  implicit def eitherIsSemiGroup[L, R] = new Semigroup[Either[L, R]] {
-    override def combine(a1: Either[L, R], a2: => Either[L, R]): Either[L, R] = {
-      a1 match {
-        case Left(_) => a2
-        case a => a
-      }
-    }
+  implicit def eitherIsSemiGroup[L, R]: Semigroup[Either[L, R]] = Semigroup.create[Either[L, R]] {
+    case (Left(_), a2) => a2
+    case (a, _) => a
   }
 
   implicit class EitherSemigroup[L, R](val either: Either[L, R])(implicit semigroup: Semigroup[Either[L, R]]) {

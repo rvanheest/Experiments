@@ -1,9 +1,7 @@
 package monadics.test
 
-import monadics.instances.OptionT.OptionTMonadPlus
-import monadics.instances.StateT.StateTMonadPlus
 import monadics.instances._
-import monadics.structures.Monoid
+import monadics.structures.{MonadPlus, Monoid}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -13,7 +11,7 @@ package object laws {
 		Arbitrary(arbitrary[T].map(Identity(_)))
 	}
 
-	implicit def arbOptionTOfList[T](implicit a: Arbitrary[T], monad: OptionTMonadPlus[List]): Arbitrary[OptionT[List, T]] = {
+	implicit def arbOptionTOfList[T](implicit a: Arbitrary[T], monad: MonadPlus[OptionT[List, ?]]): Arbitrary[OptionT[List, T]] = {
 		Arbitrary(arbitrary[T].map(OptionT.create[List, T]))
 	}
 
@@ -21,7 +19,7 @@ package object laws {
 		Arbitrary(arbitrary[T].map(t => new State[Int, T]((t, _))))
 	}
 
-	implicit def arbStateTOfList[T](implicit a: Arbitrary[T], monad: StateTMonadPlus[Int, List]): Arbitrary[StateT[Int, T, List]] = {
+	implicit def arbStateTOfList[T](implicit a: Arbitrary[T], monad: MonadPlus[StateT[Int, ?, List]]): Arbitrary[StateT[Int, T, List]] = {
 		Arbitrary(arbitrary[T].map(StateT.from[Int, T, List]))
 	}
 

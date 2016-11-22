@@ -10,11 +10,11 @@ case class Sum[A](sum: A)(implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) 
 }
 
 object Sum {
-  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) = {
+  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]): Sum[A] = {
     monoid.empty
   }
 
-  implicit def sumIsMonoid[A](implicit numeric: Numeric[A]) = new Monoid[Sum[A]] { self =>
+  implicit def sumIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Sum[A]] = new Monoid[Sum[A]] { self =>
     implicit val selfMonoid: Monoid[Sum[A]] = self
 
     def empty: Sum[A] = {

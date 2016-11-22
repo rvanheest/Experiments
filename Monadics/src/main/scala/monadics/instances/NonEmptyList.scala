@@ -17,10 +17,8 @@ object NonEmptyList {
     new NonEmptyList(head, tail.toList)
   }
 
-  implicit def NELisSemigroup[A]: Semigroup[NonEmptyList[A]] = new Semigroup[NonEmptyList[A]] {
-    def combine(a1: NonEmptyList[A], a2: => NonEmptyList[A]): NonEmptyList[A] = {
-      NonEmptyList(a1.head, a1.tail ++ (a2.head :: a2.tail))
-    }
+  implicit def NELisSemigroup[A]: Semigroup[NonEmptyList[A]] = Semigroup.create {
+    (a1, a2) => NonEmptyList(a1.head, a1.tail ++ (a2.head :: a2.tail))
   }
 
   implicit def NELisMonad: Monad[NonEmptyList] = new Monad[NonEmptyList] {

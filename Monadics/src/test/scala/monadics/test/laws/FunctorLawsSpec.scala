@@ -1,11 +1,11 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
+import monadics.instances.values.stringIsMonoid
 import monadics.laws.FunctorLaws
 import monadics.structures.Functor
 import org.scalacheck.Arbitrary
@@ -18,17 +18,17 @@ trait FunctorLawsSpec[F[_]] extends LawSpec {
 	implicit val instance: Functor[F]
 	implicit val arbIntInstance: Arbitrary[F[Int]]
 
-	val laws = FunctorLaws[F]
+	val laws: FunctorLaws[F] = FunctorLaws[F]
 
 	property(s"$name - identity") {
 		forAll { (xs: F[Int]) =>
-			laws.identity(xs)
+			laws.functorIdentity(xs)
 		}
 	}
 
 	property(s"$name - composition") {
 		forAll { (xs: F[Int], f: Int => String, g: String => Long) =>
-			laws.composition(xs, f, g)
+			laws.functorComposition(xs, f, g)
 		}
 	}
 }

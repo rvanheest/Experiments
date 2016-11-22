@@ -1,11 +1,11 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
+import monadics.instances.values.stringIsMonoid
 import monadics.laws.ApplicativeLaws
 import monadics.structures.Applicative
 import org.scalacheck.Arbitrary
@@ -15,9 +15,10 @@ import scala.util.Try
 
 trait ApplicativeLawsSpec[App[_]] extends FunctorLawsSpec[App] {
 
-	override val laws = ApplicativeLaws[App]
+	override val laws: ApplicativeLaws[App] = ApplicativeLaws[App]
 	implicit val instance: Applicative[App]
 	implicit val arbIntToStringInstance: Arbitrary[App[Int => String]]
+	implicit val arbStringToLongInstance: Arbitrary[App[String => Long]]
 
 	property(s"$name - applicative identity") {
 		forAll { (xs: App[Int]) =>
@@ -42,12 +43,19 @@ trait ApplicativeLawsSpec[App[_]] extends FunctorLawsSpec[App] {
 			laws.applicativeMap(appA, f)
 		}
 	}
+
+	property(s"$name - applicative composition") {
+		forAll { (appAToB: App[String => Long], appCToA: App[Int => String], appC: App[Int]) =>
+			laws.applicativeComposition(appAToB, appCToA, appC)
+		}
+	}
 }
 
 abstract class AbstractApplicativeLawsSpec[App[_]](override val name: String)
 																					(implicit override val instance: Applicative[App],
 																					 override val arbIntInstance: Arbitrary[App[Int]],
-																					 override val arbIntToStringInstance: Arbitrary[App[Int => String]])
+																					 override val arbIntToStringInstance: Arbitrary[App[Int => String]],
+																					 override val arbStringToLongInstance: Arbitrary[App[String => Long]])
 	extends ApplicativeLawsSpec[App]
 
 class ListApplicativeSpec extends AbstractApplicativeLawsSpec[List]("List")

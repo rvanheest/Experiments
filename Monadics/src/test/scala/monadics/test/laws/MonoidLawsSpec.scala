@@ -1,8 +1,9 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances.list._
+import monadics.instances.map._
 import monadics.instances.option._
+import monadics.instances.values.stringIsMonoid
 import monadics.instances.{Product, Sum}
 import monadics.laws.MonoidLaws
 import monadics.structures.Monoid
@@ -13,7 +14,7 @@ trait MonoidLawsSpec[M] extends SemigroupLawsSpec[M] {
   implicit val instance: Monoid[M]
   implicit val arbInstance: Arbitrary[M]
 
-  override val laws = MonoidLaws[M]
+  override val laws: MonoidLaws[M] = MonoidLaws[M]
 
   property(s"$name - right identity") {
     forAll { (a: M) =>
@@ -38,3 +39,4 @@ class SumOfIntMonoidSpec extends AbstractMonoidLawsSpec[Sum[Int]]("Sum of Int")
 class ProductOfIntMonoidSpec extends AbstractMonoidLawsSpec[Product[Int]]("Product of Int")
 class ListOfIntMonoidSpec extends AbstractMonoidLawsSpec[List[Int]]("List of Int")
 class OptionOfSemigroupMonoidSpec extends AbstractMonoidLawsSpec[Option[String]]("Option of Monoid")
+class MapOfStringToListOfIntMonoidSpec extends AbstractMonoidLawsSpec[Map[String, List[Int]]]("Map of String to List of Int")

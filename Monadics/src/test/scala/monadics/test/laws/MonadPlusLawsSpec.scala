@@ -13,7 +13,7 @@ import scala.util.Try
 
 trait MonadPlusLawsSpec[MP[_]] extends MonadLawsSpec[MP] {
 
-	override val laws = MonadPlusLaws[MP]
+	override val laws: MonadPlusLaws[MP] = MonadPlusLaws[MP]
 	implicit val instance: MonadPlus[MP]
 
 	property(s"$name - monadplus left empty") {
@@ -41,7 +41,7 @@ trait MonadPlusLawsSpec[MP[_]] extends MonadLawsSpec[MP] {
 	}
 
 	property(s"$name - monadPlus andThen empty") {
-		forAll { (altA: MP[Int], altB: MP[Int], altC: MP[Int]) =>
+		forAll { (altA: MP[Int]) =>
 			laws.monadPlusAndThenEmpty(altA)
 		}
 	}
@@ -52,7 +52,8 @@ abstract class AbstractMonadPlusLawsSpec[MP[_]](override val name: String)
 																				override val arbIntInstance: Arbitrary[MP[Int]],
 																				override val arbIntToStringInstance: Arbitrary[MP[Int => String]],
 																				override val arbIntToMonadStringInstance: Arbitrary[Int => MP[String]],
-																				override val arbStringToMonadLongInstance: Arbitrary[String => MP[Long]])
+																				override val arbStringToMonadLongInstance: Arbitrary[String => MP[Long]],
+																				override val arbStringToLongInstance: Arbitrary[MP[String => Long]])
 	extends MonadPlusLawsSpec[MP]
 
 class ListMonadPlusSpec extends AbstractMonadPlusLawsSpec[List]("List")

@@ -6,11 +6,11 @@ trait MonoidLaws[M] extends SemigroupLaws[M] {
 
   implicit val instance: Monoid[M]
 
-  def combineRightIdentity(a: M) = {
+  def combineRightIdentity(a: M): Boolean = {
     instance.combine(a, instance.empty) == a
   }
 
-  def combineLeftIdentity(a: M) = {
+  def combineLeftIdentity(a: M): Boolean = {
     instance.combine(instance.empty, a) == a
   }
 }

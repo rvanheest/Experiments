@@ -1,9 +1,10 @@
 package monadics.test.laws
 
-import monadics.ScalaMonoids.stringIsMonoid
 import monadics.instances.either._
 import monadics.instances.list._
+import monadics.instances.map._
 import monadics.instances.option._
+import monadics.instances.values.stringIsMonoid
 import monadics.instances.{NonEmptyList, Product, Sum}
 import monadics.laws.SemigroupLaws
 import monadics.structures.Semigroup
@@ -14,7 +15,7 @@ trait SemigroupLawsSpec[S] extends LawSpec {
   implicit val instance: Semigroup[S]
   implicit val arbInstance: Arbitrary[S]
 
-  val laws = SemigroupLaws[S]
+  val laws: SemigroupLaws[S] = SemigroupLaws[S]
 
   property(s"$name - associativity") {
     forAll { (a: S, b: S, c: S) =>
@@ -35,3 +36,4 @@ class ListOfIntSemigroupSpec extends AbstractSemigroupLawsSpec[List[Int]]("List 
 class OptionOfSemigroupSpec extends AbstractSemigroupLawsSpec[Option[String]]("Option of Monoid")
 class NonEmptyListSemigroupSpec extends AbstractSemigroupLawsSpec[NonEmptyList[Int]]("NonEmptyList of Int")
 class EitherSemigroupSpec extends AbstractSemigroupLawsSpec[Either[String, Int]]("Either")
+class MapOfStringToListOfIntSemigroupSpec extends AbstractSemigroupLawsSpec[Map[String, List[Int]]]("Map of String to List of Int")
