@@ -19,5 +19,15 @@ trait list {
 
     def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
   }
+
+  implicit class ListMonadPlusOperators[A](val list: List[A])(implicit monadPlus: MonadPlus[List]) {
+    def as[B](b: => B): List[B] = monadPlus.as(list, b)
+
+    def void: List[Unit] = monadPlus.void(list)
+
+    def zipWith[B](f: A => B): List[(A, B)] = monadPlus.zipWith(list)(f)
+
+    def <*>[B, C](other: List[B])(implicit ev: A <:< (B => C)): List[C] = monadPlus.<*>(list.map(ev), other)
+  }
 }
 object list extends list

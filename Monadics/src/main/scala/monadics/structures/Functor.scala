@@ -12,4 +12,8 @@ trait Functor[F[_]] {
 	def void[A](functor: F[A]): F[Unit] = {
 		as(functor, ())
 	}
+
+	def zipWith[A, B](functor: F[A])(f: A => B): F[(A, B)] = {
+		map(functor)(a => (a, f(a)))
+	}
 }

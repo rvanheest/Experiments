@@ -36,6 +36,16 @@ trait tryMonad {
       try1.orElse(try2)
     }
   }
+
+  implicit class TryMonadPlusOperators[A](val t: Try[A])(implicit monadPlus: MonadPlus[Try]) {
+    def as[B](b: => B): Try[B] = monadPlus.as(t, b)
+
+    def void: Try[Unit] = monadPlus.void(t)
+
+    def zipWith[B](f: A => B): Try[(A, B)] = monadPlus.zipWith(t)(f)
+
+    def <*>[B, C](other: Try[B])(implicit ev: A <:< (B => C)): Try[C] = monadPlus.<*>(t.map(ev), other)
+  }
 }
 
 object tryMonad extends tryMonad

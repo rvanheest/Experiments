@@ -34,6 +34,14 @@ trait option {
       option1.orElse(option2)
     }
   }
+
+  implicit class OptionMonadPlusOperators[A](val option: Option[A])(implicit monadPlus: MonadPlus[Option]) {
+    def as[B](b: => B): Option[B] = monadPlus.as(option, b)
+
+    def void: Option[Unit] = monadPlus.void(option)
+
+    def zipWith[B](f: A => B): Option[(A, B)] = monadPlus.zipWith(option)(f)
+  }
 }
 
 object option extends option

@@ -6,6 +6,14 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
 
   def map[B](f: A => B): NonEmptyList[B] = monad.map(this)(f)
 
+  def as[B](b: => B): NonEmptyList[B] = monad.as(this, b)
+
+  def void: NonEmptyList[Unit] = monad.void(this)
+
+  def zipWith[B](f: A => B): NonEmptyList[(A, B)] = monad.zipWith(this)(f)
+
+  def <*>[B, C](other: NonEmptyList[B])(implicit ev: A <:< (B => C)): NonEmptyList[C] = monad.<*>(map(ev), other)
+
   def flatMap[B](f: A => NonEmptyList[B]): NonEmptyList[B] = monad.flatMap(this)(f)
 
   def ++(other: NonEmptyList[A]): NonEmptyList[A] = semigroup.combine(this, other)
