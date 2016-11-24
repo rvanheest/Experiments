@@ -1,4 +1,5 @@
-import monadics.instances.{NonEmptyList, Product, Sum}
+import monadics.instances.NonEmptyList
+import monadics.instances.monoids.{Product, Sum}
 
 val sum1 = Sum(4)
 val sum2 = Sum(6)

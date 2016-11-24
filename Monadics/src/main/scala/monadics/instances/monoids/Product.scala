@@ -1,10 +1,10 @@
-package monadics.instances
+package monadics.instances.monoids
 
 import monadics.structures.Monoid
 
 case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[Product[A]]) {
 
-  def *(other: Product[A]): Product[A] = {
+  def *(other: => Product[A]): Product[A] = {
     monoid.combine(this, other)
   }
 }

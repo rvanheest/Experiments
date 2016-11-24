@@ -5,7 +5,7 @@ import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
-import monadics.instances.values.stringIsMonoid
+import monadics.instances.monoids.values.stringIsMonoid
 import monadics.laws.FunctorLaws
 import monadics.structures.Functor
 import org.scalacheck.Arbitrary

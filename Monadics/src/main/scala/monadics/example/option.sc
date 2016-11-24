@@ -1,5 +1,5 @@
 import monadics.instances.option._
-import monadics.instances.values._
+import monadics.instances.monoids.values._
 
 import scala.language.postfixOps
 

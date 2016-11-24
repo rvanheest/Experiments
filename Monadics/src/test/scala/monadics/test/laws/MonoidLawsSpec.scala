@@ -2,9 +2,9 @@ package monadics.test.laws
 
 import monadics.instances.list._
 import monadics.instances.map._
+import monadics.instances.monoids.values._
+import monadics.instances.monoids._
 import monadics.instances.option._
-import monadics.instances.values.stringIsMonoid
-import monadics.instances.{Product, Sum}
 import monadics.laws.MonoidLaws
 import monadics.structures.Monoid
 import org.scalacheck.Arbitrary
@@ -34,9 +34,17 @@ abstract class AbstractMonoidLawsSpec[M](override val name: String)
                                          override val arbInstance: Arbitrary[M])
   extends MonoidLawsSpec[M]
 
+class ByteMonoidSpec extends AbstractMonoidLawsSpec[Byte]("Byte")
+class ShortMonoidSpec extends AbstractMonoidLawsSpec[Short]("Short")
+class IntMonoidSpec extends AbstractMonoidLawsSpec[Int]("Int")
+class LongMonoidSpec extends AbstractMonoidLawsSpec[Long]("Long")
 class StringMonoidSpec extends AbstractMonoidLawsSpec[String]("String")
 class SumOfIntMonoidSpec extends AbstractMonoidLawsSpec[Sum[Int]]("Sum of Int")
 class ProductOfIntMonoidSpec extends AbstractMonoidLawsSpec[Product[Int]]("Product of Int")
+class AnyMonoidSpec extends AbstractMonoidLawsSpec[Any]("Any")
+class AllMonoidSpec extends AbstractMonoidLawsSpec[All]("All")
+class DualMonoidSpec extends AbstractMonoidLawsSpec[Dual[String]]("Dual of Monoid")
+class EndoMonoidSpec extends AbstractMonoidLawsSpec[Endo[Int]]("Endo of Int")
 class ListOfIntMonoidSpec extends AbstractMonoidLawsSpec[List[Int]]("List of Int")
-class OptionOfSemigroupMonoidSpec extends AbstractMonoidLawsSpec[Option[String]]("Option of Monoid")
+class OptionOfMonoidMonoidSpec extends AbstractMonoidLawsSpec[Option[String]]("Option of Monoid")
 class MapOfStringToListOfIntMonoidSpec extends AbstractMonoidLawsSpec[Map[String, List[Int]]]("Map of String to List of Int")

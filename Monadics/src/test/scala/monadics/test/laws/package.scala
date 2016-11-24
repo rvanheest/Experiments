@@ -1,6 +1,7 @@
 package monadics.test
 
 import monadics.instances._
+import monadics.instances.monoids._
 import monadics.structures.{MonadPlus, Monoid}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{Arbitrary, Gen}
@@ -49,6 +50,22 @@ package object laws {
 
 	implicit def arbProduct[T](implicit numeric: Numeric[T], a: Arbitrary[T]): Arbitrary[Product[T]] = {
 		Arbitrary(arbitrary[T].map(Product(_)))
+	}
+
+	implicit def arbAny: Arbitrary[Any] = {
+		Arbitrary(arbitrary[Boolean].map(Any(_)))
+	}
+
+	implicit def arbAll: Arbitrary[All] = {
+		Arbitrary(arbitrary[Boolean].map(All(_)))
+	}
+
+	implicit def arbDual[T](implicit tMonoid: Monoid[T], a: Arbitrary[T]): Arbitrary[Dual[T]] = {
+		Arbitrary(arbitrary[T].map(Dual(_)))
+	}
+
+	implicit def arbEndo[T](implicit a: Arbitrary[T => T]): Arbitrary[Endo[T]] = {
+		Arbitrary(arbitrary[T => T].map(Endo(_)))
 	}
 
 	implicit def arbNonEmptyList[T](implicit a: Arbitrary[T], as: Arbitrary[List[T]]): Arbitrary[NonEmptyList[T]] = {

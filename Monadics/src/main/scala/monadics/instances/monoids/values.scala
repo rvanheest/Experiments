@@ -1,4 +1,4 @@
-package monadics.instances
+package monadics.instances.monoids
 
 import monadics.structures.Monoid
 
