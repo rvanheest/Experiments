@@ -13,6 +13,8 @@ object Any {
   def empty(implicit monoid: Monoid[Any]): Any = monoid.empty
 
   implicit def anyIsMonoid: Monoid[Any] = {
-    Monoid.create(Any(any = false))((x, y) => Any(x.any || y.any))
+    Monoid.create(Any(any = false)) {
+      case (Any(x), Any(y)) => Any(x || y)
+    }
   }
 }

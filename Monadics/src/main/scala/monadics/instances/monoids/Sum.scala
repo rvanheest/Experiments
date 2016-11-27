@@ -14,15 +14,9 @@ object Sum {
     monoid.empty
   }
 
-  implicit def sumIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Sum[A]] = new Monoid[Sum[A]] { self =>
-    implicit val selfMonoid: Monoid[Sum[A]] = self
-
-    def empty: Sum[A] = {
-      Sum(numeric.zero)
-    }
-
-    def combine(a1: Sum[A], a2: => Sum[A]): Sum[A] = {
-      Sum(numeric.plus(a1.sum, a2.sum))
+  implicit def sumIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Sum[A]] = {
+    Monoid.create(Sum(numeric.zero)) {
+      case (Sum(a1), Sum(a2)) => Sum(numeric.plus(a1, a2))
     }
   }
 }

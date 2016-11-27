@@ -14,15 +14,9 @@ object Product {
     monoid.empty
   }
 
-  implicit def ProductIsMonoid[A](implicit numeric: Numeric[A]) = new Monoid[Product[A]] { self =>
-    implicit val selfMonoid: Monoid[Product[A]] = self
-
-    def empty: Product[A] = {
-      Product(numeric.one)
-    }
-
-    def combine(a1: Product[A], a2: => Product[A]): Product[A] = {
-      Product(numeric.times(a1.product, a2.product))
+  implicit def productIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Product[A]] = {
+    Monoid.create(Product(numeric.one)) {
+      case (Product(a1), Product(a2)) => Product(numeric.times(a1, a2))
     }
   }
 }
