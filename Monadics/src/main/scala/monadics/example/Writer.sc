@@ -33,3 +33,6 @@ gcd(8, 1).run
 gcd(8, 2).run
 gcd(8, 3).run
 gcd(8, 4).run
+
+gcd(8, 3).foldLeft("empty")((s, i) => s"$s, $i")
+gcd(8, 3).foldRight("empty")((i, s) => s"$i, $s")

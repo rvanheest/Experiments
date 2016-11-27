@@ -1,4 +1,7 @@
 import monadics.instances.list._
+import monadics.instances.monoids.values._
+
+import scala.language.postfixOps
 
 val f: Int => String = _.toString
 val g: Int => String = i => s"g: $i"
@@ -21,3 +24,7 @@ lf <*> l
 lf <*> n
 lnf <*> l
 lnf <*> n
+
+l.foldMap(i => 2L * i)
+l.map(2 >=).all
+l.map(2 >=).any

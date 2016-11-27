@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{MonadFail, MonadPlus, Monoid, Semigroup}
+import monadics.structures._
 
 trait option {
 
@@ -41,6 +41,16 @@ trait option {
     def void: Option[Unit] = monadPlus.void(option)
 
     def zipWith[B](f: A => B): Option[(A, B)] = monadPlus.zipWith(option)(f)
+  }
+
+  implicit def optionIsFoldable = new Foldable[Option] {
+    override def foldLeft[A, B](option: Option[A], z: => B)(f: (=> B, A) => B): B = {
+      option.map(f(z, _)).getOrElse(z)
+    }
+
+    override def foldRight[A, B](option: Option[A], z: => B)(f: (A, => B) => B): B = {
+      option.map(f(_, z)).getOrElse(z)
+    }
   }
 }
 

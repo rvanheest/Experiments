@@ -1,8 +1,8 @@
 package monadics.instances
 
-import monadics.structures.{Monad, Monoid}
+import monadics.structures.{Foldable, Monad, Monoid}
 
-class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]]) {
+class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Foldable[Writer[W, ?]]) {
 
   def value: A = run._1
 
@@ -13,19 +13,25 @@ class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[
   def <*>[B, C](other: Writer[W, B])(implicit ev: A <:< (B => C)): Writer[W, C] = monad.<*>(this.map(ev), other)
 
   def flatMap[B](f: A => Writer[W, B]): Writer[W, B] = monad.flatMap(this)(f)
+
+  def foldLeft[B](z: => B)(f: (=> B, A) => B): B = monad.foldLeft(this, z)(f)
+
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = monad.foldRight(this, z)(f)
 }
 
 object Writer {
 
-  def apply[W, A](a: A, w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]]): Writer[W, A] = {
+  def apply[W, A](a: A, w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Foldable[Writer[W, ?]]): Writer[W, A] = {
     new Writer((a, w))
   }
 
-  def tell[W, A](w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]]): Writer[W, Unit] = {
+  def tell[W, A](w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Foldable[Writer[W, ?]]): Writer[W, Unit] = {
     new Writer((), w)
   }
 
-  implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] = new Monad[Writer[W, ?]] {
+  implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] with Foldable[Writer[W, ?]] = new Monad[Writer[W, ?]] with Foldable[Writer[W, ?]] {
+    implicit val self: Monad[Writer[W, ?]] with Foldable[Writer[W, ?]] = this
+
     def create[A](a: A): Writer[W, A] = Writer(a, wIsMonoid.empty)
 
     override def map[A, B](writer: Writer[W, A])(f: A => B): Writer[W, B] = {
@@ -46,6 +52,21 @@ object Writer {
       val (y, w) = f(x).run
 
       Writer(y, wIsMonoid.combine(v, w))
+    }
+
+    override def foldMap[A, B](fa: Writer[W, A])(f: A => B)(implicit mb: Monoid[B]): B = {
+      val (a, _) = fa.run
+      f(a)
+    }
+
+    override def foldLeft[A, B](fa: Writer[W, A], z: => B)(f: (=> B, A) => B): B = {
+      val (a, _) = fa.run
+      f(z, a)
+    }
+
+    override def foldRight[A, B](fa: Writer[W, A], z: => B)(f: (A, => B) => B): B = {
+      val (a, _) = fa.run
+      f(a, z)
     }
   }
 }
