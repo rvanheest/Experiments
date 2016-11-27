@@ -1,4 +1,5 @@
 import monadics.instances.option._
+import monadics.instances.list._
 import monadics.instances.monoids.values._
 
 import scala.language.postfixOps
@@ -19,3 +20,6 @@ s1.void         // Some(())
 n1.void         // None
 s1.zipWith(2 *) // Some((1, 2))
 n1.zipWith(2 *) // None
+
+Option(1).traverse[List, Int](i => List(i, i + 1, i + 2))
+Option(List(1, 2, 3)).sequence

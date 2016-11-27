@@ -76,6 +76,14 @@ trait Foldable[F[_]] {
   def find[A](fa: F[A])(predicate: A => Boolean): Option[A] = {
     foldMap(fa)(a => First(if (predicate(a)) Option(a) else Option.empty)).first
   }
+
+//  def traverse_[App[_], A, B](fa: F[A])(f: A => App[B])(implicit applicative: Applicative[App]): App[Unit] = {
+//    foldRight(fa, applicative.create(()))((a, b) => applicative.*>(f(a), b))
+//  }
+
+//  def concat[Alt[_], A](fAltA: F[Alt[A]])(implicit alternative: Alternative[Alt]): Alt[A] = {
+//    foldRight(fAltA, alternative.empty[A])(alternative.orElse(_, _))
+//  }
 }
 
 /*

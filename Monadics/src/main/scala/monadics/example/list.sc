@@ -1,4 +1,5 @@
 import monadics.instances.list._
+import monadics.instances.option._
 import monadics.instances.monoids.values._
 
 import scala.language.postfixOps
@@ -28,3 +29,7 @@ lnf <*> n
 l.foldMap(i => 2L * i)
 l.map(2 >=).all
 l.map(2 >=).any
+
+l.traverse(Option(_))
+l.map(Option(_)).sequence
+List(Option(1), Option.empty, Option(3)).sequence

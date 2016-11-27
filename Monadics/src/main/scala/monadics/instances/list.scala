@@ -8,7 +8,7 @@ trait list {
 
   implicit def listIsMonoid[A]: Monoid[List[A]] = Monoid.create[List[A]](Nil)(_ ++ _)
 
-  implicit def listIsMonadPlus = new MonadPlus[List] with MonadFail[List] {
+  implicit def listIsMonadPlus = new MonadPlus[List] with MonadFail[List] with Traverse[List] {
     def empty[A]: List[A] = List.empty
 
     def create[A](a: A): List[A] = List(a)
@@ -20,9 +20,7 @@ trait list {
     def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list.flatMap(f)
 
     def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
-  }
 
-  implicit def listIsFoldable = new Foldable[List] {
     override def foldLeft[A, B](fa: List[A], z: => B)(f: (=> B, A) => B): B = fa.foldLeft(z)(f(_, _))
 
     override def foldRight[A, B](fa: List[A], z: => B)(f: (A, => B) => B): B = fa.foldRight(z)(f(_, _))
@@ -54,6 +52,18 @@ trait list {
     override def forall[A](fa: List[A])(predicate: A => Boolean): Boolean = fa.forall(predicate)
 
     override def find[A](fa: List[A])(predicate: A => Boolean): Option[A] = fa.find(predicate)
+
+    override def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
+      fa.foldRight(applicative.create(List.empty[B]))((a: A, acc: G[List[B]]) => {
+        applicative.<**>(acc, applicative.map(f(a))((b: B) => (bs: List[B]) => b :: bs))
+      })
+    }
+
+    override def sequence[G[_], A](fa: List[G[A]])(implicit applicative: Applicative[G]): G[List[A]] = {
+      fa.foldRight(applicative.create(List.empty[A]))((ga: G[A], acc: G[List[A]]) => {
+        applicative.<**>(acc, applicative.map(ga)((a: A) => (as: List[A]) => a :: as))
+      })
+    }
   }
 
   implicit class ListMonadPlusOperators[A](val list: List[A])(implicit monadPlus: MonadPlus[List]) {
@@ -72,6 +82,16 @@ trait list {
     def all(implicit aIsBoolean: A <:< Boolean): Boolean = foldable.all(list.map(aIsBoolean))
 
     def any(implicit aIsBoolean: A <:< Boolean): Boolean = foldable.any(list.map(aIsBoolean))
+  }
+
+  implicit class ListTraverseOperators[A](val list: List[A])(implicit traverse: Traverse[List]) {
+    def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
+      traverse.traverse(list)(f)
+    }
+
+    def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[List[B]] = {
+      traverse.sequence(list.map(ev))
+    }
   }
 }
 object list extends list

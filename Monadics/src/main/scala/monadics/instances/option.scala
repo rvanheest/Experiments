@@ -2,6 +2,8 @@ package monadics.instances
 
 import monadics.structures._
 
+import scala.language.higherKinds
+
 trait option {
 
   implicit def optionOfSemigroupIsMonoid[A](implicit monoid: Semigroup[A]): Monoid[Option[A]] = Monoid.create(Option.empty[A]) {
@@ -11,11 +13,7 @@ trait option {
     case (Some(x), Some(y)) => Some(monoid.combine(x, y))
   }
 
-  implicit class OptionMonoid[A: Semigroup](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {
-    def combine(other: => Option[A]): Option[A] = monoid.combine(option, other)
-  }
-
-  implicit def optionIsMonadPlusAndMonadFail = new MonadPlus[Option] with MonadFail[Option] {
+  implicit def optionIsMonadPlusAndMonadFail = new MonadPlus[Option] with MonadFail[Option] with Traverse[Option] {
     def empty[A]: Option[A] = Option.empty
 
     def create[A](a: A): Option[A] = Option(a)
@@ -33,6 +31,28 @@ trait option {
     def orElse[A, B >: A](option1: Option[A], option2: => Option[B]): Option[B] = {
       option1.orElse(option2)
     }
+
+    override def foldLeft[A, B](option: Option[A], z: => B)(f: (=> B, A) => B): B = {
+      option.map(f(z, _)).getOrElse(z)
+    }
+
+    override def foldRight[A, B](option: Option[A], z: => B)(f: (A, => B) => B): B = {
+      option.map(f(_, z)).getOrElse(z)
+    }
+
+    override def traverse[G[_], A, B](optA: Option[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
+      optA.map(a => applicative.map(f(a))(Option(_)))
+        .getOrElse(applicative.create(Option.empty[B]))
+    }
+
+    override def sequence[G[_], A](optGA: Option[G[A]])(implicit applicative: Applicative[G]): G[Option[A]] = {
+      optGA.map(ga => applicative.map(ga)(Option(_)))
+        .getOrElse(applicative.create(Option.empty[A]))
+    }
+  }
+
+  implicit class OptionMonoid[A: Semigroup](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {
+    def combine(other: => Option[A]): Option[A] = monoid.combine(option, other)
   }
 
   implicit class OptionMonadPlusOperators[A](val option: Option[A])(implicit monadPlus: MonadPlus[Option]) {
@@ -43,13 +63,13 @@ trait option {
     def zipWith[B](f: A => B): Option[(A, B)] = monadPlus.zipWith(option)(f)
   }
 
-  implicit def optionIsFoldable = new Foldable[Option] {
-    override def foldLeft[A, B](option: Option[A], z: => B)(f: (=> B, A) => B): B = {
-      option.map(f(z, _)).getOrElse(z)
+  implicit class OptionTraverseOperators[A](val option: Option[A])(implicit traverse: Traverse[Option]) {
+    def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
+      traverse.traverse(option)(f)
     }
 
-    override def foldRight[A, B](option: Option[A], z: => B)(f: (A, => B) => B): B = {
-      option.map(f(_, z)).getOrElse(z)
+    def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[Option[B]] = {
+      traverse.sequence(option.map(ev))
     }
   }
 }
