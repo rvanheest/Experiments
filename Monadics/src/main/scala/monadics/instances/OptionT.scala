@@ -58,7 +58,7 @@ object OptionT {
 		}
 	}
 
-	implicit def optionTIsMonadTrans: OptionTMonadTrans = new OptionTMonadTrans {
+	implicit val optionTIsMonadTrans: OptionTMonadTrans = new OptionTMonadTrans {
 		def lift[M[+_], A](ma: M[A])(implicit monad: Monad[M]): OptionT[M, A] = {
 			new OptionT(monad.map(ma)(Option(_)))
 		}

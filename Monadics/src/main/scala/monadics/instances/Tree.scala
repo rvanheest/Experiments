@@ -14,7 +14,7 @@ sealed abstract class Tree[A](implicit monad: Monad[Tree]) {
 
 object Tree {
 
-	implicit def treeIsMonad: Monad[Tree] = new Monad[Tree] {
+	implicit val treeIsMonad: Monad[Tree] = new Monad[Tree] {
 		def create[A](a: A) = Leaf(a)
 
 		override def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {

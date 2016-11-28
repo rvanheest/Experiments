@@ -13,7 +13,7 @@ trait option {
     case (Some(x), Some(y)) => Some(monoid.combine(x, y))
   }
 
-  implicit def optionIsMonadPlusAndMonadFail = new MonadPlus[Option] with MonadFail[Option] with Traverse[Option] {
+  implicit val optionIsMonadPlusAndMonadFail = new MonadPlus[Option] with MonadFail[Option] with Traverse[Option] {
     def empty[A]: Option[A] = Option.empty
 
     def create[A](a: A): Option[A] = Option(a)
@@ -40,7 +40,7 @@ trait option {
       option.map(f(_, z)).getOrElse(z)
     }
 
-    override def traverse[G[_], A, B](optA: Option[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
+    def traverse[G[_], A, B](optA: Option[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
       optA.map(a => applicative.map(f(a))(Option(_)))
         .getOrElse(applicative.create(Option.empty[B]))
     }
@@ -55,21 +55,19 @@ trait option {
     def combine(other: => Option[A]): Option[A] = monoid.combine(option, other)
   }
 
-  implicit class OptionMonadPlusOperators[A](val option: Option[A])(implicit monadPlus: MonadPlus[Option]) {
-    def as[B](b: => B): Option[B] = monadPlus.as(option, b)
+  implicit class OptionMonadPlusOperators[A](val option: Option[A])(implicit monadTraverse: MonadPlus[Option] with Traverse[Option]) {
+    def as[B](b: => B): Option[B] = monadTraverse.as(option, b)
 
-    def void: Option[Unit] = monadPlus.void(option)
+    def void: Option[Unit] = monadTraverse.void(option)
 
-    def zipWith[B](f: A => B): Option[(A, B)] = monadPlus.zipWith(option)(f)
-  }
+    def zipWith[B](f: A => B): Option[(A, B)] = monadTraverse.zipWith(option)(f)
 
-  implicit class OptionTraverseOperators[A](val option: Option[A])(implicit traverse: Traverse[Option]) {
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
-      traverse.traverse(option)(f)
+      monadTraverse.traverse(option)(f)
     }
 
     def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[Option[B]] = {
-      traverse.sequence(option.map(ev))
+      monadTraverse.sequence(option.map(ev))
     }
   }
 }

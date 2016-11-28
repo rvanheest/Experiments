@@ -8,7 +8,7 @@ trait list {
 
   implicit def listIsMonoid[A]: Monoid[List[A]] = Monoid.create[List[A]](Nil)(_ ++ _)
 
-  implicit def listIsMonadPlus = new MonadPlus[List] with MonadFail[List] with Traverse[List] {
+  implicit val listIsMonadPlus = new MonadPlus[List] with MonadFail[List] with Traverse[List] {
     def empty[A]: List[A] = List.empty
 
     def create[A](a: A): List[A] = List(a)
@@ -53,7 +53,7 @@ trait list {
 
     override def find[A](fa: List[A])(predicate: A => Boolean): Option[A] = fa.find(predicate)
 
-    override def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
+    def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
       fa.foldRight(applicative.create(List.empty[B]))((a: A, acc: G[List[B]]) => {
         applicative.<**>(acc, applicative.map(f(a))((b: B) => (bs: List[B]) => b :: bs))
       })
@@ -66,31 +66,27 @@ trait list {
     }
   }
 
-  implicit class ListMonadPlusOperators[A](val list: List[A])(implicit monadPlus: MonadPlus[List]) {
-    def as[B](b: => B): List[B] = monadPlus.as(list, b)
+  implicit class ListMonadPlusOperators[A](val list: List[A])(implicit monadTraverse: MonadPlus[List] with Traverse[List]) {
+    def as[B](b: => B): List[B] = monadTraverse.as(list, b)
 
-    def void: List[Unit] = monadPlus.void(list)
+    def void: List[Unit] = monadTraverse.void(list)
 
-    def zipWith[B](f: A => B): List[(A, B)] = monadPlus.zipWith(list)(f)
+    def zipWith[B](f: A => B): List[(A, B)] = monadTraverse.zipWith(list)(f)
 
-    def <*>[B, C](other: List[B])(implicit ev: A <:< (B => C)): List[C] = monadPlus.<*>(list.map(ev), other)
-  }
+    def <*>[B, C](other: List[B])(implicit ev: A <:< (B => C)): List[C] = monadTraverse.<*>(list.map(ev), other)
 
-  implicit class ListFoldableOperators[A](val list: List[A])(implicit foldable: Foldable[List]) {
-    def foldMap[B](f: A => B)(implicit mb: Monoid[B]): B = foldable.foldMap(list)(f)
+    def foldMap[B](f: A => B)(implicit mb: Monoid[B]): B = monadTraverse.foldMap(list)(f)
 
-    def all(implicit aIsBoolean: A <:< Boolean): Boolean = foldable.all(list.map(aIsBoolean))
+    def all(implicit aIsBoolean: A <:< Boolean): Boolean = monadTraverse.all(list.map(aIsBoolean))
 
-    def any(implicit aIsBoolean: A <:< Boolean): Boolean = foldable.any(list.map(aIsBoolean))
-  }
+    def any(implicit aIsBoolean: A <:< Boolean): Boolean = monadTraverse.any(list.map(aIsBoolean))
 
-  implicit class ListTraverseOperators[A](val list: List[A])(implicit traverse: Traverse[List]) {
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
-      traverse.traverse(list)(f)
+      monadTraverse.traverse(list)(f)
     }
 
     def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[List[B]] = {
-      traverse.sequence(list.map(ev))
+      monadTraverse.sequence(list.map(ev))
     }
   }
 }

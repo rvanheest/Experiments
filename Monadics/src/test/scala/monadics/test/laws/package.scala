@@ -1,6 +1,7 @@
 package monadics.test
 
 import monadics.instances._
+import monadics.instances.either._
 import monadics.instances.monoids._
 import monadics.structures.{MonadPlus, Monoid}
 import org.scalacheck.Arbitrary._
@@ -10,6 +11,14 @@ package object laws {
 
 	implicit def arbIdentity[T](implicit a: Arbitrary[T]): Arbitrary[Identity[T]] = {
 		Arbitrary(arbitrary[T].map(Identity(_)))
+	}
+
+	implicit def arbLeftEither[L, R](implicit a: Arbitrary[Either[L, R]]): Arbitrary[LeftEither[L, R]] = {
+		Arbitrary(arbitrary[Either[L, R]].map(_.left))
+	}
+
+	implicit def arbRightEither[L, R](implicit a: Arbitrary[Either[L, R]]): Arbitrary[RightEither[L, R]] = {
+		Arbitrary(arbitrary[Either[L, R]].map(_.right))
 	}
 
 	implicit def arbOptionTOfList[T](implicit a: Arbitrary[T], monad: MonadPlus[OptionT[List, ?]]): Arbitrary[OptionT[List, T]] = {

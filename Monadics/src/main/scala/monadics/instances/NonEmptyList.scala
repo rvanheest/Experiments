@@ -29,7 +29,7 @@ object NonEmptyList {
     (a1, a2) => NonEmptyList(a1.head, a1.tail ++ (a2.head :: a2.tail))
   }
 
-  implicit def NELisMonad: Monad[NonEmptyList] = new Monad[NonEmptyList] {
+  implicit val NELisMonad: Monad[NonEmptyList] = new Monad[NonEmptyList] {
 
     def create[A](a: A): NonEmptyList[A] = NonEmptyList(a, Nil)
 

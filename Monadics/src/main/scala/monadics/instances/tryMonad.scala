@@ -17,7 +17,7 @@ trait tryMonad {
     }
   }
 
-  implicit def tryIsMonadPlusAndMonadFail = new MonadPlus[Try] with MonadFail[Try] {
+  implicit val tryIsMonadPlusAndMonadFail = new MonadPlus[Try] with MonadFail[Try] {
     def empty[A]: Try[A] = Failure(new NoSuchElementException("empty"))
 
     def create[A](a: A): Try[A] = Try(a)
