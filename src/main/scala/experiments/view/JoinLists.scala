@@ -1,5 +1,7 @@
 package experiments.view
 
+import scala.language.implicitConversions
+
 sealed abstract class JoinListView
 object JoinListsView extends View[JoinListView, List[Int]] {
 
