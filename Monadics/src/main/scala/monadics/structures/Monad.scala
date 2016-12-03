@@ -11,7 +11,7 @@ trait Monad[M[_]] extends Applicative[M] {
 	}
 
 	override def <*>[A, B](appFunc: M[A => B], appA: M[A]): M[B] = {
-		flatMap(appA)(a => map(appFunc)(_(a)))
+		flatMap(appFunc)(map(appA))
 	}
 
 	override def *>[A, B](appA: M[A], appB: M[B]): M[B] = {

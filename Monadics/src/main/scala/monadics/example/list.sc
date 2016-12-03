@@ -31,5 +31,7 @@ l.map(2 >=).all
 l.map(2 >=).any
 
 l.traverse(Option(_))
+l.traverse[List, Int](i => List(i, 4))
+
 l.map(Option(_)).sequence
 List(Option(1), Option.empty, Option(3)).sequence
