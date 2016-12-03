@@ -2,6 +2,8 @@ package monadics.instances
 
 import monadics.structures._
 
+import scala.language.higherKinds
+
 case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup[NonEmptyList[A]], monadTraverse: Monad[NonEmptyList] with Traverse[NonEmptyList]) {
 
   def map[B](f: A => B): NonEmptyList[B] = monadTraverse.map(this)(f)
@@ -23,6 +25,48 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
   def foldRight[B](z: => B)(f: (A, => B) => B): B = monadTraverse.foldRight(this, z)(f)
 
   def foldMap[B](f: A => B)(implicit mb: Monoid[B]): B = monadTraverse.foldMap(this)(f)
+
+  def toList: List[A] = head :: tail
+
+  def size: Int = 1 + tail.size
+
+  def contains(a: A): Boolean = head == a || tail.contains(a)
+
+  def max(implicit ordered: Ordering[A]): A = {
+    ordered.max(head, tail.max)
+  }
+
+  def min(implicit ordered: Ordering[A]): A = {
+    ordered.min(head, tail.min)
+  }
+
+  def sum(implicit numeric: Numeric[A]): A = {
+    numeric.plus(head, tail.sum)
+  }
+
+  def product(implicit numeric: Numeric[A]): A = {
+    numeric.times(head, tail.product)
+  }
+
+  def all(implicit ev: A <:< Boolean): Boolean = {
+    monadTraverse.all(map(ev))
+  }
+
+  def any(implicit ev: A <:< Boolean): Boolean = {
+    monadTraverse.any(map(ev))
+  }
+
+  def exists(predicate: A => Boolean): Boolean = {
+    predicate(head) || tail.exists(predicate)
+  }
+
+  def forall(predicate: A => Boolean): Boolean = {
+    predicate(head) && tail.forall(predicate)
+  }
+
+  def find(predicate: A => Boolean): Option[A] = {
+    Option(head).filter(predicate).orElse(tail.find(predicate))
+  }
 
   def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[NonEmptyList[B]] = {
     monadTraverse.traverse(this)(f)
