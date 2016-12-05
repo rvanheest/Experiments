@@ -2,6 +2,8 @@ package monadics.instances
 
 import monadics.structures._
 
+import scala.language.higherKinds
+
 trait either {
 
   implicit def eitherIsSemigroup[L, R]: Semigroup[Either[L, R]] = Semigroup.create[Either[L, R]] {
@@ -60,8 +62,8 @@ trait either {
       monad.traverse(either)(f)
     }
 
-    def sequence[G[_], R2](implicit ev: R <:< G[R2], applicative: Applicative[G]): G[Either[L, R2]] = {
-      monad.sequence(either.right.map(ev))
+    def sequence[G[_], R2](implicit ev: Either[L, R] <:< Either[L, G[R2]], applicative: Applicative[G]): G[Either[L, R2]] = {
+      monad.sequence(either)
     }
   }
 }
@@ -126,8 +128,8 @@ trait eitherLeft {
       monad.traverse(either)(f)
     }
 
-    def sequence[G[_], L2](implicit ev: L <:< G[L2], applicative: Applicative[G]): G[LeftEither[L2, R]] = {
-      monad.sequence(either.map(ev).left)
+    def sequence[G[_], L2](implicit ev: LeftEither[L, R] <:< LeftEither[G[L2], R], applicative: Applicative[G]): G[LeftEither[L2, R]] = {
+      monad.sequence(either)
     }
   }
 }
@@ -192,8 +194,8 @@ trait eitherRight {
       monad.traverse(either)(f)
     }
 
-    def sequence[G[_], R2](implicit ev: R <:< G[R2], applicative: Applicative[G]): G[RightEither[L, R2]] = {
-      monad.sequence(either.map(ev).right)
+    def sequence[G[_], R2](implicit ev: RightEither[L, R] <:< RightEither[L, G[R2]], applicative: Applicative[G]): G[RightEither[L, R2]] = {
+      monad.sequence(either)
     }
   }
 }

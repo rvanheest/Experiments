@@ -44,7 +44,7 @@ trait tryMonad {
 
     def zipWith[B](f: A => B): Try[(A, B)] = monadPlus.zipWith(t)(f)
 
-    def <*>[B, C](other: Try[B])(implicit ev: A <:< (B => C)): Try[C] = monadPlus.<*>(t.map(ev), other)
+    def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monadPlus.<*>(t, other)
   }
 }
 

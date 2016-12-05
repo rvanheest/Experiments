@@ -73,20 +73,20 @@ trait list {
 
     def zipWith[B](f: A => B): List[(A, B)] = monadTraverse.zipWith(list)(f)
 
-    def <*>[B, C](other: List[B])(implicit ev: A <:< (B => C)): List[C] = monadTraverse.<*>(list.map(ev), other)
+    def <*>[B, C](other: List[B])(implicit ev: List[A] <:< List[(B => C)]): List[C] = monadTraverse.<*>(list, other)
 
     def foldMap[B](f: A => B)(implicit mb: Monoid[B]): B = monadTraverse.foldMap(list)(f)
 
-    def all(implicit aIsBoolean: A <:< Boolean): Boolean = monadTraverse.all(list.map(aIsBoolean))
+    def all(implicit ev: List[A] <:< List[Boolean]): Boolean = monadTraverse.all(list)
 
-    def any(implicit aIsBoolean: A <:< Boolean): Boolean = monadTraverse.any(list.map(aIsBoolean))
+    def any(implicit ev: List[A] <:< List[Boolean]): Boolean = monadTraverse.any(list)
 
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[List[B]] = {
       monadTraverse.traverse(list)(f)
     }
 
-    def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[List[B]] = {
-      monadTraverse.sequence(list.map(ev))
+    def sequence[G[_], B](implicit ev: List[A] <:< List[G[B]], applicative: Applicative[G]): G[List[B]] = {
+      monadTraverse.sequence(list)
     }
   }
 }

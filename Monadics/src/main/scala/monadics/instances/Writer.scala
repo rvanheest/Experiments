@@ -2,6 +2,8 @@ package monadics.instances
 
 import monadics.structures.{Applicative, Monad, Monoid, Traverse}
 
+import scala.language.higherKinds
+
 class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]) {
 
   def value: A = run._1
@@ -10,7 +12,7 @@ class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[
 
   def map[B](f: A => B): Writer[W, B] = monad.map(this)(f)
 
-  def <*>[B, C](other: Writer[W, B])(implicit ev: A <:< (B => C)): Writer[W, C] = monad.<*>(this.map(ev), other)
+  def <*>[B, C](other: Writer[W, B])(implicit ev: Writer[W, A] <:< Writer[W, (B => C)]): Writer[W, C] = monad.<*>(this, other)
 
   def flatMap[B](f: A => Writer[W, B]): Writer[W, B] = monad.flatMap(this)(f)
 
@@ -22,8 +24,8 @@ class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[
     monad.traverse(this)(f)
   }
 
-  def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[Writer[W, B]] = {
-    monad.sequence[G, B](this.map(ev))
+  def sequence[G[_], B](implicit ev: Writer[W, A] <:< Writer[W, G[B]], applicative: Applicative[G]): G[Writer[W, B]] = {
+    monad.sequence[G, B](this)
   }
 }
 

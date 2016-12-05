@@ -66,8 +66,8 @@ trait option {
       monadTraverse.traverse(option)(f)
     }
 
-    def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[Option[B]] = {
-      monadTraverse.sequence(option.map(ev))
+    def sequence[G[_], B](implicit ev: Option[A] <:< Option[G[B]], applicative: Applicative[G]): G[Option[B]] = {
+      monadTraverse.sequence(option)
     }
   }
 }

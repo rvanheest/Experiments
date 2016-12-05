@@ -10,7 +10,7 @@ class Reader[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]) {
 
   def map[B](f: A => B): Reader[R, B] = monad.map(this)(f)
 
-  def <*>[B, C](other: Reader[R, B])(implicit ev: A <:< (B => C)): Reader[R, C] = monad.<*>(this.map(ev), other)
+  def <*>[B, C](other: Reader[R, B])(implicit ev: Reader[R, A] <:< Reader[R, (B => C)]): Reader[R, C] = monad.<*>(this, other)
 
   def flatMap[B](f: A => Reader[R, B]): Reader[R, B] = monad.flatMap(this)(f)
 }

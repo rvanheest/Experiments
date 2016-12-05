@@ -14,7 +14,7 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
 
   def zipWith[B](f: A => B): NonEmptyList[(A, B)] = monadTraverse.zipWith(this)(f)
 
-  def <*>[B, C](other: NonEmptyList[B])(implicit ev: A <:< (B => C)): NonEmptyList[C] = monadTraverse.<*>(map(ev), other)
+  def <*>[B, C](other: NonEmptyList[B])(implicit ev: NonEmptyList[A] <:< NonEmptyList[(B => C)]): NonEmptyList[C] = monadTraverse.<*>(this, other)
 
   def flatMap[B](f: A => NonEmptyList[B]): NonEmptyList[B] = monadTraverse.flatMap(this)(f)
 
@@ -40,9 +40,9 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
 
   def product(implicit numeric: Numeric[A]): A = monadTraverse.product(this)
 
-  def all(implicit ev: A <:< Boolean): Boolean = monadTraverse.all(map(ev))
+  def all(implicit ev: NonEmptyList[A] <:< NonEmptyList[Boolean]): Boolean = monadTraverse.all(this)
 
-  def any(implicit ev: A <:< Boolean): Boolean = monadTraverse.any(map(ev))
+  def any(implicit ev: NonEmptyList[A] <:< NonEmptyList[Boolean]): Boolean = monadTraverse.any(this)
 
   def exists(predicate: A => Boolean): Boolean = monadTraverse.exists(this)(predicate)
 
@@ -54,8 +54,8 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
     monadTraverse.traverse(this)(f)
   }
 
-  def sequence[G[_], B](implicit ev: A <:< G[B], applicative: Applicative[G]): G[NonEmptyList[B]] = {
-    monadTraverse.sequence[G, B](map(ev))
+  def sequence[G[_], B](implicit ev: NonEmptyList[A] <:< NonEmptyList[G[B]], applicative: Applicative[G]): G[NonEmptyList[B]] = {
+    monadTraverse.sequence[G, B](this)
   }
 }
 

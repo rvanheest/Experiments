@@ -8,7 +8,7 @@ class Continuation[R, A](c: (A => R) => R)(implicit monad: Monad[Continuation[R,
 
   def map[B](f: A => B): Continuation[R, B] = monad.map(this)(f)
 
-  def <*>[B, C](other: Continuation[R, B])(implicit ev: A <:< (B => C)): Continuation[R, C] = monad.<*>(this.map(ev), other)
+  def <*>[B, C](other: Continuation[R, B])(implicit ev: Continuation[R, A] <:< Continuation[R, (B => C)]): Continuation[R, C] = monad.<*>(this, other)
 
   def flatMap[B](f: A => Continuation[R, B]): Continuation[R, B] = monad.flatMap(this)(f)
 }

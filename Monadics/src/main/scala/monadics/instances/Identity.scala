@@ -8,9 +8,7 @@ class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
 	def map[B](f: A => B): Identity[B] = monad.map(this)(f)
 
-	def <*>[B, C](other: Identity[B])(implicit ev: A <:< (B => C)): Identity[C] = {
-		monad.<*>(this.map(ev), other)
-	}
+	def <*>[B, C](other: Identity[B])(implicit ev: Identity[A] <:< Identity[(B => C)]): Identity[C] = monad.<*>(this, other)
 
 	def *>[B](other: Identity[B]): Identity[B] = monad.*>(this, other)
 
