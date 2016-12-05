@@ -34,3 +34,8 @@ Option(nel1).traverse[List, Int](nel => nel.head :: nel.tail)
 
 nel1.map(Option(_)).sequence
 nel1.map(List(_, 5)).sequence
+
+nel1.map(_ % 2 == 0).all
+nel1.map(_ % 2 == 0).any
+nel1.forall(_ % 2 == 0)
+nel1.exists(_ % 2 == 0)

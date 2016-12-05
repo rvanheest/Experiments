@@ -26,47 +26,29 @@ case class NonEmptyList[A](head: A, tail: List[A])(implicit semigroup: Semigroup
 
   def foldMap[B](f: A => B)(implicit mb: Monoid[B]): B = monadTraverse.foldMap(this)(f)
 
-  def toList: List[A] = head :: tail
+  def toList: List[A] = monadTraverse.toList(this)
 
-  def size: Int = 1 + tail.size
+  def size: Int = monadTraverse.size(this)
 
-  def contains(a: A): Boolean = head == a || tail.contains(a)
+  def contains(a: A): Boolean = monadTraverse.contains(this)(a)
 
-  def max(implicit ordered: Ordering[A]): A = {
-    ordered.max(head, tail.max)
-  }
+  def max(implicit ordered: Ordering[A]): A = monadTraverse.max(this).get
 
-  def min(implicit ordered: Ordering[A]): A = {
-    ordered.min(head, tail.min)
-  }
+  def min(implicit ordered: Ordering[A]): A = monadTraverse.min(this).get
 
-  def sum(implicit numeric: Numeric[A]): A = {
-    numeric.plus(head, tail.sum)
-  }
+  def sum(implicit numeric: Numeric[A]): A = monadTraverse.sum(this)
 
-  def product(implicit numeric: Numeric[A]): A = {
-    numeric.times(head, tail.product)
-  }
+  def product(implicit numeric: Numeric[A]): A = monadTraverse.product(this)
 
-  def all(implicit ev: A <:< Boolean): Boolean = {
-    monadTraverse.all(map(ev))
-  }
+  def all(implicit ev: A <:< Boolean): Boolean = monadTraverse.all(map(ev))
 
-  def any(implicit ev: A <:< Boolean): Boolean = {
-    monadTraverse.any(map(ev))
-  }
+  def any(implicit ev: A <:< Boolean): Boolean = monadTraverse.any(map(ev))
 
-  def exists(predicate: A => Boolean): Boolean = {
-    predicate(head) || tail.exists(predicate)
-  }
+  def exists(predicate: A => Boolean): Boolean = monadTraverse.exists(this)(predicate)
 
-  def forall(predicate: A => Boolean): Boolean = {
-    predicate(head) && tail.forall(predicate)
-  }
+  def forall(predicate: A => Boolean): Boolean = monadTraverse.forall(this)(predicate)
 
-  def find(predicate: A => Boolean): Option[A] = {
-    Option(head).filter(predicate).orElse(tail.find(predicate))
-  }
+  def find(predicate: A => Boolean): Option[A] = monadTraverse.find(this)(predicate)
 
   def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[NonEmptyList[B]] = {
     monadTraverse.traverse(this)(f)
@@ -109,6 +91,40 @@ object NonEmptyList {
     override def foldRight[A, B](nel: NonEmptyList[A], z: => B)(f: (A, => B) => B): B = {
       val NonEmptyList(x, xs) = nel
       f(x, xs.foldRight(z)(f(_, _)))
+    }
+
+    override def toList[A](nel: NonEmptyList[A]): List[A] = nel.head :: nel.tail
+
+    override def size[A](nel: NonEmptyList[A]): Int = 1 + nel.tail.size
+
+    override def contains[A](nel: NonEmptyList[A])(a: A): Boolean = nel.head == a || nel.tail.contains(a)
+
+    override def max[A](nel: NonEmptyList[A])(implicit ordered: Ordering[A]): Option[A] = {
+      Option(ordered.max(nel.head, nel.tail.max))
+    }
+
+    override def min[A](nel: NonEmptyList[A])(implicit ordered: Ordering[A]): Option[A] = {
+      Option(ordered.min(nel.head, nel.tail.min))
+    }
+
+    override def sum[A](nel: NonEmptyList[A])(implicit numeric: Numeric[A]): A = {
+      numeric.plus(nel.head, nel.tail.sum)
+    }
+
+    override def product[A](nel: NonEmptyList[A])(implicit numeric: Numeric[A]): A = {
+      numeric.times(nel.head, nel.tail.product)
+    }
+
+    override def exists[A](nel: NonEmptyList[A])(predicate: A => Boolean): Boolean = {
+      predicate(nel.head) || nel.tail.exists(predicate)
+    }
+
+    override def forall[A](nel: NonEmptyList[A])(predicate: A => Boolean): Boolean = {
+      predicate(nel.head) && nel.tail.forall(predicate)
+    }
+
+    override def find[A](nel: NonEmptyList[A])(predicate: A => Boolean): Option[A] = {
+      Option(nel.head).filter(predicate).orElse(nel.tail.find(predicate))
     }
 
     def traverse[G[_], A, B](nel: NonEmptyList[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[NonEmptyList[B]] = {
