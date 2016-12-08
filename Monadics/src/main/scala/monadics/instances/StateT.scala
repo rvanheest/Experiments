@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Monad, MonadFail, MonadPlus, MonadTrans}
+import monadics.structures._
 
 import scala.language.{higherKinds, reflectiveCalls}
 
@@ -103,6 +103,10 @@ object StateT {
 
 	def apply[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: MonadPlus[StateT[S, ?, M]], mp: Monad[M]): StateT[S, A, M] = {
 		new StateT(state)
+	}
+
+	implicit def stateTIsEquals[S, A, M[+_]](implicit fEquals: Equals[S => M[(A, S)]]): Equals[StateT[S, A, M]] = {
+		Equals.create((s1, s2) => fEquals.equals(s1.run, s2.run))
 	}
 
 	implicit def stateTIsMonadPlus[S, M[+_]](implicit mp: MonadPlus[M] with MonadFail[M]): MonadPlus[StateT[S, ?, M]] with MonadFail[StateT[S, ?, M]] = new MonadPlus[StateT[S, ?, M]] with MonadFail[StateT[S, ?, M]] {

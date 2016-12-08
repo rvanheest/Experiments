@@ -1,8 +1,12 @@
 package monadics.instances
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 trait map {
+
+  implicit def mapIsEquals[K, V](implicit valueEquals: Equals[V]): Equals[Map[K, V]] = {
+    Equals.create((m1, m2) => m1.size == m2.size && m1.forall { case (k1, v1) => m1.get(k1).exists(valueEquals.equals(v1, _)) })
+  }
 
   implicit def mapIsMonoid[K, V](implicit valueIsMonoid: Monoid[V]): Monoid[Map[K, V]] = Monoid.create(Map.empty[K, V]) {
     (map1, map2) => map2.foldLeft(map1) {

@@ -4,8 +4,9 @@ import monadics.instances._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
+import monadics.instances.monoids.values._
 import monadics.laws.MonadFailLaws
-import monadics.structures.MonadFail
+import monadics.structures.{Equals, MonadFail}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
@@ -19,7 +20,7 @@ trait MonadFailLawsSpec[MF[_]] extends MonadLawsSpec[MF] {
 
   property(s"$name - monadfail left zero") {
     forAll { (s: String, f: Int => MF[String]) =>
-      laws.monadFailLeftZero(s, f)
+      laws.monadFailLeftZero(s, f).isEqual shouldBe true
     }
   }
 }
@@ -30,7 +31,10 @@ abstract class AbstractMonadFailLawsSpec[MF[_]](override val name: String)
                                                override val arbIntToStringInstance: Arbitrary[MF[Int => String]],
                                                override val arbIntToMonadStringInstance: Arbitrary[Int => MF[String]],
                                                override val arbStringToMonadLongInstance: Arbitrary[String => MF[Long]],
-                                               override val arbStringToLongInstance: Arbitrary[MF[String => Long]])
+                                               override val arbStringToLongInstance: Arbitrary[MF[String => Long]],
+                                               override val eqInt: Equals[MF[Int]],
+                                               override val eqLong: Equals[MF[Long]],
+                                               override val eqString: Equals[MF[String]])
   extends MonadFailLawsSpec[MF]
 
 class ListMonadFailSpec extends AbstractMonadFailLawsSpec[List]("List")

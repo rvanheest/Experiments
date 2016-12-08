@@ -6,6 +6,14 @@ import scala.language.higherKinds
 
 trait either {
 
+  implicit def eitherIsEquals[L, R](implicit lEquals: Equals[L], rEquals: Equals[R]): Equals[Either[L, R]] = {
+    Equals.create {
+      case (Left(l1), Left(l2)) => lEquals.equals(l1, l2)
+      case (Right(r1), Right(r2)) => rEquals.equals(r1, r2)
+      case _ => false
+    }
+  }
+
   implicit def eitherIsSemigroup[L, R]: Semigroup[Either[L, R]] = Semigroup.create[Either[L, R]] {
     case (Left(_), a2) => a2
     case (a, _) => a
@@ -72,6 +80,14 @@ trait eitherLeft {
 
   type LeftEither[+L, +R] = Either.LeftProjection[L, R]
 
+  implicit def leftEitherIsEquals[L, R](implicit lEquals: Equals[L], rEquals: Equals[R]): Equals[LeftEither[L, R]] = {
+    Equals.create({
+          case (Either.LeftProjection(Left(l1)), Either.LeftProjection(Left(l2))) => lEquals.equals(l1, l2)
+          case (Either.LeftProjection(Right(r1)), Either.LeftProjection(Right(r2))) => rEquals.equals(r1, r2)
+          case _ => false
+        })
+  }
+
   implicit def eitherLeftIsSemigroup[L, R]: Semigroup[LeftEither[L, R]] = Semigroup.create[LeftEither[L, R]] {
     case (Either.LeftProjection(Right(_)), a) => a
     case (a, _) => a
@@ -137,6 +153,14 @@ trait eitherLeft {
 trait eitherRight {
 
   type RightEither[+L, +R] = Either.RightProjection[L, R]
+
+  implicit def rightEitherIsEquals[L, R](implicit lEquals: Equals[L], rEquals: Equals[R]): Equals[RightEither[L, R]] = {
+    Equals.create({
+          case (Either.RightProjection(Left(l1)), Either.RightProjection(Left(l2))) => lEquals.equals(l1, l2)
+          case (Either.RightProjection(Right(r1)), Either.RightProjection(Right(r2))) => rEquals.equals(r1, r2)
+          case _ => false
+        })
+  }
 
   implicit def eitherRightIsSemigroup[L, R]: Semigroup[RightEither[L, R]] = Semigroup.create[RightEither[L, R]] {
     case (Either.RightProjection(Left(_)), a2) => a2

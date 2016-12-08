@@ -3,11 +3,31 @@ package monadics.test
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.monoids._
-import monadics.structures.{MonadPlus, Monoid}
+import monadics.structures.{Equals, MonadPlus, Monoid}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{Arbitrary, Gen}
 
+import scala.language.higherKinds
+
 package object laws {
+
+	implicit def function1IsEquals[A, B](implicit arbA: Arbitrary[A], eqB: Equals[B]): Equals[A => B] = {
+		Equals.create((x, y) => {
+			val samples = Stream.continually(arbA.arbitrary.sample).flatten.take(100)
+			samples.forall(a => eqB.equals(x(a), y(a)))
+		})
+	}
+
+	implicit def stateTFunctionIsEquals[S, A, M[+_]](implicit arbS: Arbitrary[S], eqMAS: Equals[M[(A, S)]]): Equals[S => M[(A, S)]] = {
+		Equals.create((x, y) => {
+			val samples = Stream.continually(arbS.arbitrary.sample).flatten.take(100)
+			samples.forall(s => eqMAS.equals(x(s), y(s)))
+		})
+	}
+
+	implicit def tupleIsEquals[A, B](implicit aEquals: Equals[A], bEquals: Equals[B]): Equals[(A, B)] = {
+		Equals.create { case ((a1, b1), (a2, b2)) => aEquals.equals(a1, a2) && bEquals.equals(b1, b2) }
+	}
 
 	implicit def arbIdentity[T](implicit a: Arbitrary[T]): Arbitrary[Identity[T]] = {
 		Arbitrary(arbitrary[T].map(Identity(_)))

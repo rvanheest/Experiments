@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.Monad
+import monadics.structures.{Equals, Monad}
 
 import scala.language.reflectiveCalls
 
@@ -35,6 +35,10 @@ object State {
 	def get[S]: State[S, S] = new State(s => (s, s))
 
 	def put[S](newState: S): State[S, Unit] = new State(_ => ((), newState))
+
+	implicit def stateIsEquals[S, A](implicit fEquals: Equals[S => (A, S)]): Equals[State[S, A]] = {
+		Equals.create((s1, s2) => fEquals.equals(s1.run, s2.run))
+	}
 
 	implicit def stateIsMonad[S]: Monad[State[S, ?]] = new Monad[State[S, ?]] {
 		def create[B](b: B): State[S, B] = new State(s => (b, s))

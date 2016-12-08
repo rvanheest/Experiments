@@ -9,13 +9,13 @@ trait FunctorLaws[F[_]] {
 	implicit val instance: Functor[F]
 
 	// fmap id == id
-	def functorIdentity[A](fa: F[A]): Boolean = {
-		instance.map(fa)(a => a) == fa
+	def functorIdentity[A](fa: F[A]): IsEquals[F[A]] = {
+		instance.map(fa)(a => a) === fa
 	}
 
 	// fmap (g . h) == (fmap g) . (fmap h)
-	def functorComposition[A, B, C](fa: F[A], f: A => B, g: B => C): Boolean = {
-		instance.map(fa)(g compose f) == instance.map(instance.map(fa)(f))(g)
+	def functorComposition[A, B, C](fa: F[A], f: A => B, g: B => C): IsEquals[F[C]] = {
+		instance.map(fa)(g compose f) === instance.map(instance.map(fa)(f))(g)
 	}
 }
 

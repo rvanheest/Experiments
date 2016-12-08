@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[Product[A]]) {
 
@@ -12,6 +12,10 @@ case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[P
 object Product {
   def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Product[A]]): Product[A] = {
     monoid.empty
+  }
+
+  implicit def productIsEquals[A](implicit aEquals: Equals[A]): Equals[Product[A]] = {
+    Equals.create { case (Product(a1), Product(a2)) => aEquals.equals(a1, a2) }
   }
 
   implicit def productIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Product[A]] = {

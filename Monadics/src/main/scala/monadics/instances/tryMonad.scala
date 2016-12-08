@@ -1,10 +1,18 @@
 package monadics.instances
 
-import monadics.structures.{MonadFail, MonadPlus, Monoid, Semigroup}
+import monadics.structures._
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 trait tryMonad {
+
+  implicit def tryIsEquals[A](implicit aEquals: Equals[A]): Equals[Try[A]] = {
+    Equals.create {
+      case (Success(x), Success(y)) => aEquals.equals(x, y)
+      case (Failure(ex1), Failure(ex2)) => ex1.getClass == ex2.getClass && ex1.getMessage == ex2.getMessage
+      case _ => false
+    }
+  }
 
   implicit def tryOfSemigroupIsMonoid[A](implicit semigroup: Semigroup[A]): Semigroup[Try[A]] = new Monoid[Try[A]] {
     override def empty: Try[A] = Failure(new NoSuchElementException("empty"))
@@ -17,9 +25,7 @@ trait tryMonad {
     }
   }
 
-  implicit val tryIsMonadPlusAndMonadFail = new MonadPlus[Try] with MonadFail[Try] {
-    def empty[A]: Try[A] = Failure(new NoSuchElementException("empty"))
-
+  implicit val tryIsMonadPlusAndMonadFail = new MonadFail[Try] {
     def create[A](a: A): Try[A] = Try(a)
 
     def fail[A](e: Throwable): Try[A] = Failure(e)
@@ -31,20 +37,16 @@ trait tryMonad {
     def flatMap[A, B](monad: Try[A])(f: A => Try[B]): Try[B] = {
       monad.flatMap(f)
     }
-
-    def orElse[A, B >: A](try1: Try[A], try2: => Try[B]): Try[B] = {
-      try1.orElse(try2)
-    }
   }
 
-  implicit class TryMonadPlusOperators[A](val t: Try[A])(implicit monadPlus: MonadPlus[Try]) {
-    def as[B](b: => B): Try[B] = monadPlus.as(t, b)
+  implicit class TryMonadOperators[A](val t: Try[A])(implicit monad: Monad[Try]) {
+    def as[B](b: => B): Try[B] = monad.as(t, b)
 
-    def void: Try[Unit] = monadPlus.void(t)
+    def void: Try[Unit] = monad.void(t)
 
-    def zipWith[B](f: A => B): Try[(A, B)] = monadPlus.zipWith(t)(f)
+    def zipWith[B](f: A => B): Try[(A, B)] = monad.zipWith(t)(f)
 
-    def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monadPlus.<*>(t, other)
+    def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monad.<*>(t, other)
   }
 }
 

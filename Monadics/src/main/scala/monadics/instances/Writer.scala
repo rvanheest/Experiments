@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Applicative, Monad, Monoid, Traverse}
+import monadics.structures._
 
 import scala.language.higherKinds
 
@@ -37,6 +37,14 @@ object Writer {
 
   def tell[W, A](w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]): Writer[W, Unit] = {
     new Writer((), w)
+  }
+
+  implicit def writerIsEquals[W, A](implicit wEquals: Equals[W], aEquals: Equals[A]): Equals[Writer[W, A]] = {
+    Equals.create((x, y) => {
+      val (a1, w1) = x.run
+      val (a2, w2) = y.run
+      aEquals.equals(a1, a2) && wEquals.equals(w1, w2)
+    })
   }
 
   implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] = new Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] {

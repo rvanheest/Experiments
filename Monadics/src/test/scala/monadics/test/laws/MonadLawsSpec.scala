@@ -5,9 +5,9 @@ import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
-import monadics.instances.monoids.values.stringIsMonoid
+import monadics.instances.monoids.values._
 import monadics.laws.MonadLaws
-import monadics.structures.Monad
+import monadics.structures.{Equals, Monad}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
@@ -22,19 +22,19 @@ trait MonadLawsSpec[M[_]] extends ApplicativeLawsSpec[M] {
 
 	property(s"$name - monad left identity") {
 		forAll { (a: Int, f: Int => M[String]) =>
-			laws.monadLeftIdentity(a, f)
+			laws.monadLeftIdentity(a, f).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monad right identity") {
 		forAll { (ma: M[Int]) =>
-			laws.monadRightIdentity(ma)
+			laws.monadRightIdentity(ma).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monad associativity") {
 		forAll { (ma: M[Int], f: Int => M[String], g: String => M[Long]) =>
-			laws.monadAssociativity(ma, f, g)
+			laws.monadAssociativity(ma, f, g).isEqual shouldBe true
 		}
 	}
 }
@@ -45,7 +45,10 @@ abstract class AbstractMonadLawsSpec[M[_]](override val name: String)
 																	 override val arbIntToStringInstance: Arbitrary[M[Int => String]],
 																	 override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
 																	 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]],
-																	 override val arbStringToLongInstance: Arbitrary[M[String => Long]])
+																	 override val arbStringToLongInstance: Arbitrary[M[String => Long]],
+																	 override val eqInt: Equals[M[Int]],
+																	 override val eqLong: Equals[M[Long]],
+																	 override val eqString: Equals[M[String]])
 	extends MonadLawsSpec[M]
 
 class ListMonadSpec extends AbstractMonadLawsSpec[List]("List")

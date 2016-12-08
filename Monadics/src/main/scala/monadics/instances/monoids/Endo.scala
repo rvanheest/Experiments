@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 case class Endo[A](endo: A => A)(implicit monoid: Monoid[Endo[A]]) {
 
@@ -11,6 +11,10 @@ case class Endo[A](endo: A => A)(implicit monoid: Monoid[Endo[A]]) {
 
 object Endo {
   def empty[A](implicit monoid: Monoid[Endo[A]]): Endo[A] = monoid.empty
+
+  implicit def endoIsEquals[A](implicit fEquals: Equals[A => A]): Equals[Endo[A]] = {
+    Equals.create { case (Endo(e1), Endo(e2)) => fEquals.equals(e1, e2) }
+  }
 
   implicit def endoIsMonoid[A]: Monoid[Endo[A]] = {
     Monoid.create(Endo(identity[A])) {

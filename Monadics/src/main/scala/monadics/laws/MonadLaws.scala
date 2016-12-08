@@ -9,18 +9,18 @@ trait MonadLaws[M[_]] extends ApplicativeLaws[M] {
 	implicit val instance: Monad[M]
 
 	// return a >>= k == k a
-	def monadLeftIdentity[A, B](a: A, f: A => M[B]): Boolean = {
-		instance.flatMap(instance.create(a))(f) == f(a)
+	def monadLeftIdentity[A, B](a: A, f: A => M[B]): IsEquals[M[B]] = {
+		instance.flatMap(instance.create(a))(f) === f(a)
 	}
 
 	// m >>= return == m
-	def monadRightIdentity[A](ma: M[A]): Boolean = {
-		instance.flatMap(ma)(a => instance.create(a)) == ma
+	def monadRightIdentity[A](ma: M[A]): IsEquals[M[A]] = {
+		instance.flatMap(ma)(a => instance.create(a)) === ma
 	}
 
 	// m >>= (\x -> k x >>= h) == (m >>= k) >>= h
-	def monadAssociativity[A, B, C](ma: M[A], f: A => M[B], g: B => M[C]): Boolean = {
-		instance.flatMap(instance.flatMap(ma)(f))(g) == instance.flatMap(ma)(a => instance.flatMap(f(a))(b => g(b)))
+	def monadAssociativity[A, B, C](ma: M[A], f: A => M[B], g: B => M[C]): IsEquals[M[C]] = {
+		instance.flatMap(instance.flatMap(ma)(f))(g) === instance.flatMap(ma)(a => instance.flatMap(f(a))(b => g(b)))
 	}
 }
 

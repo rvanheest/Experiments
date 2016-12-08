@@ -3,11 +3,11 @@ package monadics.test.laws
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
+import monadics.instances.monoids.values._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
-import monadics.instances.monoids.values.stringIsMonoid
 import monadics.laws.FunctorLaws
-import monadics.structures.Functor
+import monadics.structures.{Equals, Functor}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
@@ -17,25 +17,29 @@ trait FunctorLawsSpec[F[_]] extends LawSpec {
 
 	implicit val instance: Functor[F]
 	implicit val arbIntInstance: Arbitrary[F[Int]]
+	implicit val eqInt: Equals[F[Int]]
+	implicit val eqLong: Equals[F[Long]]
 
 	val laws: FunctorLaws[F] = FunctorLaws[F]
 
 	property(s"$name - identity") {
 		forAll { (xs: F[Int]) =>
-			laws.functorIdentity(xs)
+			laws.functorIdentity(xs).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - composition") {
 		forAll { (xs: F[Int], f: Int => String, g: String => Long) =>
-			laws.functorComposition(xs, f, g)
+			laws.functorComposition(xs, f, g).isEqual shouldBe true
 		}
 	}
 }
 
 abstract class AbstractFunctorLawsSpec[F[_]](override val name: String)
-																		(implicit override val instance: Functor[F],
-																		 override val arbIntInstance: Arbitrary[F[Int]])
+																						(implicit override val instance: Functor[F],
+																						 override val arbIntInstance: Arbitrary[F[Int]],
+																						 override val eqInt: Equals[F[Int]],
+																						 override val eqLong: Equals[F[Long]])
 	extends FunctorLawsSpec[F]
 
 class ListFunctorSpec extends AbstractFunctorLawsSpec[List]("List")

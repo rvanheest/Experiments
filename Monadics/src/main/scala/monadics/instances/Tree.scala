@@ -1,6 +1,8 @@
 package monadics.instances
 
-import monadics.structures.Monad
+import monadics.structures.{Equals, Monad}
+
+import scala.annotation.tailrec
 
 sealed abstract class Tree[A](implicit monad: Monad[Tree]) {
 	def map[B](f: A => B): Tree[B] = monad.map(this)(f)
@@ -13,6 +15,26 @@ sealed abstract class Tree[A](implicit monad: Monad[Tree]) {
 }
 
 object Tree {
+
+	implicit def treeIsEquals[A](implicit aEquals: Equals[A]): Equals[Tree[A]] = new Equals[Tree[A]] {
+		def equals(x: Tree[A], y: Tree[A]) = {
+
+			@tailrec
+			def rec(todo: List[(Tree[A], Tree[A])], acc: Boolean = true): Boolean = {
+				if (acc)
+					todo match {
+						case Nil => acc
+						case (Leaf(a), Leaf(b)) :: tail => rec(tail, acc && aEquals.equals(a, b))
+						case (Branch(l1, r1), Branch(l2, r2)) :: tail => rec((l1, l2) :: (r1, r2) :: tail, acc)
+						case _ => false
+					}
+				else
+					false
+			}
+
+			rec(List((x, y)))
+		}
+	}
 
 	implicit val treeIsMonad: Monad[Tree] = new Monad[Tree] {
 		def create[A](a: A) = Leaf(a)

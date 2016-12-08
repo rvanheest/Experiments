@@ -6,7 +6,7 @@ import monadics.instances.monoids.values._
 import monadics.instances.monoids._
 import monadics.instances.option._
 import monadics.laws.MonoidLaws
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 import org.scalacheck.Arbitrary
 
 trait MonoidLawsSpec[M] extends SemigroupLawsSpec[M] {
@@ -18,20 +18,21 @@ trait MonoidLawsSpec[M] extends SemigroupLawsSpec[M] {
 
   property(s"$name - right identity") {
     forAll { (a: M) =>
-      laws.combineRightIdentity(a)
+      laws.combineRightIdentity(a).isEqual shouldBe true
     }
   }
 
   property(s"$name - left identity") {
     forAll { (a: M) =>
-      laws.combineLeftIdentity(a)
+      laws.combineLeftIdentity(a).isEqual shouldBe true
     }
   }
 }
 
 abstract class AbstractMonoidLawsSpec[M](override val name: String)
                                         (implicit override val instance: Monoid[M],
-                                         override val arbInstance: Arbitrary[M])
+                                         override val arbInstance: Arbitrary[M],
+                                         override val eqS: Equals[M])
   extends MonoidLawsSpec[M]
 
 class ByteMonoidSpec extends AbstractMonoidLawsSpec[Byte]("Byte")

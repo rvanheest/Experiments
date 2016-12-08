@@ -9,18 +9,18 @@ trait AlternativeLaws[Alt[_]] extends ApplicativeLaws[Alt] {
 	implicit val instance: Alternative[Alt]
 
 	// empty <|> x == x
-	def alternativeLeftEmpty[A](altA: Alt[A]): Boolean = {
-		instance.orElse(instance.empty, altA) == altA
+	def alternativeLeftEmpty[A](altA: Alt[A]): IsEquals[Alt[A]] = {
+		instance.orElse(instance.empty[A], altA) === altA
 	}
 
 	// x <|> empty == x
-	def alternativeRightEmpty[A](altA: Alt[A]): Boolean = {
-		instance.orElse(altA, instance.empty) == altA
+	def alternativeRightEmpty[A](altA: Alt[A]): IsEquals[Alt[A]] = {
+		instance.orElse(altA, instance.empty[A]) === altA
 	}
 
 	// (x <|> y) <|> z == x <|> (y <|> z)
-	def alternativeAssociativity[A, B >: A, C >: B](altA: Alt[A], altB: Alt[B], altC: Alt[C]): Boolean = {
-		instance.orElse(instance.orElse(altA, altB), altC) == instance.orElse(altA, instance.orElse(altB, altC))
+	def alternativeAssociativity[A, B >: A, C >: B](altA: Alt[A], altB: Alt[B], altC: Alt[C]): IsEquals[Alt[C]] = {
+		instance.orElse(instance.orElse(altA, altB), altC) === instance.orElse(altA, instance.orElse(altB, altC))
 	}
 }
 

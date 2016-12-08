@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Monad, MonadPlus, MonadTrans}
+import monadics.structures.{Equals, Monad, MonadPlus, MonadTrans}
 
 import scala.language.{higherKinds, reflectiveCalls}
 
@@ -38,6 +38,10 @@ object OptionT {
 
 	def apply[M[+_], A](trans: M[Option[A]])(implicit monad: MonadPlus[OptionT[M, ?]]): OptionT[M, A] = {
 		new OptionT(trans)
+	}
+
+	implicit def optionTIsEquals[M[+_], A](implicit mEquals: Equals[M[Option[A]]]): Equals[OptionT[M, A]] = {
+		Equals.create((o1, o2) => mEquals.equals(o1.get, o2.get))
 	}
 
 	implicit def optionTIsMonadPlus[M[+_]](implicit monad: Monad[M]): MonadPlus[OptionT[M, ?]] = new MonadPlus[OptionT[M, ?]] {
