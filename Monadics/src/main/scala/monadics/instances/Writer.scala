@@ -4,11 +4,13 @@ import monadics.structures._
 
 import scala.language.higherKinds
 
-case class Writer[W, A](run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]) {
+class Writer[W, A](tuple: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]) {
 
-  def value: A = run._1
+  def run: (A, W) = tuple
 
-  def log: W = run._2
+  def value: A = tuple._1
+
+  def log: W = tuple._2
 
   def map[B](f: A => B): Writer[W, B] = monad.map(this)(f)
 

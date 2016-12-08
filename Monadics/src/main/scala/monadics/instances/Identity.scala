@@ -2,7 +2,7 @@ package monadics.instances
 
 import monadics.structures.{Equals, Monad}
 
-case class Identity[A](private val id: A)(implicit monad: Monad[Identity]) {
+class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
 	def run: A = id
 
@@ -23,22 +23,13 @@ case class Identity[A](private val id: A)(implicit monad: Monad[Identity]) {
 	def thenAnd[B](other: Identity[B]): Identity[A] = monad.thenAnd(this, other)
 
 	def flatten[B](implicit ev: A <:< Identity[B]): Identity[B] = monad.flatten(this)(ev)
-
-//	override def equals(obj: scala.Any) = {
-//		obj match {
-//			case that: Identity[A] => this.run == that.run
-//			case _ => false
-//		}
-//	}
-//
-//	override def toString = s"Identity($id)"
 }
 
 object Identity {
 
-//	def apply[A](a: A)(implicit monad: Monad[Identity]): Identity[A] = {
-//		new Identity(a)
-//	}
+	def apply[A](a: A)(implicit monad: Monad[Identity]): Identity[A] = {
+		new Identity(a)
+	}
 
 	implicit def identityIsEquals[A](implicit aEquals: Equals[A]): Equals[Identity[A]] = {
 		Equals.create((id1, id2) => aEquals.equals(id1.run, id2.run))
