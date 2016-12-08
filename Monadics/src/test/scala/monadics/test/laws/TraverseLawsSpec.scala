@@ -3,10 +3,10 @@ package monadics.test.laws
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
-import monadics.instances.monoids.values.stringIsMonoid
+import monadics.instances.monoids.values._
 import monadics.instances.option._
 import monadics.laws.TraverseLaws
-import monadics.structures.Traverse
+import monadics.structures.{Equals, Traverse}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
@@ -23,25 +23,25 @@ trait TraverseLawsSpec[T[_]] extends FunctorLawsSpec[T] {
 
   property(s"$name - traverse identity") {
     forAll { (xs: T[Int]) =>
-      laws.traverseIdentity(xs) shouldBe true
+      laws.traverseIdentity(xs).isEqual shouldBe true
     }
   }
 
   property(s"$name - traverse composition") {
     forAll(sizeRange(10)) { (xs: T[Int], g: String => Option[Long], f: Int => List[String]) =>
-      laws.traverseComposition(xs, g, f) shouldBe true
+      laws.traverseComposition(xs, g, f).isEqual shouldBe true
     }
   }
 
   property(s"$name - sequence identity") {
     forAll { (xs: T[Int]) =>
-      laws.sequenceIdentity(xs) shouldBe true
+      laws.sequenceIdentity(xs).isEqual shouldBe true
     }
   }
 
   property(s"$name - sequence composition") {
     forAll(sizeRange(10)) { (xs: T[List[Option[Int]]]) =>
-      laws.sequenceComposition(xs) shouldBe true
+      laws.sequenceComposition(xs).isEqual shouldBe true
     }
   }
 }
@@ -51,7 +51,9 @@ abstract class AbstractTraverseLawsSpec[T[_]](override val name: String)
                                               override val arbIntInstance: Arbitrary[T[Int]],
                                               override val arbListOfOptionOfInt: Arbitrary[T[List[Option[Int]]]],
                                               override val arbStringToOptionOfLong: Arbitrary[String => Option[Long]],
-                                              override val arbIntToListOfString: Arbitrary[Int => List[String]])
+                                              override val arbIntToListOfString: Arbitrary[Int => List[String]],
+                                              override val eqInt: Equals[T[Int]],
+                                              override val eqLong: Equals[T[Long]])
   extends TraverseLawsSpec[T]
 
 class ListTraverseSpec extends AbstractTraverseLawsSpec[List]("List")

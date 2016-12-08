@@ -1,7 +1,7 @@
 package monadics.laws
 
 import monadics.instances.Identity
-import monadics.structures.{Applicative, Functor, Traverse}
+import monadics.structures.{Applicative, Equals, Functor, Traverse}
 
 import scala.language.higherKinds
 
@@ -10,27 +10,27 @@ trait TraverseLaws[T[_]] extends FunctorLaws[T] {
   implicit val instance: Traverse[T]
 
   // traverse Identity = Identity
-  def traverseIdentity[A](ta: T[A]): Boolean = {
-    instance.traverse(ta)(Identity(_)) == Identity(ta)
+  def traverseIdentity[A](ta: T[A]): IsEquals[Identity[T[A]]] = {
+    instance.traverse(ta)(Identity(_)) === Identity(ta)
   }
 
   // traverse (Compose . fmap g . f) = Compose . fmap (traverse g) . traverse f
-  def traverseComposition[F[_], G[_], A, B, C](ta: T[A], g: B => G[C], f: A => F[B])(implicit gApp: Applicative[G], fApp: Applicative[F]): Boolean = {
+  def traverseComposition[F[_], G[_], A, B, C](ta: T[A], g: B => G[C], f: A => F[B])(implicit gApp: Applicative[G], fApp: Applicative[F]): IsEquals[Compose[F, G, T[C]]] = {
     val c1 = instance.traverse[Compose[F, G, ?], A, C](ta)((a: A) => Compose[F, G, C](fApp.map(f(a))(g)))
     val c2 = Compose[F, G, T[C]](fApp.map(instance.traverse(ta)(f))(instance.traverse(_)(g)))
-    c1 == c2
+    c1 === c2
   }
 
   // sequenceA . fmap Identity = Identity
-  def sequenceIdentity[A](ta: T[A]): Boolean = {
-    instance.sequence(instance.map(ta)(Identity(_))) == Identity(ta)
+  def sequenceIdentity[A](ta: T[A]): IsEquals[Identity[T[A]]] = {
+    instance.sequence(instance.map(ta)(Identity(_))) === Identity(ta)
   }
 
   // sequenceA . fmap Compose = Compose . fmap sequenceA . sequenceA
-  def sequenceComposition[F[_], G[_], A](ta: T[F[G[A]]])(implicit gApp: Applicative[G], fApp: Applicative[F]): Boolean = {
+  def sequenceComposition[F[_], G[_], A](ta: T[F[G[A]]])(implicit gApp: Applicative[G], fApp: Applicative[F]): IsEquals[Compose[F, G, T[A]]] = {
     val c1 = instance.sequence[Compose[F, G, ?], A](instance.map(ta)(Compose[F, G, A]))
     val c2 = Compose[F, G, T[A]](fApp.map(instance.sequence[F[?], G[A]](ta))(instance.sequence[G[?], A]))
-    c1 == c2
+    c1 === c2
   }
 
   // TODO make into separate class ???
@@ -41,6 +41,10 @@ trait TraverseLaws[T[_]] extends FunctorLaws[T] {
   }
 
   object Compose {
+    implicit def composeIsEquals[F[_], G[_], A](implicit fgaEquals: Equals[F[G[A]]]): Equals[Compose[F, G, A]] = {
+      Equals.create { case (Compose(c1), Compose(c2)) => fgaEquals.equals(c1, c2) }
+    }
+
     implicit def composeIsApplicative[F[_], G[_]](implicit fEv: Applicative[F], gEv: Applicative[G]): Applicative[Compose[F, G, ?]] = new Applicative[Compose[F, G, ?]] {
       override def create[A](a: A): Compose[F, G, A] = {
         Compose[F, G, A](fEv.create(gEv.create(a)))
