@@ -3,9 +3,9 @@ package monadics.test.laws
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
+import monadics.instances.monoids.values.stringIsMonoid
 import monadics.instances.option._
 import monadics.instances.tryMonad._
-import monadics.instances.monoids.values.stringIsMonoid
 import monadics.laws.FunctorLaws
 import monadics.structures.Functor
 import org.scalacheck.Arbitrary
@@ -20,13 +20,13 @@ trait FunctorLawsSpec[F[_]] extends LawSpec {
 
 	val laws: FunctorLaws[F] = FunctorLaws[F]
 
-	property(s"$name - identity") {
+	property(s"$name - functor identity") {
 		forAll { (xs: F[Int]) =>
 			laws.functorIdentity(xs)
 		}
 	}
 
-	property(s"$name - composition") {
+	property(s"$name - functor composition") {
 		forAll { (xs: F[Int], f: Int => String, g: String => Long) =>
 			laws.functorComposition(xs, f, g)
 		}

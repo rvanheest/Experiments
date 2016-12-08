@@ -4,7 +4,7 @@ import monadics.structures.{Applicative, Monad, Monoid, Traverse}
 
 import scala.language.higherKinds
 
-class Writer[W, A](val run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]) {
+case class Writer[W, A](run: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]) {
 
   def value: A = run._1
 

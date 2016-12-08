@@ -3,9 +3,9 @@ package monadics.test.laws
 import monadics.instances._
 import monadics.instances.either._
 import monadics.instances.list._
+import monadics.instances.monoids.values.stringIsMonoid
 import monadics.instances.option._
 import monadics.instances.tryMonad._
-import monadics.instances.monoids.values.stringIsMonoid
 import monadics.laws.ApplicativeLaws
 import monadics.structures.Applicative
 import org.scalacheck.Arbitrary
@@ -44,12 +44,11 @@ trait ApplicativeLawsSpec[App[_]] extends FunctorLawsSpec[App] {
 		}
 	}
 
-	// TODO takes too long...
-//	property(s"$name - applicative composition") {
-//		forAll { (appAToB: App[String => Long], appCToA: App[Int => String], appC: App[Int]) =>
-//			laws.applicativeComposition(appAToB, appCToA, appC)
-//		}
-//	}
+	property(s"$name - applicative composition") {
+		forAll(sizeRange(20)) { (appAToB: App[String => Long], appCToA: App[Int => String], appC: App[Int]) =>
+			laws.applicativeComposition(appAToB, appCToA, appC)
+		}
+	}
 }
 
 abstract class AbstractApplicativeLawsSpec[App[_]](override val name: String)
