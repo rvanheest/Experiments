@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 case class First[A](first: Option[A])(implicit monoid: Monoid[First[A]]) {
 
@@ -11,6 +11,10 @@ case class First[A](first: Option[A])(implicit monoid: Monoid[First[A]]) {
 
 object First {
   def empty[A](implicit monoid: Monoid[First[A]]): First[A] = monoid.empty
+
+  implicit def firstIsEquals[A](implicit aEquals: Equals[Option[A]]): Equals[First[A]] = {
+    Equals.create { case (First(a1), First(a2)) => aEquals.equals(a1, a2) }
+  }
 
   implicit def firstIsMonoid[A]: Monoid[First[A]] = {
     Monoid.create(First(Option.empty[A])) {

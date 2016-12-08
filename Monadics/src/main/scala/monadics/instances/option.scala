@@ -6,6 +6,12 @@ import scala.language.higherKinds
 
 trait option {
 
+  implicit def optionEquals[A](implicit aEquals: Equals[A]): Equals[Option[A]] = Equals.create({
+      case (None, None) => true
+      case (Some(x), Some(y)) => aEquals.equals(x, y)
+      case (_, _) => false
+    })
+
   implicit def optionOfSemigroupIsMonoid[A](implicit monoid: Semigroup[A]): Monoid[Option[A]] = Monoid.create(Option.empty[A]) {
     case (None, None) => None
     case (a@Some(_), None) => a

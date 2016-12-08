@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 case class Sum[A](sum: A)(implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) {
 
@@ -12,6 +12,10 @@ case class Sum[A](sum: A)(implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) 
 object Sum {
   def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]): Sum[A] = {
     monoid.empty
+  }
+
+  implicit def sumIsEquals[A](implicit aEquals: Equals[A]): Equals[Sum[A]] = {
+    Equals.create { case (Sum(a1), Sum(a2)) => aEquals.equals(a1, a2) }
   }
 
   implicit def sumIsMonoid[A](implicit numeric: Numeric[A]): Monoid[Sum[A]] = {

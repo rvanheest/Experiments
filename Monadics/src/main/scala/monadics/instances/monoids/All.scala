@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.Monoid
+import monadics.structures.{Equals, Monoid}
 
 case class All(all: Boolean)(implicit monoid: Monoid[All]) {
 
@@ -11,6 +11,10 @@ case class All(all: Boolean)(implicit monoid: Monoid[All]) {
 
 object All {
   def empty(implicit monoid: Monoid[All]): All = monoid.empty
+
+  implicit def allIsEquals(implicit aEquals: Equals[Boolean]): Equals[All] = {
+    Equals.create { case (All(x), All(y)) => aEquals.equals(x, y) }
+  }
 
   implicit def anyIsMonoid: Monoid[All] = {
     Monoid.create(All(all = true)) {

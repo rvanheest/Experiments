@@ -4,8 +4,9 @@ import monadics.instances._
 import monadics.instances.list._
 import monadics.instances.option._
 import monadics.instances.tryMonad._
+import monadics.instances.monoids.values._
 import monadics.laws.MonadPlusLaws
-import monadics.structures.MonadPlus
+import monadics.structures.{Equals, MonadPlus}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
@@ -18,31 +19,31 @@ trait MonadPlusLawsSpec[MP[_]] extends MonadLawsSpec[MP] {
 
 	property(s"$name - monadplus left empty") {
 		forAll { (mp: MP[Int]) =>
-			laws.monadPlusLeftEmpty(mp)
+			laws.monadPlusLeftEmpty(mp).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monadPlus right empty") {
 		forAll { (mp: MP[Int]) =>
-			laws.monadPlusRightEmpty(mp)
+			laws.monadPlusRightEmpty(mp).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monadPlus associativity") {
 		forAll { (mpA: MP[Int], mpB: MP[Int], mpC: MP[Int]) =>
-			laws.monadPlusAssociativity(mpA, mpB, mpC)
+			laws.monadPlusAssociativity(mpA, mpB, mpC).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monadPlus empty flatMap") {
 		forAll { (f: Int => MP[String]) =>
-			laws.monadPlusEmptyFlatMap(f)
+			laws.monadPlusEmptyFlatMap(f).isEqual shouldBe true
 		}
 	}
 
 	property(s"$name - monadPlus andThen empty") {
 		forAll { (altA: MP[Int]) =>
-			laws.monadPlusAndThenEmpty(altA)
+			laws.monadPlusAndThenEmpty(altA).isEqual shouldBe true
 		}
 	}
 }
@@ -53,11 +54,13 @@ abstract class AbstractMonadPlusLawsSpec[MP[_]](override val name: String)
 																				override val arbIntToStringInstance: Arbitrary[MP[Int => String]],
 																				override val arbIntToMonadStringInstance: Arbitrary[Int => MP[String]],
 																				override val arbStringToMonadLongInstance: Arbitrary[String => MP[Long]],
-																				override val arbStringToLongInstance: Arbitrary[MP[String => Long]])
+																				override val arbStringToLongInstance: Arbitrary[MP[String => Long]],
+																				override val eqInt: Equals[MP[Int]],
+																				override val eqLong: Equals[MP[Long]],
+																				override val eqString: Equals[MP[String]])
 	extends MonadPlusLawsSpec[MP]
 
 class ListMonadPlusSpec extends AbstractMonadPlusLawsSpec[List]("List")
 class OptionMonadPlusSpec extends AbstractMonadPlusLawsSpec[Option]("Option")
-class TryMonadPlusSpec extends AbstractMonadPlusLawsSpec[Try]("Try")
 class OptionTMonadPlusSpec extends AbstractMonadPlusLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
 class StateTMonadPlusSpec extends AbstractMonadPlusLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")

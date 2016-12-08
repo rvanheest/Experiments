@@ -9,9 +9,9 @@ trait MonadFailLaws[M[_]] extends MonadLaws[M] {
   implicit val instance: MonadFail[M]
 
   // fail s >>= f == fail s
-  def monadFailLeftZero[A, B](s: String, f: A => M[B]): Boolean = {
+  def monadFailLeftZero[A, B](s: String, f: A => M[B]): IsEquals[M[B]] = {
     val ex = instance.fail(s)
-    instance.flatMap(ex)(f) == ex
+    instance.flatMap(ex)(f) === ex.asInstanceOf[M[B]]
   }
 }
 

@@ -65,6 +65,13 @@ object NonEmptyList {
     new NonEmptyList(head, tail.toList)
   }
 
+  implicit def NELisEquals[A](implicit aEquals: Equals[A], listEquals: Equals[List[A]]): Equals[NonEmptyList[A]] = {
+    Equals.create {
+      case (NonEmptyList(h1, Nil), NonEmptyList(h2, Nil)) => aEquals.equals(h1, h2)
+      case (NonEmptyList(h1, t1), NonEmptyList(h2, t2)) => aEquals.equals(h1, h2) && listEquals.equals(t1, t2)
+    }
+  }
+
   implicit def NELisSemigroup[A]: Semigroup[NonEmptyList[A]] = Semigroup.create {
     (a1, a2) => NonEmptyList(a1.head, a1.tail ++ (a2.head :: a2.tail))
   }
@@ -85,12 +92,12 @@ object NonEmptyList {
 
     override def foldLeft[A, B](nel: NonEmptyList[A], z: => B)(f: (=> B, A) => B): B = {
       val NonEmptyList(x, xs) = nel
-      xs.foldLeft(f(z, x))(f(_, _))
+      xs.foldLeft(f(z, x))((b, a) => f(b, a))
     }
 
     override def foldRight[A, B](nel: NonEmptyList[A], z: => B)(f: (A, => B) => B): B = {
       val NonEmptyList(x, xs) = nel
-      f(x, xs.foldRight(z)(f(_, _)))
+      f(x, xs.foldRight(z)((a, b) => f(a, b)))
     }
 
     override def toList[A](nel: NonEmptyList[A]): List[A] = nel.head :: nel.tail

@@ -1,6 +1,6 @@
 package monadics.instances.monoids
 
-import monadics.structures.{Alternative, Monoid}
+import monadics.structures.{Alternative, Equals, Monoid}
 
 import scala.language.higherKinds
 
@@ -14,6 +14,10 @@ case class Alt[F[_], A](alt: F[A])(implicit monoid: Monoid[Alt[F, A]], alternati
 object Alt {
   def empty[F[_], A](implicit monoid: Monoid[Alt[F, A]], alternative: Alternative[F]): Alt[F, A] = {
     monoid.empty
+  }
+
+  implicit def altIsEquals[F[_], A](implicit aEquals: Equals[F[A]]): Equals[Alt[F, A]] = {
+    Equals.create { case (Alt(x), Alt(y)) => aEquals.equals(x, y) }
   }
 
   implicit def altIsMonoid[F[_], A](implicit alternative: Alternative[F]): Monoid[Alt[F, A]] = {

@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.Monad
+import monadics.structures.{Equals, Monad}
 
 class Continuation[R, A](c: (A => R) => R)(implicit monad: Monad[Continuation[R, ?]]) {
 
@@ -20,6 +20,10 @@ object Continuation {
   }
 
   def apply[R, A](a: A)(implicit monad: Monad[Continuation[R, ?]]): Continuation[R, A] = monad.create(a)
+
+  implicit def continuationIsEquals[R, A](implicit fEquals: Equals[(A => R) => R]): Equals[Continuation[R, A]] = {
+    Equals.create((r1, r2) => fEquals.equals(r1.run, r2.run))
+  }
 
   implicit def continuationIsMonad[R]: Monad[Continuation[R, ?]] = new Monad[Continuation[R, ?]] {
     def create[A](a: A): Continuation[R, A] = new Continuation(_(a))

@@ -6,6 +6,10 @@ import scala.language.higherKinds
 
 trait list {
 
+  implicit def listIsEquals[A](implicit aEquals: Equals[A]): Equals[List[A]] = {
+    Equals.create((xs, ys) => xs.size == ys.size && xs.zip(ys).forall((aEquals.equals _).tupled))
+  }
+
   implicit def listIsMonoid[A]: Monoid[List[A]] = Monoid.create[List[A]](Nil)(_ ++ _)
 
   implicit val listIsMonadPlus = new MonadPlus[List] with MonadFail[List] with Traverse[List] {

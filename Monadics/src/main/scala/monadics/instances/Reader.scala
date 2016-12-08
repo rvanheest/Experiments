@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.Monad
+import monadics.structures.{Equals, Monad}
 
 import scala.language.implicitConversions
 
@@ -18,6 +18,10 @@ class Reader[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]) {
 object Reader {
 
   implicit def readerIsFunction[R, A](reader: Reader[R, A]): R => A = reader.run
+
+  implicit def readerIsEquals[R, A](implicit fEquals: Equals[R => A]): Equals[Reader[R, A]] = {
+    Equals.create((r1, r2) => fEquals.equals(r1.run, r2.run))
+  }
 
   implicit def readerIsMonad[R]: Monad[Reader[R, ?]] = new Monad[Reader[R, ?]] {
     def create[A](a: A): Reader[R, A] = new Reader(_ => a)

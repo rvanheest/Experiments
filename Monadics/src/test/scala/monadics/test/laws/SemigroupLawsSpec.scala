@@ -8,26 +8,28 @@ import monadics.instances.monoids._
 import monadics.instances.monoids.values._
 import monadics.instances.option._
 import monadics.laws.SemigroupLaws
-import monadics.structures.Semigroup
+import monadics.structures.{Equals, Semigroup}
 import org.scalacheck.Arbitrary
 
 trait SemigroupLawsSpec[S] extends LawSpec {
 
   implicit val instance: Semigroup[S]
   implicit val arbInstance: Arbitrary[S]
+  implicit val eqS: Equals[S]
 
   val laws: SemigroupLaws[S] = SemigroupLaws[S]
 
   property(s"$name - associativity") {
     forAll { (a: S, b: S, c: S) =>
-      laws.associativity(a, b, c)
+      laws.associativity(a, b, c).isEqual shouldBe true
     }
   }
 }
 
 abstract class AbstractSemigroupLawsSpec[S](override val name: String)
                                            (implicit override val instance: Semigroup[S],
-                                            override val arbInstance: Arbitrary[S])
+                                            override val arbInstance: Arbitrary[S],
+                                            override val eqS: Equals[S])
   extends SemigroupLawsSpec[S]
 
 class ByteSemigroupSpec extends AbstractSemigroupLawsSpec[Byte]("Byte")
