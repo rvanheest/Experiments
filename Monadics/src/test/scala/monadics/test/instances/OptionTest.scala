@@ -85,6 +85,30 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
+  property("option applicative should appy the function in the left value to the value on the right") {
+    import monadics.instances.option._
+
+    forAll { (x: Int, f: Int => String) =>
+      Option(f) <*> Option(x) shouldBe Option(f(x))
+    }
+  }
+
+  property("option applicative is empty when the function value is empty") {
+    import monadics.instances.option._
+
+    forAll { (x: Int) =>
+      Option.empty[Int => String] <*> Option(x) shouldBe Option.empty[String]
+    }
+  }
+
+  property("option applicative is empty when the right value is empty") {
+    import monadics.instances.option._
+
+    forAll { (f: Int => String) =>
+      Option(f) <*> Option.empty[Int] shouldBe Option.empty[String]
+    }
+  }
+
   property("option traverse should invert the Option and List") {
     import monadics.instances.option._
     import monadics.instances.list._

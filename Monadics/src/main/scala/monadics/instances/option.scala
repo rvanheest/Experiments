@@ -68,6 +68,8 @@ trait option {
 
     def zipWith[B](f: A => B): Option[(A, B)] = monadTraverse.zipWith(option)(f)
 
+    def <*>[B, C](other: Option[B])(implicit ev: Option[A] <:< Option[(B => C)]): Option[C] = monadTraverse.<*>(option, other)
+
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
       monadTraverse.traverse(option)(f)
     }

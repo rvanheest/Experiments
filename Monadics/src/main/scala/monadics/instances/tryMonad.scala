@@ -2,6 +2,7 @@ package monadics.instances
 
 import monadics.structures._
 
+import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
 trait tryMonad {
@@ -25,7 +26,7 @@ trait tryMonad {
     }
   }
 
-  implicit val tryIsMonadPlusAndMonadFail = new MonadFail[Try] {
+  implicit val tryIsMonadPlusAndMonadFail = new MonadFail[Try] with Traverse[Try] {
     def create[A](a: A): Try[A] = Try(a)
 
     def fail[A](e: Throwable): Try[A] = Failure(e)
@@ -36,6 +37,20 @@ trait tryMonad {
 
     def flatMap[A, B](monad: Try[A])(f: A => Try[B]): Try[B] = {
       monad.flatMap(f)
+    }
+
+    def traverse[G[_], A, B](fa: Try[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Try[B]] = {
+      fa match {
+        case Success(a) => applicative.map(f(a))(Success(_))
+        case Failure(e) => applicative.create(Failure(e))
+      }
+    }
+
+    override def sequence[G[_], A](fa: Try[G[A]])(implicit applicative: Applicative[G]): G[Try[A]] = {
+      fa match {
+        case Success(ga) => applicative.map(ga)(Try(_))
+        case Failure(e) => applicative.create(Failure(e))
+      }
     }
   }
 

@@ -5,11 +5,13 @@ import monadics.instances.either._
 import monadics.instances.list._
 import monadics.instances.monoids.values._
 import monadics.instances.option._
+import monadics.instances.tryMonad._
 import monadics.laws.TraverseLaws
 import monadics.structures.{Equals, Traverse}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
+import scala.util.Try
 
 trait TraverseLawsSpec[T[_]] extends FunctorLawsSpec[T] {
 
@@ -58,6 +60,7 @@ abstract class AbstractTraverseLawsSpec[T[_]](override val name: String)
 
 class ListTraverseSpec extends AbstractTraverseLawsSpec[List]("List")
 class OptionTraverseSpec extends AbstractTraverseLawsSpec[Option]("Option")
+class TryTraverseSpec extends AbstractTraverseLawsSpec[Try]("Try")
 class EitherTraverseSpec extends AbstractTraverseLawsSpec[Either[Int, ?]]("Either")
 class EitherLeftTraverseSpec extends AbstractTraverseLawsSpec[LeftEither[?, Int]]("LeftEither")
 class EitherRightTraverseSpec extends AbstractTraverseLawsSpec[RightEither[Int, ?]]("RightEither")
