@@ -1,11 +1,8 @@
 package monadics.test.instances
 
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
+class OptionTest extends InstanceSpec {
 
-class OptionTest extends PropSpec with PropertyChecks with Matchers {
-
-  property("option combine adds the inner values if both sides are not empty") {
+  property("option 'combine' adds the inner values if both sides are not empty") {
     import monadics.instances.option._
     import monadics.instances.monoids.values._
 
@@ -14,7 +11,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option combine returns the left value if the right value is empty") {
+  property("option 'combine' returns the left value if the right value is empty") {
     import monadics.instances.option._
     import monadics.instances.monoids.values._
 
@@ -23,7 +20,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option combine returns the right value if the left value is empty") {
+  property("option 'combine' returns the right value if the left value is empty") {
     import monadics.instances.option._
     import monadics.instances.monoids.values._
 
@@ -32,14 +29,14 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option combine returns an empty value if both values are empty") {
+  property("option 'combine' returns an empty value if both values are empty") {
     import monadics.instances.option._
     import monadics.instances.monoids.values._
 
     Option.empty[Int] combine Option.empty[Int] shouldBe Option.empty[Int]
   }
 
-  property("option as replaces the value with another value") {
+  property("option 'as' replaces the value with another value") {
     import monadics.instances.option._
 
     forAll { (x: Int, y: Int) =>
@@ -47,7 +44,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option as does not replace an empty value") {
+  property("option 'as' does not replace an empty value") {
     import monadics.instances.option._
 
     forAll { (x: Int) =>
@@ -55,7 +52,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option void replaces a value with ()") {
+  property("option 'void' replaces a value with ()") {
     import monadics.instances.option._
 
     forAll { (x: Int) =>
@@ -63,13 +60,13 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option void does not replace an empty value") {
+  property("option 'void' does not replace an empty value") {
     import monadics.instances.option._
 
     Option.empty.void shouldBe Option.empty
   }
 
-  property("option zipWith combines the value with applying the function in a tuple") {
+  property("option 'zipWith' combines the value with applying the function in a tuple") {
     import monadics.instances.option._
 
     forAll { (x: Int, f: Int => String) =>
@@ -77,7 +74,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option zipWith does not combines an empty value with a function") {
+  property("option 'zipWith' does not combines an empty value with a function") {
     import monadics.instances.option._
 
     forAll { (f: Int => String) =>
@@ -85,7 +82,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option applicative should appy the function in the left value to the value on the right") {
+  property("option 'applicative' should appy the function in the left value to the value on the right") {
     import monadics.instances.option._
 
     forAll { (x: Int, f: Int => String) =>
@@ -93,7 +90,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option applicative is empty when the function value is empty") {
+  property("option 'applicative' is empty when the function value is empty") {
     import monadics.instances.option._
 
     forAll { (x: Int) =>
@@ -101,7 +98,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option applicative is empty when the right value is empty") {
+  property("option 'applicative' is empty when the right value is empty") {
     import monadics.instances.option._
 
     forAll { (f: Int => String) =>
@@ -109,7 +106,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option traverse should invert the Option and List") {
+  property("option 'traverse' should invert the Option and List") {
     import monadics.instances.option._
     import monadics.instances.list._
 
@@ -118,7 +115,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option traverse should not invert when the value is empty") {
+  property("option 'traverse' should not invert when the value is empty") {
     import monadics.instances.option._
     import monadics.instances.list._
 
@@ -127,7 +124,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option sequence should invert the list in an option value") {
+  property("option 'sequence' should invert the list in an option value") {
     import monadics.instances.option._
     import monadics.instances.list._
 
@@ -136,7 +133,7 @@ class OptionTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("option sequence should not invert an empty option") {
+  property("option 'sequence' should not invert an empty option") {
     import monadics.instances.option._
     import monadics.instances.list._
 

@@ -57,7 +57,7 @@ trait option {
     }
   }
 
-  implicit class OptionMonoid[A: Semigroup](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {
+  implicit class OptionMonoid[A](val option: Option[A])(implicit monoid: Monoid[Option[A]]) {
     def combine(other: => Option[A]): Option[A] = monoid.combine(option, other)
   }
 

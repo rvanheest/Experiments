@@ -15,15 +15,8 @@ trait tryMonad {
     }
   }
 
-  implicit def tryOfSemigroupIsMonoid[A](implicit semigroup: Semigroup[A]): Semigroup[Try[A]] = new Monoid[Try[A]] {
-    override def empty: Try[A] = Failure(new NoSuchElementException("empty"))
-
-    override def combine(ta: Try[A], tb: => Try[A]): Try[A] = {
-      ta.map(a =>
-        tb.map(b => Try(semigroup.combine(a, b)))
-          .getOrElse(ta))
-        .getOrElse(tb)
-    }
+  implicit def tryOfSemigroupIsMonoid[A]: Semigroup[Try[A]] = new Semigroup[Try[A]] {
+    override def combine(ta: Try[A], tb: => Try[A]): Try[A] = ta.orElse(tb)
   }
 
   implicit val tryIsMonadPlusAndMonadFail = new MonadFail[Try] with Traverse[Try] {
@@ -31,17 +24,13 @@ trait tryMonad {
 
     def fail[A](e: Throwable): Try[A] = Failure(e)
 
-    override def map[A, B](functor: Try[A])(f: A => B): Try[B] = {
-      functor.map(f)
-    }
+    override def map[A, B](functor: Try[A])(f: A => B): Try[B] = functor.map(f)
 
-    def flatMap[A, B](monad: Try[A])(f: A => Try[B]): Try[B] = {
-      monad.flatMap(f)
-    }
+    def flatMap[A, B](monad: Try[A])(f: A => Try[B]): Try[B] = monad.flatMap(f)
 
     def traverse[G[_], A, B](fa: Try[A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Try[B]] = {
       fa match {
-        case Success(a) => applicative.map(f(a))(Success(_))
+        case Success(a) => applicative.map(f(a))(Try(_))
         case Failure(e) => applicative.create(Failure(e))
       }
     }
@@ -54,14 +43,24 @@ trait tryMonad {
     }
   }
 
-  implicit class TryMonadOperators[A](val t: Try[A])(implicit monad: Monad[Try]) {
-    def as[B](b: => B): Try[B] = monad.as(t, b)
+  implicit class TryMonoid[A](val t: Try[A])(implicit semigroup: Semigroup[Try[A]]) {
+    def combine(other: => Try[A]): Try[A] = semigroup.combine(t, other)
+  }
 
-    def void: Try[Unit] = monad.void(t)
+  implicit class TryMonadOperators[A](val t: Try[A])(implicit monadTraverse: Monad[Try] with Traverse[Try]) {
+    def as[B](b: => B): Try[B] = monadTraverse.as(t, b)
 
-    def zipWith[B](f: A => B): Try[(A, B)] = monad.zipWith(t)(f)
+    def void: Try[Unit] = monadTraverse.void(t)
 
-    def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monad.<*>(t, other)
+    def zipWith[B](f: A => B): Try[(A, B)] = monadTraverse.zipWith(t)(f)
+
+    def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monadTraverse.<*>(t, other)
+
+    def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Try[B]] = monadTraverse.traverse(t)(f)
+
+    def sequence[G[_], B](implicit ev: Try[A] <:< Try[G[B]], applicative: Applicative[G]): G[Try[B]] = {
+      monadTraverse.sequence(t)
+    }
   }
 }
 

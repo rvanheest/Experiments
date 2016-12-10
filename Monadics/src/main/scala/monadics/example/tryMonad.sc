@@ -1,5 +1,6 @@
 import monadics.instances.tryMonad._
 
+import scala.language.postfixOps
 import scala.util.{Failure, Try}
 
 val g: Int => String = _.toString
@@ -7,6 +8,8 @@ val s = Try(1)
 val sg = Try(g)
 val f = Failure[Int](new Exception("foobar"))
 val fg = Failure[Int => String](new Exception("foo"))
+
+s.combine(s.map(2 *))
 
 s.as("abc")
 f.as("abc")
