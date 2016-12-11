@@ -43,10 +43,6 @@ trait tryMonad {
     }
   }
 
-  implicit class TryMonoid[A](val t: Try[A])(implicit semigroup: Semigroup[Try[A]]) {
-    def combine(other: => Try[A]): Try[A] = semigroup.combine(t, other)
-  }
-
   implicit class TryMonadOperators[A](val t: Try[A])(implicit monadTraverse: Monad[Try] with Traverse[Try]) {
     def as[B](b: => B): Try[B] = monadTraverse.as(t, b)
 
