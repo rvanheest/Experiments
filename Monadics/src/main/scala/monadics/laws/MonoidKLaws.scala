@@ -8,12 +8,12 @@ trait MonoidKLaws[M[_]] extends SemigroupKLaws[M] {
 
   implicit val instance: MonoidK[M]
 
-  // mempty <> x = x
+  // empty <|> x = x
   def combineLeftIdentity[A](ma: M[A]): IsEquals[M[A]] = {
     instance.combine(instance.empty[A], ma) === ma
   }
 
-  // x <> mempty = x
+  // x <|> empty = x
   def combineRightIdentity[A](ma: M[A]): IsEquals[M[A]] = {
     instance.combine(ma, instance.empty[A]) === ma
   }

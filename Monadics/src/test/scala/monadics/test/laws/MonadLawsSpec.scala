@@ -40,15 +40,15 @@ trait MonadLawsSpec[M[_]] extends ApplicativeLawsSpec[M] {
 }
 
 abstract class AbstractMonadLawsSpec[M[_]](override val name: String)
-																	(implicit override val instance: Monad[M],
-																	 override val arbIntInstance: Arbitrary[M[Int]],
-																	 override val arbIntToStringInstance: Arbitrary[M[Int => String]],
-																	 override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
-																	 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]],
-																	 override val arbStringToLongInstance: Arbitrary[M[String => Long]],
-																	 override val eqInt: Equals[M[Int]],
-																	 override val eqLong: Equals[M[Long]],
-																	 override val eqString: Equals[M[String]])
+																					(implicit override val instance: Monad[M],
+																					 override val arbIntInstance: Arbitrary[M[Int]],
+																					 override val arbIntToStringInstance: Arbitrary[M[Int => String]],
+																					 override val arbIntToMonadStringInstance: Arbitrary[Int => M[String]],
+																					 override val arbStringToMonadLongInstance: Arbitrary[String => M[Long]],
+																					 override val arbStringToLongInstance: Arbitrary[M[String => Long]],
+																					 override val eqInt: Equals[M[Int]],
+																					 override val eqLong: Equals[M[Long]],
+																					 override val eqString: Equals[M[String]])
 	extends MonadLawsSpec[M]
 
 class ListMonadSpec extends AbstractMonadLawsSpec[List]("List")

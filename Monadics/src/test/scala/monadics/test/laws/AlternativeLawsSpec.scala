@@ -15,21 +15,21 @@ trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] with MonoidKL
 	override val laws: AlternativeLaws[Alt] = AlternativeLaws[Alt]
 	implicit val instance: Alternative[Alt]
 
-	property(s"$name - alternative left empty") {
-		forAll { (alt: Alt[Int]) =>
-			laws.alternativeLeftEmpty(alt).isEqual shouldBe true
+	property(s"$name - alternative right distributivity") {
+		forAll { (altA: Alt[Int], altF: Alt[Int => String], altG: Alt[Int => String]) =>
+			laws.alternativeRightDistributivity(altA, altF, altG).isEqual shouldBe true
 		}
 	}
 
-	property(s"$name - alternative right empty") {
-		forAll { (alt: Alt[Int]) =>
-			laws.alternativeRightEmpty(alt).isEqual shouldBe true
+	property(s"$name - alternative right absorption") {
+		forAll { (altF: Alt[Int => String]) =>
+			laws.alternativeRightAbsorption(altF).isEqual shouldBe true
 		}
 	}
 
-	property(s"$name - alternative associativity") {
-		forAll { (altA: Alt[Int], altB: Alt[Int], altC: Alt[Int]) =>
-			laws.alternativeAssociativity(altA, altB, altC).isEqual shouldBe true
+	property(s"$name - alternative left distributivity") {
+		forAll { (altX: Alt[Int], altY: Alt[Int], f: Int => String) =>
+			laws.alternativeLeftDistributivity(altX, altY, f).isEqual shouldBe true
 		}
 	}
 }

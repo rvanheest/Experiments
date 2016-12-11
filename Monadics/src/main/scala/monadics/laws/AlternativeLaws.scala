@@ -8,19 +8,16 @@ trait AlternativeLaws[Alt[_]] extends ApplicativeLaws[Alt] with MonoidKLaws[Alt]
 
 	implicit val instance: Alternative[Alt] with MonoidK[Alt]
 
-	// empty <|> x == x
-	def alternativeLeftEmpty[A](altA: Alt[A]): IsEquals[Alt[A]] = {
-		instance.combine(instance.empty[A], altA) === altA
+	def alternativeRightDistributivity[A, B](altA: Alt[A], altF: Alt[A => B], altG: Alt[A => B]): IsEquals[Alt[B]] = {
+		instance.<*>(instance.combine(altF, altG), altA) === instance.combine(instance.<*>(altF, altA), instance.<*>(altG, altA))
 	}
 
-	// x <|> empty == x
-	def alternativeRightEmpty[A](altA: Alt[A]): IsEquals[Alt[A]] = {
-		instance.combine(altA, instance.empty[A]) === altA
+	def alternativeRightAbsorption[A, B](altF: Alt[A => B]): IsEquals[Alt[B]] = {
+		instance.<*>(altF, instance.empty[A]) === instance.empty[B]
 	}
 
-	// (x <|> y) <|> z == x <|> (y <|> z)
-	def alternativeAssociativity[A, B >: A, C >: B](altA: Alt[A], altB: Alt[B], altC: Alt[C]): IsEquals[Alt[C]] = {
-		instance.combine(instance.combine(altA, altB), altC) === instance.combine(altA, instance.combine(altB, altC))
+	def alternativeLeftDistributivity[A, B](altX: Alt[A], altY: Alt[A], f: A => B): IsEquals[Alt[B]] = {
+		instance.map(instance.combine(altX, altY))(f) === instance.combine(instance.map(altX)(f), instance.map(altY)(f))
 	}
 }
 
