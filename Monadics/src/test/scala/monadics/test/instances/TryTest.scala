@@ -1,10 +1,8 @@
 package monadics.test.instances
 
-import org.scalatest.Inside
-
 import scala.util.{Failure, Try}
 
-class TryTest extends InstanceSpec with Inside {
+class TryTest extends InstanceSpec {
 
   property("try 'as' replaces the value with another value") {
     import monadics.instances.tryMonad._
@@ -17,8 +15,7 @@ class TryTest extends InstanceSpec with Inside {
   property("try 'as' does not replace an empty value") {
     import monadics.instances.tryMonad._
 
-    forAll { (x: Int) =>
-      val e = new Exception("foo")
+    forAll { (x: Int, e: Exception) =>
       Try(throw e).as(x) shouldBe Failure(e)
     }
   }
@@ -34,8 +31,9 @@ class TryTest extends InstanceSpec with Inside {
   property("try 'void' does not replace an empty value") {
     import monadics.instances.tryMonad._
 
-    val e = new Exception("foo")
-    Try(throw e).void shouldBe Failure(e)
+    forAll { (e: Exception) =>
+      Try(throw e).void shouldBe Failure(e)
+    }
   }
 
   property("try 'zipWith' combines the value with applying the function in a tuple") {
@@ -49,13 +47,12 @@ class TryTest extends InstanceSpec with Inside {
   property("try 'zipWith' does not combines an empty value with a function") {
     import monadics.instances.tryMonad._
 
-    forAll { (f: Int => String) =>
-      val e = new Exception("foo")
+    forAll { (f: Int => String, e: Exception) =>
       Try(throw e).zipWith(f) shouldBe Failure(e)
     }
   }
 
-  property("try 'applicative' should appy the function in the left value to the value on the right") {
+  property("try 'applicative' should apply the function in the left value to the value on the right") {
     import monadics.instances.tryMonad._
 
     forAll { (x: Int, f: Int => String) =>
@@ -66,8 +63,7 @@ class TryTest extends InstanceSpec with Inside {
   property("try 'applicative' is empty when the function value is empty") {
     import monadics.instances.tryMonad._
 
-    forAll { (x: Int) =>
-      val e = new Exception("foo")
+    forAll { (x: Int, e: Exception) =>
       Try(throw e) <*> Try(x) shouldBe Failure(e)
     }
   }
@@ -75,9 +71,32 @@ class TryTest extends InstanceSpec with Inside {
   property("try 'applicative' is empty when the right value is empty") {
     import monadics.instances.tryMonad._
 
-    forAll { (f: Int => String) =>
-      val e = new Exception("foo")
+    forAll { (f: Int => String, e: Exception) =>
       Try(f) <*> Try(throw e) shouldBe Failure(e)
+    }
+  }
+
+  property("try 'andThen' replaces the value with the other value") {
+    import monadics.instances.tryMonad._
+
+    forAll { (a: Int, b: Int) =>
+      Try(a).andThen(Try(b)) shouldBe Try(b)
+    }
+  }
+
+  property("try 'andThen' does not replace the value when the original is empty") {
+    import monadics.instances.tryMonad._
+
+    forAll { (a: Int, e: Exception) =>
+      Try(throw e).andThen(Try(a)) shouldBe Failure(e)
+    }
+  }
+
+  property("try 'andThen' replaces the value with an empty if the new value is empty") {
+    import monadics.instances.tryMonad._
+
+    forAll { (a: Int, e: Exception) =>
+      Try(a).andThen(Try(throw e)) shouldBe Failure(e)
     }
   }
 
@@ -94,8 +113,7 @@ class TryTest extends InstanceSpec with Inside {
     import monadics.instances.tryMonad._
     import monadics.instances.list._
 
-    forAll { (f: Int => List[String]) =>
-      val e = new Exception("foo")
+    forAll { (f: Int => List[String], e: Exception) =>
       Try(throw e).traverse(f) shouldBe List(Failure(e))
     }
   }
@@ -113,7 +131,8 @@ class TryTest extends InstanceSpec with Inside {
     import monadics.instances.tryMonad._
     import monadics.instances.list._
 
-    val e = new Exception("foo")
-    Try[List[Int]](throw e).sequence[List, Int] shouldBe List(Failure(e))
+    forAll { (e: Exception) =>
+      Try[List[Int]](throw e).sequence[List, Int] shouldBe List(Failure(e))
+    }
   }
 }

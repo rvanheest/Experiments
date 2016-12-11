@@ -14,10 +14,20 @@ trait MonadPlusLawsSpec[MP[_]] extends MonadFilterLawsSpec[MP] with AlternativeL
 
 	override val laws: MonadPlusLaws[MP] = MonadPlusLaws[MP]
 	implicit val instance: MonadPlus[MP]
+}
 
+trait MonadPlusLeftDistributivityLaw[MP[_]] extends MonadPlusLawsSpec[MP] {
 	property(s"$name - monadplus left distributivity") {
 		forAll { (mpX: MP[Int], mpY: MP[Int], f: Int => MP[String]) =>
-			laws.monadCombineLeftDistributivity(mpX, mpY, f).isEqual shouldBe true
+			laws.monadplusCombineLeftDistributivity(mpX, mpY, f).isEqual shouldBe true
+		}
+	}
+}
+
+trait MonadPlusLeftCatchLaw[MP[_]] extends MonadPlusLawsSpec[MP] {
+	property(s"$name - monadplus left catch") {
+		forAll { (a: Int, mpA: MP[Int]) =>
+			laws.monadplusLeftCatch(a, mpA).isEqual shouldBe true
 		}
 	}
 }
@@ -35,6 +45,10 @@ abstract class AbstractMonadPlusLawsSpec[MP[_]](override val name: String)
 	extends MonadPlusLawsSpec[MP]
 
 class ListMonadPlusSpec extends AbstractMonadPlusLawsSpec[List]("List")
+																with MonadPlusLeftDistributivityLaw[List]
 class OptionMonadPlusSpec extends AbstractMonadPlusLawsSpec[Option]("Option")
+																	with MonadPlusLeftCatchLaw[Option] // left distributivity does not hold for Option
 class OptionTMonadPlusSpec extends AbstractMonadPlusLawsSpec[OptionT[List, ?]]("OptionT[List, ?]")
+																	 with MonadPlusLeftDistributivityLaw[OptionT[List, ?]]
 class StateTMonadPlusSpec extends AbstractMonadPlusLawsSpec[StateT[Int, ?, List]]("StateT[Int, ?, List]")
+																	with MonadPlusLeftDistributivityLaw[StateT[Int, ?, List]]

@@ -82,7 +82,7 @@ class OptionTest extends InstanceSpec {
     }
   }
 
-  property("option 'applicative' should appy the function in the left value to the value on the right") {
+  property("option 'applicative' should apply the function in the left value to the value on the right") {
     import monadics.instances.option._
 
     forAll { (x: Int, f: Int => String) =>
@@ -103,6 +103,30 @@ class OptionTest extends InstanceSpec {
 
     forAll { (f: Int => String) =>
       Option(f) <*> Option.empty[Int] shouldBe Option.empty[String]
+    }
+  }
+
+  property("option 'andThen' replaces the value with the other value") {
+    import monadics.instances.option._
+
+    forAll { (a: Int, b: Int) =>
+      Option(a).andThen(Option(b)) shouldBe Option(b)
+    }
+  }
+
+  property("option 'andThen' does not replace the value when the original is empty") {
+    import monadics.instances.option._
+
+    forAll { (a: Int) =>
+      Option.empty[Int].andThen(Option(a)) shouldBe Option.empty[Int]
+    }
+  }
+
+  property("option 'andThen' replaces the value with an empty if the new value is empty") {
+    import monadics.instances.option._
+
+    forAll { (a: Int) =>
+      Option(a).andThen(Option.empty[Int]) shouldBe Option.empty[Int]
     }
   }
 

@@ -52,6 +52,8 @@ trait tryMonad {
 
     def <*>[B, C](other: Try[B])(implicit ev: Try[A] <:< Try[(B => C)]): Try[C] = monadTraverse.<*>(t, other)
 
+    def andThen[B](other: => Try[B]): Try[B] = monadTraverse.andThen(t, other)
+
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Try[B]] = monadTraverse.traverse(t)(f)
 
     def sequence[G[_], B](implicit ev: Try[A] <:< Try[G[B]], applicative: Applicative[G]): G[Try[B]] = {

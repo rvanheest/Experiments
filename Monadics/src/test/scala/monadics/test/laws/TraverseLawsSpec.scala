@@ -30,7 +30,7 @@ trait TraverseLawsSpec[T[_]] extends FunctorLawsSpec[T] {
   }
 
   property(s"$name - traverse composition") {
-    forAll(sizeRange(10)) { (xs: T[Int], g: String => Option[Long], f: Int => List[String]) =>
+    forAll(sizeRange(5)) { (xs: T[Int], g: String => Option[Long], f: Int => List[String]) =>
       laws.traverseComposition(xs, g, f).isEqual shouldBe true
     }
   }

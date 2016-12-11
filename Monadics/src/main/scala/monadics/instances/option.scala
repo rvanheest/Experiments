@@ -70,6 +70,8 @@ trait option {
 
     def <*>[B, C](other: Option[B])(implicit ev: Option[A] <:< Option[(B => C)]): Option[C] = monadTraverse.<*>(option, other)
 
+    def andThen[B](other: => Option[B]) = monadTraverse.andThen(option, other)
+
     def traverse[G[_], B](f: A => G[B])(implicit applicative: Applicative[G]): G[Option[B]] = {
       monadTraverse.traverse(option)(f)
     }
