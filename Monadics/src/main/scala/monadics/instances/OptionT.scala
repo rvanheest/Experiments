@@ -57,7 +57,7 @@ object OptionT {
 			new OptionT(monad.flatMap(optionT.get)(_.map(f(_).get).getOrElse(monad.create(Option.empty))))
 		}
 
-		def orElse[A, B >: A](alt1: OptionT[M, A], alt2: => OptionT[M, B]): OptionT[M, B] = {
+		def combine[A, B >: A](alt1: OptionT[M, A], alt2: => OptionT[M, B]): OptionT[M, B] = {
 			new OptionT(monad.flatMap(alt1.get)(optA => optA.map(_ => monad.create(optA)).getOrElse(alt2.get)))
 		}
 	}

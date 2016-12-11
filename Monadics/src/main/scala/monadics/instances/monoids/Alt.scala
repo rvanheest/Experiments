@@ -22,7 +22,7 @@ object Alt {
 
   implicit def altIsMonoid[F[_], A](implicit alternative: Alternative[F]): Monoid[Alt[F, A]] = {
     Monoid.create(Alt(alternative.empty[A])) {
-      case (Alt(x), Alt(y)) => Alt(alternative.orElse(x, y))
+      case (Alt(x), Alt(y)) => Alt(alternative.combine(x, y))
     }
   }
 }

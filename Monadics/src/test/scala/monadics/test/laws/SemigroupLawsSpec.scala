@@ -19,7 +19,7 @@ trait SemigroupLawsSpec[S] extends LawSpec {
 
   val laws: SemigroupLaws[S] = SemigroupLaws[S]
 
-  property(s"$name - associativity") {
+  property(s"$name - semigroup associativity") {
     forAll { (a: S, b: S, c: S) =>
       laws.associativity(a, b, c).isEqual shouldBe true
     }

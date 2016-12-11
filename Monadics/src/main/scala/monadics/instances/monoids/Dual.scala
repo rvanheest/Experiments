@@ -2,11 +2,9 @@ package monadics.instances.monoids
 
 import monadics.structures.{Equals, Monoid}
 
-case class Dual[A](dual: A)(implicit monoid: Monoid[Dual[A]], aMonoid: Monoid[A]) {
+case class Dual[A](dual: A)(implicit monoid: Monoid[Dual[A]]) {
 
-  def combine(other: => Dual[A]): Dual[A] = {
-    monoid.combine(this, other)
-  }
+  def combine(other: => Dual[A]): Dual[A] = monoid.combine(this, other)
 }
 
 object Dual {

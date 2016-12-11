@@ -2,15 +2,13 @@ package monadics.instances.monoids
 
 import monadics.structures.{Equals, Monoid}
 
-case class Sum[A](sum: A)(implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]) {
+case class Sum[A](sum: A)(implicit monoid: Monoid[Sum[A]]) {
 
-  def +(other: => Sum[A]): Sum[A] = {
-    monoid.combine(this, other)
-  }
+  def +(other: => Sum[A]): Sum[A] = monoid.combine(this, other)
 }
 
 object Sum {
-  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Sum[A]]): Sum[A] = {
+  def empty[A](implicit monoid: Monoid[Sum[A]]): Sum[A] = {
     monoid.empty
   }
 

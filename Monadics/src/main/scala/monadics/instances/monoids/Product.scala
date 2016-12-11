@@ -2,15 +2,13 @@ package monadics.instances.monoids
 
 import monadics.structures.{Equals, Monoid}
 
-case class Product[A](product: A)(implicit numeric: Numeric[A], monoid: Monoid[Product[A]]) {
+case class Product[A](product: A)(implicit monoid: Monoid[Product[A]]) {
 
-  def *(other: => Product[A]): Product[A] = {
-    monoid.combine(this, other)
-  }
+  def *(other: => Product[A]): Product[A] = monoid.combine(this, other)
 }
 
 object Product {
-  def empty[A](implicit numeric: Numeric[A], monoid: Monoid[Product[A]]): Product[A] = {
+  def empty[A](implicit monoid: Monoid[Product[A]]): Product[A] = {
     monoid.empty
   }
 

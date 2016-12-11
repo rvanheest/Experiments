@@ -2,17 +2,15 @@ package monadics.test.laws
 
 import monadics.instances._
 import monadics.instances.list._
-import monadics.instances.option._
-import monadics.instances.tryMonad._
 import monadics.instances.monoids.values._
+import monadics.instances.option._
 import monadics.laws.AlternativeLaws
 import monadics.structures.{Alternative, Equals}
 import org.scalacheck.Arbitrary
 
 import scala.language.higherKinds
-import scala.util.Try
 
-trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] {
+trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] with MonoidKLawsSpec[Alt] {
 
 	override val laws: AlternativeLaws[Alt] = AlternativeLaws[Alt]
 	implicit val instance: Alternative[Alt]
@@ -37,13 +35,13 @@ trait AlternativeLawsSpec[Alt[_]] extends ApplicativeLawsSpec[Alt] {
 }
 
 abstract class AbstractAlternativeLawsSpec[Alt[_]](override val name: String)
-																					(implicit override val instance: Alternative[Alt],
-																					 override val arbIntInstance: Arbitrary[Alt[Int]],
-																					 override val arbIntToStringInstance: Arbitrary[Alt[Int => String]],
-																					 override val arbStringToLongInstance: Arbitrary[Alt[String => Long]],
-																					 override val eqInt: Equals[Alt[Int]],
-																					 override val eqLong: Equals[Alt[Long]],
-																					 override val eqString: Equals[Alt[String]])
+																									(implicit override val instance: Alternative[Alt],
+																									 override val arbIntInstance: Arbitrary[Alt[Int]],
+																									 override val arbIntToStringInstance: Arbitrary[Alt[Int => String]],
+																									 override val arbStringToLongInstance: Arbitrary[Alt[String => Long]],
+																									 override val eqInt: Equals[Alt[Int]],
+																									 override val eqLong: Equals[Alt[Long]],
+																									 override val eqString: Equals[Alt[String]])
 	extends AlternativeLawsSpec[Alt]
 
 class ListAlternativeSpec extends AbstractAlternativeLawsSpec[List]("List")

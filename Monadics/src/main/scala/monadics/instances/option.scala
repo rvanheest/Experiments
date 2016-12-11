@@ -34,7 +34,7 @@ trait option {
       option.flatMap(f)
     }
 
-    def orElse[A, B >: A](option1: Option[A], option2: => Option[B]): Option[B] = {
+    def combine[A, B >: A](option1: Option[A], option2: => Option[B]): Option[B] = {
       option1.orElse(option2)
     }
 

@@ -23,7 +23,7 @@ trait list {
 
     def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list.flatMap(f)
 
-    def orElse[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
+    def combine[A, B >: A](list1: List[A], list2: => List[B]): List[B] = list1 ++ list2
 
     override def foldLeft[A, B](fa: List[A], z: => B)(f: (=> B, A) => B): B = fa.foldLeft(z)(f(_, _))
 

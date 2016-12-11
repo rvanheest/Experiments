@@ -13,7 +13,7 @@ class StateT[S, A, M[+_]](state: S => M[(A, S)])(implicit theState: MonadPlus[St
 	def execute(s: S): M[S] = mp.map(state(s))(_._2)
 
 	def orElse[B >: A](other: => StateT[S, B, M]): StateT[S, B, M] = {
-		theState.orElse(this, other)
+		theState.combine(this, other)
 	}
 	def <|>[B >: A](other: => StateT[S, B, M]): StateT[S, B, M] = this.orElse(other)
 
@@ -124,8 +124,8 @@ object StateT {
 			new StateT(s => mp.flatMap(monad.run(s)) { case (a, ss) => f(a).run(ss) })
 		}
 
-		def orElse[A, B >: A](alt1: StateT[S, A, M], alt2: => StateT[S, B, M]): StateT[S, B, M] = {
-			new StateT(s => mp.orElse(alt1.run(s), alt2.run(s)))
+		def combine[A, B >: A](alt1: StateT[S, A, M], alt2: => StateT[S, B, M]): StateT[S, B, M] = {
+			new StateT(s => mp.combine(alt1.run(s), alt2.run(s)))
 		}
 	}
 

@@ -10,17 +10,17 @@ trait MonadPlusLaws[MP[_]] extends MonadLaws[MP] {
 
 	// empty <|> x == x
 	def monadPlusLeftEmpty[A](mpA: MP[A]): IsEquals[MP[A]] = {
-		instance.orElse(instance.empty[A], mpA) === mpA
+		instance.combine(instance.empty[A], mpA) === mpA
 	}
 
 	// x <|> empty == x
 	def monadPlusRightEmpty[A](mpA: MP[A]): IsEquals[MP[A]] = {
-		instance.orElse(mpA, instance.empty[A]) === mpA
+		instance.combine(mpA, instance.empty[A]) === mpA
 	}
 
 	// (x <|> y) <|> z == x <|> (y <|> z)
 	def monadPlusAssociativity[A, B >: A, C >: B](mpA: MP[A], mpB: MP[B], mpC: MP[C]): IsEquals[MP[C]] = {
-		instance.orElse(instance.orElse(mpA, mpB), mpC) === instance.orElse(mpA, instance.orElse(mpB, mpC))
+		instance.combine(instance.combine(mpA, mpB), mpC) === instance.combine(mpA, instance.combine(mpB, mpC))
 	}
 
 	// mzero >>= f == mzero

@@ -16,13 +16,13 @@ trait MonoidLawsSpec[M] extends SemigroupLawsSpec[M] {
 
   override val laws: MonoidLaws[M] = MonoidLaws[M]
 
-  property(s"$name - right identity") {
+  property(s"$name - monoid right identity") {
     forAll { (a: M) =>
       laws.combineRightIdentity(a).isEqual shouldBe true
     }
   }
 
-  property(s"$name - left identity") {
+  property(s"$name - monoid left identity") {
     forAll { (a: M) =>
       laws.combineLeftIdentity(a).isEqual shouldBe true
     }
