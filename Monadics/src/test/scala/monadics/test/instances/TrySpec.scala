@@ -2,7 +2,7 @@ package monadics.test.instances
 
 import scala.util.{Failure, Try}
 
-class TryTest extends InstanceSpec {
+class TrySpec extends InstanceSpec {
 
   property("try 'as' replaces the value with another value") {
     import monadics.instances.tryMonad._

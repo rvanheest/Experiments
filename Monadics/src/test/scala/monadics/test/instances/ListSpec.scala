@@ -3,7 +3,7 @@ package monadics.test.instances
 import monadics.instances.monoids.{Product, Sum}
 import monadics.instances.option._
 
-class ListTest extends InstanceSpec {
+class ListSpec extends InstanceSpec {
 
   property("list 'as' replaces the values with other values") {
     import monadics.instances.list._

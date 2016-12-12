@@ -1,6 +1,6 @@
 package monadics.test.instances
 
-class OptionTest extends InstanceSpec {
+class OptionSpec extends InstanceSpec {
 
   property("option 'combine' adds the inner values if both sides are not empty") {
     import monadics.instances.option._
