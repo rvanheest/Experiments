@@ -1,8 +1,5 @@
 package monadics.test.instances
 
-import monadics.instances.monoids.{Product, Sum}
-import monadics.instances.option._
-
 class ListSpec extends InstanceSpec {
 
   property("list 'as' replaces the values with other values") {
@@ -39,6 +36,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'foldMap' should map the elements and fold them together into a total sum") {
     import monadics.instances.list._
+    import monadics.instances.monoids.Sum
 
     forAll { (xs: List[Int]) =>
       xs.foldMap(Sum(_)).sum shouldBe xs.sum
@@ -47,6 +45,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'foldMap' should map the elements and fold them together into a total product") {
     import monadics.instances.list._
+    import monadics.instances.monoids.Product
 
     forAll { (xs: List[Int]) =>
       xs.foldMap(Product(_)).product shouldBe xs.product
@@ -81,6 +80,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'traverse' with Option should return a Some if all values in traverse were successful") {
     import monadics.instances.list._
+    import monadics.instances.option._
 
     forAll { (xs: List[Int]) =>
       xs.traverse[Option, Int](x => if (isEven(x * 2)) Some(x) else None) shouldBe Some(xs)
@@ -89,6 +89,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'traverse' with Option should return a None if not all values in traverse were successful") {
     import monadics.instances.list._
+    import monadics.instances.option._
 
     forAll { (xs: List[Int]) =>
       (1 :: xs).traverse[Option, Int](x => if (isEven(x)) Some(x) else None) shouldBe None
@@ -97,6 +98,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'sequence' with Option switches the List and Option") {
     import monadics.instances.list._
+    import monadics.instances.option._
 
     forAll { (xs: List[Int]) =>
       xs.map(Option(_)).sequence[Option, Int] shouldBe Some(xs)
@@ -105,6 +107,7 @@ class ListSpec extends InstanceSpec {
 
   property("list 'sequence' with Option returns none if not all values were Some") {
     import monadics.instances.list._
+    import monadics.instances.option._
 
     forAll { (xs: List[Int]) =>
       (xs.map(Option(_)) ::: List(Option.empty[Int]) ::: xs.map(Option(_))).sequence[Option, Int] shouldBe None

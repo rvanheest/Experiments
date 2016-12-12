@@ -8,6 +8,7 @@ val r1: Either[String, Int] = Right(1)
 val r2: Either[String, Int] = Right(2)
 val ol: Either[String, Option[Int]] = Left("ghi")
 val or: Either[String, Option[Int]] = Right(Option(3))
+val oer: Either[String, Option[Int]] = Right(None)
 
 // semigroup
 l1.orElse(l2) // Left("def")
@@ -28,5 +29,8 @@ r2.zipWith(_ % 2 == 0) // Right((2, true))
 // traverse operators
 l1.traverse[Option, Int](Option(_))
 r1.traverse[Option, Int](Option(_))
+l1.traverse[Option, Int](_ => None)
+r1.traverse[Option, Int](_ => None)
 ol.sequence
 or.sequence
+oer.sequence

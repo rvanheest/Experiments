@@ -19,7 +19,11 @@ object Continuation {
     new Continuation[R, A](aToR => f(a => new Continuation[R, B](_ => aToR(a))).run(aToR))
   }
 
-  def apply[R, A](a: A)(implicit monad: Monad[Continuation[R, ?]]): Continuation[R, A] = monad.create(a)
+  def apply[R, A](c: (A => R) => R)(implicit monad: Monad[Continuation[R, ?]]): Continuation[R, A] = {
+    new Continuation[R, A](c)
+  }
+
+  def from[R, A](a: A)(implicit monad: Monad[Continuation[R, ?]]): Continuation[R, A] = monad.create(a)
 
   implicit def continuationIsEquals[R, A](implicit fEquals: Equals[(A => R) => R]): Equals[Continuation[R, A]] = {
     Equals.create((r1, r2) => fEquals.equals(r1.run, r2.run))

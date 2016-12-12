@@ -10,9 +10,9 @@ pythagoras(3, 4)
 
 
 
-def addCPS[R](x: Int, y: Int): Continuation[R, Int] = Continuation(add(x, y))
+def addCPS[R](x: Int, y: Int): Continuation[R, Int] = Continuation.from(add(x, y))
 
-def squareCPS[R](x: Int): Continuation[R, Int] = Continuation(square(x))
+def squareCPS[R](x: Int): Continuation[R, Int] = Continuation.from(square(x))
 
 def pythagorasCPS[R](x: Int, y: Int): Continuation[R, Int] = for {
   a <- squareCPS(x)
@@ -29,7 +29,7 @@ def squareCCC[R](x: Int): Continuation[R, Int] = Continuation.callCC[R, Int, Int
 def fooCCC[R](x: Int): Continuation[R, String] = Continuation.callCC[R, String, String](k => {
   val y = x * x + 3
   if (y > 20) k("over 20")
-  else Continuation(s"${y - 4}")
+  else Continuation.from(s"${y - 4}")
 })
 
 fooCCC(4).run(identity)
@@ -39,7 +39,7 @@ def barCCC[R](c: Char, s: String): Continuation[R, Int] = {
   Continuation.callCC[R, String, String](k => {
     c + s match {
       case "hello" => k("They say hello")
-      case x => Continuation(s"They appear to be saying $x")
+      case x => Continuation.from(s"They appear to be saying $x")
     }
   }).map(_.length)
 }
