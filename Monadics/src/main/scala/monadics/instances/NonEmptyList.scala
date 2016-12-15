@@ -107,11 +107,11 @@ object NonEmptyList {
     override def contains[A](nel: NonEmptyList[A])(a: A): Boolean = nel.head == a || nel.tail.contains(a)
 
     override def max[A](nel: NonEmptyList[A])(implicit ordered: Ordering[A]): Option[A] = {
-      Option(ordered.max(nel.head, nel.tail.max))
+      if (nel.tail.isEmpty) Option(nel.head) else Option(ordered.max(nel.head, nel.tail.max))
     }
 
     override def min[A](nel: NonEmptyList[A])(implicit ordered: Ordering[A]): Option[A] = {
-      Option(ordered.min(nel.head, nel.tail.min))
+      Option(if (nel.tail.isEmpty) nel.head else ordered.min(nel.head, nel.tail.min))
     }
 
     override def sum[A](nel: NonEmptyList[A])(implicit numeric: Numeric[A]): A = {
