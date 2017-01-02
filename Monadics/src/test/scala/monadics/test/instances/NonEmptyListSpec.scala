@@ -4,7 +4,7 @@ import scala.language.postfixOps
 
 class NonEmptyListSpec extends InstanceSpec {
 
-  property("nonemptylist 'map' ...") {
+  property("nonemptylist 'map'") {
     import monadics.instances.NonEmptyList
 
     forAll { (x: Int, xs: List[Int], f: Int => String) =>
@@ -12,7 +12,7 @@ class NonEmptyListSpec extends InstanceSpec {
     }
   }
 
-  property("nonemptylist 'as' ...") {
+  property("nonemptylist 'as'") {
     import monadics.instances.NonEmptyList
 
     forAll { (x: Int, xs: List[Int], b: String) =>
@@ -79,10 +79,10 @@ class NonEmptyListSpec extends InstanceSpec {
 
   property("nonemptylist 'foldMap'") {
     import monadics.instances.NonEmptyList
-    import monadics.instances.monoids.values._
+    import monadics.instances.monoids.Sum
 
     forAll { (x: Int, xs: List[Int]) =>
-      NonEmptyList(x, xs).foldMap(i => 2 * i) shouldBe (x :: xs).map(i => 2 * i).sum
+      NonEmptyList(x, xs).foldMap(i => Sum(2 * i)).sum shouldBe (x :: xs).map(i => 2 * i).sum
     }
   }
 
