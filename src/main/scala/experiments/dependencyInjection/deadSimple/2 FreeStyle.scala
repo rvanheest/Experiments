@@ -74,37 +74,9 @@ object LittleLanguage extends App {
 			case More(Put(k, v, a)) => runKVS(a, table + (k -> v))
 			case More(Get(k, f)) => runKVS(f(table(k)), table)
 			case More(Delete(k, a)) => runKVS(a, table - k)
-			case Done(a) => table
+			case Done(_) => table
 		}
 	}
 
 	println(runKVS(freeModify("abc", s => s + "123"), Map("abc" -> "xyz")))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

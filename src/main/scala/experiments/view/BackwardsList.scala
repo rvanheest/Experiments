@@ -9,8 +9,10 @@ object BackwardsListView extends View[List[Int], BackwardsListView] {
   case class Snoc(list: List[Int], last: Int) extends BackwardsListView
 
   /**
+   * {{{
    * in (x Cons Nil)          = Nil Snoc x
    * in (x Cons (xs Snoc x')) = (x Cons xs) Snoc x'
+   * }}}
    */
   implicit def in(list: List[Int]): BackwardsListView = list match {
     case Nil => EmptyList
@@ -21,8 +23,10 @@ object BackwardsListView extends View[List[Int], BackwardsListView] {
   }
 
   /**
+   * {{{
    * out (Nil Snoc x)          = x Cons Nil
    * out ((x Cons xs) Snoc x') = x Cons (xs Snoc x')
+   * }}}
    */
   implicit def out(backwards: BackwardsListView): List[Int] = backwards match {
     case EmptyList => Nil
@@ -48,7 +52,7 @@ object BackwardsListDemo extends App {
   println(out(Snoc(Snoc(Nil, 1), 2)))
 
   /**
-   * last (xs Snoc x) = x
+   * {{{last (xs Snoc x) = x}}}
    */
   def last(list: List[Int]): Int =
     implicitly[BackwardsListView](list) match {
@@ -57,7 +61,7 @@ object BackwardsListDemo extends App {
     }
 
   /**
-   * rotateLeft (x Cons xs) = xs Snoc x
+   * {{{rotateLeft (x Cons xs) = xs Snoc x}}}
    */
   def rotateLeft(list: List[Int]): List[Int] =
     list match {
@@ -66,7 +70,7 @@ object BackwardsListDemo extends App {
     }
 
   /**
-   * rotateRight (xs Snoc x) = x Cons xs
+   * {{{rotateRight (xs Snoc x) = x Cons xs}}}
    */
   def rotateRight(list: List[Int]): List[Int] =
     implicitly[BackwardsListView](list) match {

@@ -12,7 +12,7 @@ package object parsec {
 	}
 
 	implicit class ABX[S, A, B](val f: A => Parser[S, B]) extends AnyVal {
-		def =<<(parser: Parser[S, A]) = parser >>= f
+		def =<<(parser: Parser[S, A]): Parser[S, B] = parser >>= f
 	}
 
 	implicit class FuncParser[S, A, B](val parser: Parser[S, A => B]) extends AnyVal {

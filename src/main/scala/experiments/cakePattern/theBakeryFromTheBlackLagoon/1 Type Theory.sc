@@ -1,5 +1,5 @@
 class Foo(x: Int) {
-	def add(y: Int) = x + y
+	def add(y: Int): Int = x + y
 }
 
 // forall a T[a] is true

@@ -6,9 +6,9 @@ import scala.language.postfixOps
 
 object IdentityTest extends App {
 
-  val id1 = new Identity(5)
-  val id2 = new Identity(3.0)
-  val idf = new Identity[Double => Int](_ toInt)
+  val id1 = Identity(5)
+  val id2 = Identity(3.0)
+  val idf = Identity[Double => Int](_ toInt)
 
   println(id1.map(2 *))
 

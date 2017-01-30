@@ -56,7 +56,7 @@ trait Monad[M[_]] extends Applicative[M] {
   def flatMap[A, B](monad: M[A])(f: A => M[B]): M[B]
 
   def andThen[A, B](mA: M[A], mB: M[B]): M[B] = {
-    flatMap(mA)(a => mB)
+    flatMap(mA)(_ => mB)
   }
 
   def thenAnd[A, B](mA: M[A], mB: M[B]): M[A] = {

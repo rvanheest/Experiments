@@ -11,16 +11,16 @@ sealed abstract class Result {
 case object Success extends Result {
   def isSuccess = true
   def isFail = false
-  def or(that: => Result) = this
-  def and(that: => Result) = that
-  def unary_! = Fail("???") // TODO what to return here?
+  def or(that: => Result): Result = this
+  def and(that: => Result): Result = that
+  def unary_! : Result = Fail("???") // TODO what to return here?
 }
 case class Fail(reason: String) extends Result {
   def isSuccess = false
   def isFail = true
-  def or(that: => Result) = that
-  def and(that: => Result) = this
-  def unary_! = Success
+  def or(that: => Result): Result = that
+  def and(that: => Result): Result = this
+  def unary_! : Result = Success
 }
 
 case class HRPredicate[T](name: String, predicate: T => Result) {
