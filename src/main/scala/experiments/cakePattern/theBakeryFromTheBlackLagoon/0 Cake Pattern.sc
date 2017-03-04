@@ -16,6 +16,4 @@ trait TwitterModule extends TweetModule with UserModule {
 	def post(userId: Long, body: String) = ???
 }
 
-val universe = new MySQLUserModule with TwitterModule
-
-
+val universe: UserModule with TweetModule = new MySQLUserModule with TwitterModule
