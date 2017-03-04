@@ -13,7 +13,7 @@ package object prettyprint {
   }
 
   implicit def prettyPrintNumber = new PrettyPrint[base.Number] {
-    def format(e: base.Number) = e.value.toString
+    def format(e: base.Number): String = e.value.toString
   }
   implicit def prettyPrintPlus[A: PrettyPrint, B: PrettyPrint] = new PrettyPrint[Plus[A, B]] {
     def format(e: Plus[A, B]) = s"(${implicitly[PrettyPrint[A]].format(e.left)} + ${implicitly[PrettyPrint[B]].format(e.right)})"

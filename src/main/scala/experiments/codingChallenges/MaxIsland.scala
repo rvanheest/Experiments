@@ -64,7 +64,7 @@ object MaxIsland extends App {
       .map { case (row, i) => row.zipWithIndex.map { case (c, j) => Node(charToNodeType(c), (i, j)) }}
   }
 
-  def charToNodeType(c: Char) = c match {
+  def charToNodeType(c: Char): NodeType.Value = c match {
     case 'w' => WATER
     case 'l' => LAND
     case _ => throw new IllegalArgumentException(s"character $c is not supported here!")

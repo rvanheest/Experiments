@@ -25,7 +25,7 @@ sealed abstract class Maybe[+A](implicit mp: MonadPlus[Maybe]) {
 
   def orElse[B >: A](other: => Maybe[B]): Maybe[B] = mp.orElse(this, other)
 
-  def maybe = mp.maybe(this)
+  def maybe: Maybe[Maybe[A]] = mp.maybe(this)
 
   def filter(predicate: A => Boolean): Maybe[A] = mp.filter(this)(predicate)
 
@@ -44,7 +44,7 @@ object Maybe {
 }
 
 case class Just[+A](a: A) extends Maybe[A] {
-  def ifPresent[U](f: A => U) = f(a)
+  def ifPresent[U](f: A => U): Unit = f(a)
 
   def doOnDefined(f: A => Unit): Maybe[A] = {
     f(a)
@@ -55,7 +55,7 @@ case class Just[+A](a: A) extends Maybe[A] {
 }
 
 case object None extends Maybe[Nothing] {
-  def ifPresent[U](f: Nothing => U) = ()
+  def ifPresent[U](f: Nothing => U): Unit = ()
 
   def doOnDefined(f: Nothing => Unit): Maybe[Nothing] = this
 

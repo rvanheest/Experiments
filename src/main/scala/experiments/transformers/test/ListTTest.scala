@@ -3,6 +3,8 @@ package experiments.transformers.test
 import experiments.transformers.ListT
 import experiments.transformers._
 
+import scala.language.postfixOps
+
 object ListTTest extends App {
 
 	val opt1 = Option(List(1, 2, 3, 4))

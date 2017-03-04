@@ -47,6 +47,4 @@ object JoinListViewDemo extends App {
   println(out(in(Join(Unit(1), Unit(2)))))
   println(out(in(Join(Join(Empty, Unit(1)), Join(Unit(2), Empty)))))
   println(out(in(Join(Unit(1), Join(Unit(2), Empty)))))
-
-
 }

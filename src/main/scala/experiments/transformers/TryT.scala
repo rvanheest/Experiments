@@ -2,6 +2,7 @@ package experiments.transformers
 
 import experiments.monadics.MonadPlus
 
+import scala.language.higherKinds
 import scala.util.{Failure, Try}
 
 case class TryT[M[_], A](run: M[Try[A]])(implicit m: MonadPlus[M]) {

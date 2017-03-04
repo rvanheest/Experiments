@@ -6,7 +6,7 @@ case class BST private() {
 
   var root: Node = _
 
-  def isEmpty = root == null
+  def isEmpty: Boolean = root == null
 
   def add(element: Int): Unit = {
     if (isEmpty)

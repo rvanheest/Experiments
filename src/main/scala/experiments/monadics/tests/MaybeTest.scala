@@ -61,7 +61,7 @@ object MaybeTest extends App {
   println(for {i <- j1; j <- j2} yield i + j)
   println(for {i <- j1; j <- n} yield i + j)
   println(for {i <- n; j <- j1} yield i + j)
-  println(for {i <- n; j <- n} yield i + i)
+  println(for {i <- n; j <- n} yield i + j)
   println(for {f <- jf; j <- j1} yield f(j))
 
   // monadplus

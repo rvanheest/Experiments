@@ -9,13 +9,13 @@ case class Cartesian(x: Double, y: Double)
 object Cartesian extends View[Pole, Cartesian] {
 
   /**
-   * in (Pole r t) = Cart (r * cos t) (r * sin t)
+   * {{{in (Pole r t) = Cart (r * cos t) (r * sin t)}}}
    */
   implicit def in(pole: Pole): Cartesian =
     Cartesian(pole.magnitude * cos(pole.argument), pole.magnitude * sin(pole.argument))
 
   /**
-   * out (Cart x y) = Pole (sqrt (x^2^ + y^2^) (atan2 x y)
+   * {{{out (Cart x y) = Pole (sqrt (x^2^ + y^2^) (atan2 x y)}}}
    */
   implicit def out(cart: Cartesian): Pole = {
     val Cartesian(x, y) = cart
@@ -28,7 +28,7 @@ object ComplexNumbersDemo extends App {
   import Cartesian._
 
   /**
-   * add (Cart x y) (Cart x' y') = Cart (x + x') (y + y')
+   * {{{add (Cart x y) (Cart x' y') = Cart (x + x') (y + y')}}}
    */
   def add(cart1: Cartesian, cart2: Cartesian): Cartesian = {
     val Cartesian(x1, y1) = cart1
@@ -37,7 +37,7 @@ object ComplexNumbersDemo extends App {
   }
 
   /**
-   * mult (Pole r t) (Pole r' t') = Pole (r * r') (t * t')
+   * {{{mult (Pole r t) (Pole r' t') = Pole (r * r') (t * t')}}}
    */
   def multiply(pole1: Pole, pole2: Pole): Pole = {
     val Pole(m1, a1) = pole1
