@@ -7,15 +7,18 @@ object Example extends App {
 	val dependend: Action[Int => Unit] = DependendAction()
 	val unrelated: Action[Unit] = UnrelatedAction()
 
-	val act1: Action[Unit] = getOnce.applyRight(dependend).combine(unrelated)
-	val act2: Action[Unit] = getOnce.combine(unrelated).applyRight(dependend)
-	val act3: Action[Unit] = dependend.applyLeft(getOnce).combine(unrelated)
+	val act1: Action[Unit] = getOnce.applyRight(dependend).andThen(unrelated)
+	val act2: Action[Unit] = getOnce.andThen(unrelated).applyRight(dependend)
+	val act3: Action[Unit] = dependend.applyLeft(getOnce).andThen(unrelated)
+	val act4: Action[Unit] = unrelated.thenAnd(dependend).applyLeft(getOnce)
 
-	act1.run()
+	println(act1.run())
 	println
-	act2.run()
+	println(act2.run())
 	println
-	act3.run()
+	println(act3.run())
+	println()
+	println(act4.run())
 
 	case class GetOnceAction() extends Action[Int] {
 		lazy val computeOnce: Int = {
