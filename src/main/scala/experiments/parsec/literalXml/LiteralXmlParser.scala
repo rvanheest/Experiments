@@ -1,9 +1,12 @@
-package experiments.parsec
+package experiments.parsec.literalXml
 
+import experiments.parsec.Parser
 import experiments.parsec.Parser._
-import experiments.parsec.StringParser._
+import experiments.parsec.string.StringParser._
 
-object XmlParser {
+import scala.util.Success
+
+object LiteralXmlParser {
 	type AttrName = String
 	type AttrVal = String
 
@@ -37,7 +40,7 @@ object XmlParser {
 
 	def debug: StringParser[String] = Parser(xs => {
 		println(s"debug = $xs")
-		Option(("", xs))
+		Success(("", xs))
 	})
 
 	def tag: StringParser[XML] = {
@@ -60,20 +63,20 @@ object XmlParser {
 		} yield result
 	}
 
-	def elementBody: StringParser[XML] = spaces *> tag <|> text
+	def elementBody: StringParser[XML] = spaces >> tag <|> text
 
-	def endTag(str: String): StringParser[String] = string("</") *> string(str) <* char('>')
+	def endTag(str: String): StringParser[String] = string("</") >> string(str) << char('>')
 
-	def text: StringParser[XML] = item.noneOf("><").atLeastOnce.map(cs => Body(cs.mkString))
+	def text: StringParser[XML] = item.noneOf("><".toList).atLeastOnce.map(cs => Body(cs.mkString))
 
 	def attribute: StringParser[Attribute] = {
 		for {
-			name <- item.noneOf("= />").many.map(_.mkString)
+			name <- item.noneOf("= />".toList).many.map(_.mkString)
 			_ <- spaces
 			_ <- char('=')
 			_ <- spaces
 			_ <- char('"')
-			value <- item.noneOf("\"").many.map(_.mkString)
+			value <- item.noneOf("\"".toList).many.map(_.mkString)
 			_ <- char('"')
 			_ <- spaces
 		} yield Attribute(name, value)

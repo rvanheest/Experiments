@@ -1,5 +1,5 @@
 import experiments.parsec.Parser
-import experiments.parsec.StringParser._
+import experiments.parsec.string.StringParser._
 
 def expr = (for {
   a <- term
@@ -19,8 +19,8 @@ def factor: Parser[String, Int] = number.map(_.toInt) <|> (for {
   _ <- char(')')
 } yield a)
 
-expr.parse("1+1")
-expr.parse("2*3+1")
-expr.parse("(2+3)*4")
-expr.parse("2+3*4")
-expr.parse("(2*3)+(2+7)")
+expr.eval("1+1")
+expr.eval("2*3+1")
+expr.eval("(2+3)*4")
+expr.eval("2+3*4")
+expr.eval("(2*3)+(2+7)")
