@@ -33,15 +33,16 @@ def person: XmlParser[Person] = {
 	} yield p
 }
 
+// this should be failing: zipCode vs zip-code
 val xml = <person>
 	<name>Richard van Heest</name>
 	<age>24</age>
 	<address>
 		<street>Prins Bernhardlaan</street>
 		<number>116</number>
-		<zip-code>3241TA</zip-code>
+		<zipCode>3241TA</zipCode>
 		<city>Middelharnis</city>
 	</address>
 </person>
 
-person.eval(Utility.trim(xml)).get
+person.run(Utility.trim(xml))
