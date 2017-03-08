@@ -12,8 +12,8 @@ object StringParser {
 
 	def item: StringParser[Char] = {
 		Parser(_.toList match {
-			case x :: xs => Success((x, xs.mkString))
-			case Nil => Failure(new NoSuchElementException("you're trying to parse a character in an empty String"))
+			case x :: xs => (Success(x), xs.mkString)
+			case Nil => (Failure(new NoSuchElementException("you're trying to parse a character in an empty String")), "")
 		})
 	}
 

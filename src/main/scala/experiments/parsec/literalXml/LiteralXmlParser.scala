@@ -40,7 +40,7 @@ object LiteralXmlParser {
 
 	def debug: StringParser[String] = Parser(xs => {
 		println(s"debug = $xs")
-		Success(("", xs))
+		(Success(""), xs)
 	})
 
 	def tag: StringParser[XML] = {

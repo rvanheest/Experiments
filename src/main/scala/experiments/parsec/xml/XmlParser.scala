@@ -2,7 +2,7 @@ package experiments.parsec.xml
 
 import experiments.parsec.Parser
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 import scala.xml.{NamespaceBinding, Node}
 
 object XmlParser {
@@ -12,8 +12,8 @@ object XmlParser {
 	private def nodeItem: XmlParser[Node] = {
 		Parser(ns => ns
 			.headOption
-			.map(head => Success(head, ns.tail))
-			.getOrElse(Failure(new NoSuchElementException("you're trying to parse a node in an empty xml Node"))))
+			.map(head => (Try(head), ns.tail))
+			.getOrElse((Failure(new NoSuchElementException("you're trying to parse a node in an empty xml Node")), Seq.empty)))
 	}
 
 	private def withException[T](s: String)(constructor: String => T): XmlParser[T] = {
@@ -36,11 +36,13 @@ object XmlParser {
 
 	def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
 		Parser(input => {
-			nodeWithName(name).map(_.child).run(input).flatMap {
-				case (childNodes, rest) =>
-					subParser.run(childNodes).map {
-						case (result, rest2) => (result, rest2 ++ rest)
+			nodeWithName(name).map(_.child).run(input) match {
+				case (Success(childNodes), rest) =>
+					subParser.run(childNodes) match {
+						case (s@Success(_), rest2) => (s, rest2 ++ rest)
+						case (Failure(e2), rest2) => (Failure(e2), rest2)
 					}
+				case (Failure(e), rest) => (Failure(e), rest)
 			}
 		})
 	}
@@ -48,8 +50,8 @@ object XmlParser {
 	private def attributeItem: XmlParser[Node] = {
 		Parser(ns => ns
 			.headOption
-			.map(head => Success(head, ns))
-			.getOrElse(Failure(new NoSuchElementException("you're trying to parse an attribute in an empty xml Node"))))
+			.map(head => (Try(head), ns))
+			.getOrElse((Failure(new NoSuchElementException("you're trying to parse an attribute in an empty xml Node")), Seq.empty)))
 	}
 
 	def attribute[T](attr: String)(constructor: String => T): XmlParser[T] = {
@@ -78,7 +80,7 @@ object XmlParser {
 	def debugAndContinue(pos: String = ""): XmlParser[Unit] = {
 		Parser(xs => {
 			println(s"you hit a debug statement at $pos: $xs")
-			Success((), xs)
+			(Success(()), xs)
 		})
 	}
 }

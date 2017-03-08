@@ -2,23 +2,33 @@ package experiments.parsec
 
 import scala.util.{Failure, Success, Try}
 
-class Parser[S, A](parse: S => Try[(A, S)]) {
+class Parser[S, A](parse: S => (Try[A], S)) {
 
-	def run(s: S): Try[(A, S)] = parse(s)
+	def run(s: S): (Try[A], S) = parse(s)
 
-	def eval(s: S): Try[A] = parse(s).map(_._1)
+	def eval(s: S): Try[A] = parse(s)._1
 
-	def execute(s: S): Try[S] = parse(s).map(_._2)
+	def execute(s: S): S = parse(s)._2
 
 	def orElse[B >: A](other: => Parser[S, B]): Parser[S, B] = {
-		Parser(st => parse(st).orElse(other.run(st)))
+		Parser(st => {
+			parse(st) match {
+				case res@(Success(_), _) => res
+				case (Failure(_), _) => other.run(st)
+			}
+		})
 	}
 	def <|>[B >: A](other: => Parser[S, B]): Parser[S, B] = {
 		this.orElse(other)
 	}
 
 	def map[B](f: A => B): Parser[S, B] = {
-		Parser(st => parse(st).map { case (a, s) => (f(a), s) })
+		Parser(st => {
+			parse(st) match {
+				case (Success(a), st2) => (Success(f(a)), st2)
+				case (Failure(e), st2) => (Failure(e), st2)
+			}
+		})
 	}
 
 	def doOnNext[Ignore](f: A => Ignore): Parser[S, A] = {
@@ -30,7 +40,12 @@ class Parser[S, A](parse: S => Try[(A, S)]) {
 	}
 
 	def flatMap[B](f: A => Parser[S, B]): Parser[S, B] = {
-		Parser(st => parse(st).flatMap { case (a, s) => f(a).run(s) })
+		Parser(st => {
+			parse(st) match {
+				case (Success(a), st2) => f(a).run(st2)
+				case (Failure(e), st2) => (Failure(e), st2)
+			}
+		})
 	}
 	def >>=[B](f: A => Parser[S, B]): Parser[S, B] = {
 		this.flatMap(f)
@@ -90,11 +105,11 @@ class Parser[S, A](parse: S => Try[(A, S)]) {
 	def skipMany: Parser[S, Unit] = this >> skipMany <|> Parser.from(())
 }
 object Parser {
-	def apply[S, A](parser: S => Try[(A, S)]) = new Parser(parser)
+	def apply[S, A](parser: S => (Try[A], S)) = new Parser(parser)
 
-	def from[S, A](a: A): Parser[S, A] = Parser(Success(a, _))
+	def from[S, A](a: A): Parser[S, A] = Parser((Success(a), _))
 
-	def empty[S, A]: Parser[S, A] = Parser(_ => Failure(new NoSuchElementException("empty parser")))
+	def empty[S, A]: Parser[S, A] = Parser((Failure(new NoSuchElementException("empty parser")), _))
 
-	def failure[S, A](e: Throwable): Parser[S, A] = Parser(_ => Failure(e))
+	def failure[S, A](e: Throwable): Parser[S, A] = Parser((Failure(e), _))
 }
