@@ -22,7 +22,10 @@ object XmlParser {
 	}
 
 	def nodeWithName(name: String): XmlParser[Node] = {
-		nodeItem.satisfy(_.label == name)
+		nodeItem.transform {
+			case (head, tail) if head.label == name => (Success(head), tail)
+			case (head, tail) => (Failure(new NoSuchElementException(s"could not find an element with name '$name'")), head +: tail)
+		}
 	}
 
 	def xmlToString(name: String): XmlParser[String] = {
@@ -30,20 +33,15 @@ object XmlParser {
 	}
 
 	def node[T](name: String)(constructor: String => T): XmlParser[T] = {
-		xmlToString(name)
-			.flatMap(withException(_)(constructor))
+		xmlToString(name).flatMap(withException(_)(constructor))
 	}
 
 	def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
-		Parser(input => {
-			nodeWithName(name).map(_.child).run(input) match {
-				case (Success(childNodes), rest) =>
-					subParser.run(childNodes) match {
-						case (s@Success(_), rest2) => (s, rest2 ++ rest)
-						case (Failure(e2), rest2) => (Failure(e2), rest2)
-					}
-				case (Failure(e), rest) => (Failure(e), rest)
-			}
+		Parser(nodeWithName(name).map(_.child).run(_) match {
+			case (Success(childNodes), rest) =>
+				val (r, rest2) = subParser.run(childNodes)
+				(r, rest2 ++ rest)
+			case (Failure(e), rest) => (Failure(e), rest)
 		})
 	}
 

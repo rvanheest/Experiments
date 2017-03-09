@@ -51,6 +51,15 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 		this.flatMap(f)
 	}
 
+	def transform[B](f: (A, S) => (Try[B], S)): Parser[S, B] = {
+		Parser(st => {
+			parse(st) match {
+				case (Success(a), st2) => f(a, st2)
+				case (Failure(e), st2) => (Failure(e), st2)
+			}
+		})
+	}
+
 	def >>[B](other: => Parser[S, B]): Parser[S, B] = {
 		this >>= (_ => other)
 	}

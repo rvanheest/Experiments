@@ -3,11 +3,11 @@ import experiments.parsec.xml.XmlParser.{XmlParser, _}
 import scala.xml.Utility
 
 case class Address(street: String, number: String, zipCode: String, city: String)
-case class Person(name: String, age: Int, address: Address)
+case class Person(name: String, age: Int, address: Address, mail: String)
 
-def address(name: String): XmlParser[Address] = {
+def parseAddress(name: String): XmlParser[Address] = {
 	for {
-		// attributes
+		// no attributes here
 		addr <- branchNode(name) {
 			for {
 				street <- xmlToString("street")
@@ -20,29 +20,28 @@ def address(name: String): XmlParser[Address] = {
 }
 
 // root node doesn't have a name
-def person: XmlParser[Person] = {
+def parsePerson: XmlParser[Person] = {
 	for {
-		// attributes
+		age <- attribute("age")(_.toInt)
 		p <- branchNode("person") {
 			for {
 				pName <- xmlToString("name")
-				age <- xmlToString("age").map(_.toInt)
-				address <- address("address")
-			} yield Person(pName, age, address)
+				address <- parseAddress("address")
+				mail <- xmlToString("mail")
+			} yield Person(pName, age, address, mail)
 		}
 	} yield p
 }
 
-// this should be failing: zipCode vs zip-code
-val xml = <person>
+val xml = <person age="24">
 	<name>Richard van Heest</name>
-	<age>24</age>
 	<address>
 		<street>Prins Bernhardlaan</street>
 		<number>116</number>
-		<zipCode>3241TA</zipCode>
+		<zip-code>3241TA</zip-code>
 		<city>Middelharnis</city>
 	</address>
+	<mail>richard.v.heest@gmail.com</mail>
 </person>
 
-person.run(Utility.trim(xml))
+parsePerson.run(Utility.trim(xml))
