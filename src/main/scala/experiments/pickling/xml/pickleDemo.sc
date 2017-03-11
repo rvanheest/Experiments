@@ -1,3 +1,4 @@
+import experiments.pickling.xml.XmlPickle.XmlPickle
 import experiments.pickling.xml.{Pickle, XmlPickle}
 
 import scala.xml._
@@ -14,29 +15,29 @@ val obj1 = Person(
 	mail = Some("richard.v.heest@gmail.com"))
 val obj2 = obj1.copy(address = AntwoordnummerAddress("12345", "3241TA", "Middelharnis"), mail = None)
 
-val street: Pickle[String] = XmlPickle.string("street")
-val number: Pickle[String] = XmlPickle.string("number")
-val antwoordnummer: Pickle[String] = XmlPickle.string("antwoordnummer")
-val zipCode: Pickle[String] = XmlPickle.string("zipCode")
-val city: Pickle[String] = XmlPickle.string("city")
+val street: XmlPickle[String] = XmlPickle.string("street")
+val number: XmlPickle[String] = XmlPickle.string("number")
+val antwoordnummer: XmlPickle[String] = XmlPickle.string("antwoordnummer")
+val zipCode: XmlPickle[String] = XmlPickle.string("zipCode")
+val city: XmlPickle[String] = XmlPickle.string("city")
 
-val address: Pickle[Address] = {
-	val realAddress: Pickle[Address] = street.quad(number, zipCode, city)
+val address: XmlPickle[Address] = {
+	val realAddress: XmlPickle[Address] = street.quad(number, zipCode, city)
 		.wrap[Address]({ case (s, n, z, c) => RealAddress(s, n, z, c) })({ case RealAddress(s, n, z, c) => (s, n, z, c) })
-	val antwoordnummerAddress: Pickle[Address] = antwoordnummer.triple(zipCode, city)
+	val antwoordnummerAddress: XmlPickle[Address] = antwoordnummer.triple(zipCode, city)
 		.wrap[Address]({ case (a, z, c) => AntwoordnummerAddress(a, z, c) })({ case AntwoordnummerAddress(a, z, c) => (a, z, c) })
-	val altAddress: Pickle[Address] = Pickle.alt[Address](Array(realAddress, antwoordnummerAddress)) {
+	val altAddress: XmlPickle[Address] = Pickle.alt[Address, Node](Array(realAddress, antwoordnummerAddress)) {
 		case _: RealAddress => 0
 		case _: AntwoordnummerAddress => 1
 	}
 	XmlPickle.inside("address")(altAddress)
 }
 
-val name: Pickle[String] = XmlPickle.string("name")
-val age: Pickle[Int] = XmlPickle.attribute("age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
-val prefixedAge: Pickle[Int] = XmlPickle.attribute("prefix", "age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
-val mail: Pickle[Option[String]] = XmlPickle.string("mail").maybe
-val person: Pickle[Person] = name.quad(age.pair(prefixedAge), address, mail)
+val name: XmlPickle[String] = XmlPickle.string("name")
+val age: XmlPickle[Int] = XmlPickle.attribute("age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
+val prefixedAge: XmlPickle[Int] = XmlPickle.attribute("prefix", "age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
+val mail: XmlPickle[Option[String]] = XmlPickle.string("mail").maybe
+val person: XmlPickle[Person] = name.quad(age.pair(prefixedAge), address, mail)
 	.wrap(x => Person(x._1, x._2._1, x._3, x._4))({ case Person(n, a, ad, m) => (n, (a, a), ad, m) })
 
 val pp = new PrettyPrinter(80, 4)
