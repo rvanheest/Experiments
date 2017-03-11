@@ -16,11 +16,6 @@ object XmlParser {
 			.getOrElse((Failure(new NoSuchElementException("you're trying to parse a node in an empty xml Node")), Seq.empty)))
 	}
 
-	private def withException[T](s: String)(constructor: String => T): XmlParser[T] = {
-		try { Parser.from(constructor(s)) }
-		catch { case e: Throwable => Parser.failure(e) }
-	}
-
 	def nodeWithName(name: String): XmlParser[Node] = {
 		nodeItem.transform {
 			case (head, tail) if head.label == name => (Success(head), tail)
@@ -33,7 +28,7 @@ object XmlParser {
 	}
 
 	def node[T](name: String)(constructor: String => T): XmlParser[T] = {
-		xmlToString(name).flatMap(withException(_)(constructor))
+		xmlToString(name).flatMap(Parser.withException(_)(constructor))
 	}
 
 	def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
@@ -56,7 +51,7 @@ object XmlParser {
 		attributeItem
 			.map(_ \@ attr)
 			.satisfy(_.nonEmpty)
-			.flatMap(withException(_)(constructor))
+			.flatMap(Parser.withException(_)(constructor))
 	}
 
 	def attributeId(attr: String): XmlParser[String] = {

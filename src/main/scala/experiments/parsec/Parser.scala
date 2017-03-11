@@ -121,4 +121,9 @@ object Parser {
 	def empty[S, A]: Parser[S, A] = Parser((Failure(new NoSuchElementException("empty parser")), _))
 
 	def failure[S, A](e: Throwable): Parser[S, A] = Parser((Failure(e), _))
+
+	def withException[T, S, A](s: S)(constructor: S => A): Parser[T, A] = {
+		try { Parser.from(constructor(s)) }
+		catch { case e: Throwable => Parser.failure(e) }
+	}
 }
