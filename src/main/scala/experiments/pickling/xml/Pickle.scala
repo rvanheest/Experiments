@@ -1,7 +1,6 @@
 package experiments.pickling.xml
 
-import scala.xml._
-import scala.xml.transform.RewriteRule
+import scala.xml.Node
 
 trait Pickle[T] { self =>
 	def pickle(t: T, xml: Node): Node
@@ -58,40 +57,6 @@ object Pickle {
 			val index = selector(a)
 			val p = as(index)
 			p.pickle(a, xml)
-		}
-	}
-
-	private class AddChildrenTo(newChild: Node) extends RewriteRule {
-		override def transform(n: Node): Node = n match {
-			case Elem(prefix, lbl, attribs, scope, child @ _*) =>
-				Elem(prefix, lbl, attribs, scope, false, newChild ++ child : _*)
-			case _ => sys.error("Can only add children to elements!")
-		}
-	}
-
-	def string(name: String): Pickle[String] = new Pickle[String] {
-		override def pickle(s: String, xml: Node): Node = {
-			new AddChildrenTo(<xml>{s}</xml>.copy(label = name)).transform(xml)
-		}
-	}
-
-	def attribute(name: String): Pickle[String] = new Pickle[String] {
-		override def pickle(s: String, xml: Node): Node = xml match {
-			case elem: Elem => elem % new UnprefixedAttribute(name, s, Null)
-			case _ => sys.error("Can only add children to elements!")
-		}
-	}
-
-	def attribute(prefix: String, name: String): Pickle[String] = new Pickle[String] {
-		override def pickle(s: String, xml: Node): Node = xml match {
-			case elem: Elem => elem % new PrefixedAttribute(prefix, name, s, Null)
-			case _ => sys.error("Can only add children to elements!")
-		}
-	}
-
-	def inside[A](name: String)(pickleA: Pickle[A]): Pickle[A] = new Pickle[A] {
-		override def pickle(a: A, xml: Node): Node = {
-			new AddChildrenTo(pickleA.pickle(a, <xml/>.copy(label = name))).transform(xml)
 		}
 	}
 }
