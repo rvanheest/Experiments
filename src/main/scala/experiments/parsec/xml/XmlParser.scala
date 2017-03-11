@@ -58,10 +58,10 @@ object XmlParser {
 		attribute(attr)(identity)
 	}
 
-	def namespaceAttribute(attrName: String)(implicit nsURL: String, namespace: NamespaceBinding): XmlParser[String] = {
+	def namespaceAttribute(attrName: String)(implicit namespace: NamespaceBinding): XmlParser[String] = {
 		// notice that _.attributes(...) can be null!!!
 		attributeItem
-			.map(_.attributes(nsURL, namespace, attrName))
+			.map(_.attributes(namespace.uri, namespace, attrName))
 			.satisfy(xs => xs != null && xs.nonEmpty)
 			.map(_.head.text)
 	}

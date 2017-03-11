@@ -4,11 +4,9 @@ trait Pickle[T, State] { self =>
 	def pickle(t: T, state: State): State
 
 	def maybe[S](implicit ev: S =:= T): Pickle[Option[S], State] = new Pickle[Option[S], State] {
+	// TODO can we get rid of this evidence?
 		override def pickle(optS: Option[S], state: State): State = {
-			optS match {
-				case Some(x) => self.pickle(ev(x), state)
-				case None => state
-			}
+			optS.map(x => self.pickle(ev(x), state)).getOrElse(state)
 		}
 	}
 
@@ -41,7 +39,7 @@ trait Pickle[T, State] { self =>
 	}
 
 	def wrap[B](f: T => B)(g: PartialFunction[B, T]): Pickle[B, State] = {
-		this.seq[B](b => if (g.isDefinedAt(b)) g(b) else sys.error("undefined"))(t => Pickle.lift(f(t)))
+		this.seq[B](b => if (g isDefinedAt b) g(b) else sys.error("undefined"))(t => Pickle.lift(f(t)))
 	}
 }
 
@@ -52,9 +50,7 @@ object Pickle {
 
 	def alt[A, State](as: Array[Pickle[A, State]])(selector: A => Int): Pickle[A, State] = new Pickle[A, State] {
 		override def pickle(a: A, state: State): State = {
-			val index = selector(a)
-			val p = as(index)
-			p.pickle(a, state)
+			as(selector(a)).pickle(a, state)
 		}
 	}
 }
