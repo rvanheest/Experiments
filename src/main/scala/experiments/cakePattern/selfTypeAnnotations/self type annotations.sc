@@ -49,19 +49,29 @@ object inheritance {
 		// Has access to all the Database methods
 		// when it only should just be able to talk to the UserDb abstraction
 	}
+
+	val emailService = new EmailService {}
 }
 
 object selfTypeAnnotation {
 	trait Database {
-		def query(/* parameters */): Any = ???
+		def query(/* parameters */): Any
+	}
+	trait MongoDatabase extends Database {
+		override def query() = ???
 	}
 	trait UserDB { this: Database =>
 		def getUserData(/* parameters */): Any = ???
 	}
-	trait EmailService {
-		this: UserDB =>
+	trait EmailService { this: UserDB =>
 
 		// Can only access UserDb methods, cannot access Database methods
 		val userData = getUserData()
 	}
+	object EmailService {
+		def apply(): EmailService = new EmailService() with UserDB with MongoDatabase
+	}
+
+	val emailService = EmailService()
+	println(emailService.userData)
 }
