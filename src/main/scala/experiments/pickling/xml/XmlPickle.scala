@@ -1,6 +1,7 @@
 package experiments.pickling.xml
 
 import experiments.parsec.xml.XmlParser
+import experiments.pickling.Pickle
 
 import scala.xml._
 

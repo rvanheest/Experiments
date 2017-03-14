@@ -1,4 +1,4 @@
-package experiments.pickling.xml
+package experiments.pickling
 
 import experiments.parsec.Parser
 

@@ -1,10 +1,11 @@
 package experiments.pickling.xml
 
+import experiments.pickling.Pickle
 import experiments.pickling.xml.XmlPickle.XmlPickle
 
 import scala.xml.{ NamespaceBinding, Node, PrettyPrinter, TopScope }
 
-object PickleTest extends App {
+object XmlPickleTest extends App {
 
   case class Number(number: String, addition: Option[String] = None)
   sealed abstract class Address(zipCode: String, city: String)
