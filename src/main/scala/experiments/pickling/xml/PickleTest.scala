@@ -47,8 +47,8 @@ object PickleTest extends App {
   }
 
   val name: XmlPickle[String] = XmlPickle.string("name")
-  val age: XmlPickle[Int] = XmlPickle.attribute("age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
-  val prefixedAge: XmlPickle[Int] = XmlPickle.attribute("prefix", "age").seq[Int](_.toString)(s => Pickle.lift(s.toInt))
+  val age: XmlPickle[Int] = XmlPickle.attribute("age").seq[Int](_.toString).map(_.toInt)
+  val prefixedAge: XmlPickle[Int] = XmlPickle.attribute("prefix", "age").seq[Int](_.toString).map(_.toInt)
   val mail: XmlPickle[Option[String]] = XmlPickle.string("mail").maybe
 
   val person: XmlPickle[Person] = {
