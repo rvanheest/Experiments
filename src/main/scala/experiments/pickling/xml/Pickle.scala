@@ -1,20 +1,16 @@
 package experiments.pickling.xml
 
-trait Pickle[A, State] { self =>
-	def pickle(a: A, state: State): State
+case class Pickle[A, State](pickle: (A, State) => State) {
 
-	def maybe[B](implicit ev: B =:= A): Pickle[Option[B], State] = new Pickle[Option[B], State] {
-		// TODO can we get rid of this evidence?
-		override def pickle(optS: Option[B], state: State): State = {
-			optS.map(x => self.pickle(ev(x), state)).getOrElse(state)
-		}
+	def maybe: Pickle[Option[A], State] = {
+		Pickle((optS: Option[A], state: State) => optS.map(x => this.pickle(x, state)).getOrElse(state))
 	}
 
-	def seq[B](f: B => A)(g: A => Pickle[B, State]): Pickle[B, State] = new Pickle[B, State] {
-		override def pickle(b: B, s: State): State = {
+	def seq[B](f: B => A)(g: A => Pickle[B, State]): Pickle[B, State] = {
+		Pickle[B, State]((b: B, s: State) => {
 			val t = f(b)
-			self.pickle(t, g(t).pickle(b, s))
-		}
+			this.pickle(t, g(t).pickle(b, s))
+		})
 	}
 
 	def pair[B](pb: Pickle[B, State]): Pickle[(A, B), State] = {
@@ -39,7 +35,7 @@ trait Pickle[A, State] { self =>
 	}
 
 	def wrap[B](f: A => B): WrapBuilder[B] = {
-		new WrapBuilder(self, f)
+		new WrapBuilder(this, f)
 	}
 
 	class WrapBuilder[B](pickle: Pickle[A, State], f: A => B) {
@@ -50,13 +46,9 @@ trait Pickle[A, State] { self =>
 }
 
 object Pickle {
-	def lift[A, State](a: A): Pickle[A, State] = new Pickle[A, State] {
-		override def pickle(a: A, s: State): State = s
-	}
+	def lift[A, State](a: A): Pickle[A, State] = new Pickle[A, State]((_, s) => s)
 
-	def alt[A, State](as: Array[Pickle[A, State]])(selector: A => Int): Pickle[A, State] = new Pickle[A, State] {
-		override def pickle(a: A, state: State): State = {
-			as(selector(a)).pickle(a, state)
-		}
+	def alt[A, State](as: Array[Pickle[A, State]])(selector: A => Int): Pickle[A, State] = {
+		Pickle[A, State]((a, state) => as(selector(a)).pickle(a, state))
 	}
 }
