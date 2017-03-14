@@ -34,9 +34,7 @@ case class Pickle[A, State](pickle: (A, State) => State) {
 						Pickle.lift(a, b, c, d)))))
 	}
 
-	def wrap[B](f: A => B): WrapBuilder[B] = {
-		new WrapBuilder(this, f)
-	}
+	def wrap[B](f: A => B): WrapBuilder[B] = new WrapBuilder(this, f)
 
 	class WrapBuilder[B](pickle: Pickle[A, State], f: A => B) {
 		def unwrap(g: PartialFunction[B, A]): Pickle[B, State] = {
@@ -46,7 +44,7 @@ case class Pickle[A, State](pickle: (A, State) => State) {
 }
 
 object Pickle {
-	def lift[A, State](a: A): Pickle[A, State] = new Pickle[A, State]((_, s) => s)
+	def lift[A, State](a: A): Pickle[A, State] = Pickle[A, State]((_, s) => s)
 
 	def alt[A, State](as: Array[Pickle[A, State]])(selector: A => Int): Pickle[A, State] = {
 		Pickle[A, State]((a, state) => as(selector(a)).pickle(a, state))
