@@ -38,8 +38,15 @@ trait Pickle[T, State] { self =>
 						Pickle.lift(t, b, c, d)))))
 	}
 
-	def wrap[B](f: T => B)(g: PartialFunction[B, T]): Pickle[B, State] = {
-		this.seq[B](b => if (g isDefinedAt b) g(b) else sys.error("undefined"))(t => Pickle.lift(f(t)))
+	def wrap[B](f: T => B): WrapBuilder[T, B, State] = {
+		new WrapBuilder(this, f)
+//		this.seq[B](b => if (g isDefinedAt b) g(b) else sys.error("undefined"))(t => Pickle.lift(f(t)))
+	}
+
+	class WrapBuilder[A, B, St](pickle: Pickle[A, St], f: A => B) {
+		def unwrap(g: PartialFunction[B, A]): Pickle[B, St] = {
+			pickle.seq[B](b => if (g isDefinedAt b) g(b) else sys.error("undefined"))(t => Pickle.lift(f(t)))
+		}
 	}
 }
 

@@ -21,18 +21,24 @@ object PickleTest extends App {
   val obj3 = obj1.copy(address = AntwoordnummerAddress("12345", "3241TA", "Middelharnis"), mail = None)
 
   val street: XmlPickle[String] = XmlPickle.string("street")
-  val number: XmlPickle[Number] = XmlPickle.attribute("addition").maybe
-    .pair(XmlPickle.string("number"))
-    .wrap({ case (a, n) => Number(n, a) })({ case Number(n, a) => (a, n) })
+  val number: XmlPickle[Number] = {
+    val number = XmlPickle.string("number")
+    val attrs = XmlPickle.attribute("addition").maybe
+    attrs.pair(number)
+      .wrap { case (a, n) => Number(n, a) }
+      .unwrap { case Number(n, a) => (a, n) }
+  }
   val antwoordnummer: XmlPickle[String] = XmlPickle.string("antwoordnummer")
   val zipCode: XmlPickle[String] = XmlPickle.string("zipCode")
   val city: XmlPickle[String] = XmlPickle.string("city")
 
   val address: XmlPickle[Address] = {
     val realAddress: XmlPickle[Address] = street.quad(number, zipCode, city)
-      .wrap[Address]({ case (s, n, z, c) => RealAddress(s, n, z, c) })({ case RealAddress(s, n, z, c) => (s, n, z, c) })
+      .wrap[Address] { case (s, n, z, c) => RealAddress(s, n, z, c) }
+      .unwrap { case RealAddress(s, n, z, c) => (s, n, z, c) }
     val antwoordnummerAddress: XmlPickle[Address] = antwoordnummer.triple(zipCode, city)
-      .wrap[Address]({ case (a, z, c) => AntwoordnummerAddress(a, z, c) })({ case AntwoordnummerAddress(a, z, c) => (a, z, c) })
+      .wrap[Address] { case (a, z, c) => AntwoordnummerAddress(a, z, c) }
+      .unwrap { case AntwoordnummerAddress(a, z, c) => (a, z, c) }
     val altAddress: XmlPickle[Address] = Pickle.alt[Address, Seq[Node]](Array(realAddress, antwoordnummerAddress)) {
       case _: RealAddress => 0
       case _: AntwoordnummerAddress => 1
@@ -49,7 +55,8 @@ object PickleTest extends App {
     val person: XmlPickle[(String, Address, Option[String])] = XmlPickle.inside("person")(name.triple(address, mail))
     val attrs: XmlPickle[(Int, Int)] = age.pair(prefixedAge)
     attrs.pair(person)
-      .wrap({ case ((a, _), (n, ad, m)) => Person(n, a, ad, m) })({ case Person(n, a, ad, m) => ((a, a), (n, ad, m)) })
+      .wrap { case ((a, _), (n, ad, m)) => Person(n, a, ad, m) }
+      .unwrap { case Person(n, a, ad, m) => ((a, a), (n, ad, m)) }
   }
 
   val pp = new PrettyPrinter(80, 4)
@@ -63,4 +70,6 @@ object PickleTest extends App {
 //  address.pickle(obj2.address, Nil).map(pp.format(_)).foreach(println)
 
   person.pickle(obj1, Nil).map(pp.format(_)).foreach(println)
+  person.pickle(obj2, Nil).map(pp.format(_)).foreach(println)
+  person.pickle(obj3, Nil).map(pp.format(_)).foreach(println)
 }
