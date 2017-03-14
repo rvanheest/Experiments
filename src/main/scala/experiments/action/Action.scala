@@ -1,6 +1,6 @@
 package experiments.action
 
-import scala.collection.mutable
+import scala.annotation.tailrec
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
@@ -16,6 +16,9 @@ case class ActionException(row: Int, message: String, cause: Throwable = null) e
     - pure f <*> pure x = pure (f x)								(Homomorphism)
     - u <*> pure y = pure ($ y) <*> u								(Interchange)
     - u <*> (v <*> w) = pure (.) <*> u <*> v <*> w	(Composition)
+    - u *> v = pure (const id) <*> u <*> v
+    - u <* v = pure const <*> u <*> v
+    - fmap f x = pure f <*> x
  */
 trait Action[T] { self =>
 
@@ -56,6 +59,7 @@ trait Action[T] { self =>
 	private def generateReport(header: String = "", t: Throwable, footer: String = ""): String = {
 		def toOption(s: String): Option[String] = if (s.trim.isEmpty) Option.empty else Option(s)
 
+		@tailrec
 		def report(es: List[Throwable], rpt: String = ""): String = {
 			es match {
 				case Nil => rpt
@@ -78,37 +82,47 @@ trait Action[T] { self =>
 	}
 
 	// <*>
+	/*
+	  Note that this operator will change the order of operations in the 'execute' phase.
+	  First 'other' is executed, then 'self'.
+	  The order in the preconditions is preserved.
+	  TODO is the order preserved or reversed in 'rollback' phase?
+	 */
 	def applyLeft[S, R](other: Action[S])(implicit ev: T <:< (S => R)): Action[R] = combineWith(other)((f, t) => f(t))
 
 	// <**>
 	def applyRight[S](other: Action[T => S]): Action[S] = combineWith(other)((t, f) => f(t))
 
 	// <*
-	def andThen[S](other: Action[S]): Action[T] = combineWith(other)((t, _) => t)
+	def thenAnd[S](other: Action[S]): Action[T] = combineWith(other)((t, _) => t)
 
 	// *>
-	def thenAnd[S](other: Action[S]): Action[S] = combineWith(other)((_, s) => s)
+	def andThen[S](other: Action[S]): Action[S] = combineWith(other)((_, s) => s)
 
 	// liftA2
 	def combineWith[S, R](other: Action[S])(f: (T, S) => R): Action[R] = new Action[R] {
-		private lazy val executedActions = mutable.Stack[Action[_]]()
+		private var pastSelf = false
+
+		override def run(): Try[R] = {
+			pastSelf = false
+			super.run()
+		}
 
 		override def checkPreconditions: Try[Unit] = {
 			List(self, other).map(_.checkPreconditions).collectResults.map(_ => ())
 		}
 
 		override def execute(): Try[R] = {
-			executedActions.push(self)
-			self.execute()
-				.doIfSuccess(_ => executedActions.push(other))
-				.flatMap(t1 => other.execute().map(f(t1, _)))
+			for {
+				t <- self.execute()
+				_ = pastSelf = true
+				s <- other.execute()
+			} yield f(t, s)
 		}
 
 		override def rollback(): Try[Unit] = {
-			Stream.continually(executedActions.isEmpty)
-				.takeWhile(_ == true)
-				.map(_ => executedActions.pop().rollback())
-				.toList
+			(self :: (if (pastSelf) other :: Nil else Nil))
+				.map(_.rollback())
 				.collectResults
 				.map(_ => ())
 		}
