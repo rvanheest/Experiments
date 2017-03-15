@@ -1,16 +1,13 @@
 package experiments.pickling.xml
 
-import experiments.pickling.Pickle
-import experiments.pickling.xml.XmlPickle.XmlPickle
-
-import scala.xml.{ NamespaceBinding, Node, PrettyPrinter, TopScope }
+import scala.xml.{ NamespaceBinding, PrettyPrinter, TopScope }
 
 object XmlPickleTest extends App {
 
   case class Number(number: String, addition: Option[String] = None)
   sealed abstract class Address(zipCode: String, city: String)
-  case class RealAddress(street: String, number: Number, zipCode: String, city: String) extends Address(zipCode: String, city: String)
-  case class AntwoordnummerAddress(number: String, zipCode: String, city: String) extends Address(zipCode: String, city: String)
+  case class RealAddress(street: String, number: Number, zipCode: String, city: String) extends Address(zipCode, city)
+  case class AntwoordnummerAddress(number: String, zipCode: String, city: String) extends Address(zipCode, city)
   case class Person(name: String, age: Int, address: Address, mail: Option[String])
 
   val obj1 = Person(
@@ -36,18 +33,16 @@ object XmlPickleTest extends App {
     val antwoordnummerAddress = antwoordnummer.triple(zipCode, city)
       .wrap[Address] { case (a, z, c) => AntwoordnummerAddress(a, z, c) }
       .unwrap { case AntwoordnummerAddress(a, z, c) => (a, z, c) }
-    val altAddress = Pickle.alt[Address, Seq[Node]](Array(realAddress, antwoordnummerAddress)) {
-      case _: RealAddress => 0
-      case _: AntwoordnummerAddress => 1
-    }
-    XmlPickle.inside("address")(altAddress)
+    XmlPickle.inside("address")(realAddress orElse antwoordnummerAddress)
   }
 
   val name = XmlPickle.string("name")
-  val age = XmlPickle.attribute("age").seq[Int](_.toString).map(_.toInt)
+//  val age = XmlPickle.attribute("age").seq[Int](_.toString).map(_.toInt)
+  val age = XmlPickle.attribute("age").toInt
   implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-  val prefixedAge = XmlPickle.namespaceAttribute("age")(xlinkNamespace).seq[Int](_.toString).map(_.toInt)
-  val mail: XmlPickle[Option[String]] = XmlPickle.string("mail").maybe
+//  val prefixedAge = XmlPickle.namespaceAttribute("age")(xlinkNamespace).seq[Int](_.toString).map(_.toInt)
+  val prefixedAge = XmlPickle.namespaceAttribute("age").toInt
+  val mail = XmlPickle.string("mail").maybe
 
   val person = {
     val person: XmlPickle[(String, Address, Option[String])] = XmlPickle.inside("person")(name.triple(address, mail))
