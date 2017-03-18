@@ -4,7 +4,7 @@ import experiments.parsec.Parser
 
 import scala.language.{ higherKinds, implicitConversions, reflectiveCalls }
 import scala.reflect.{ ClassTag, classTag }
-import scala.util.{ Failure, Try }
+import scala.util.{ Failure, Success, Try }
 
 trait PickleBuilder[A, State, Repr] {
 	def apply(pickle: (A, State) => Try[State], unpickle: State => (Try[A], State)): Repr
@@ -25,37 +25,11 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 	def seq[B](f: B => A): SeqBuilder[A, B] = new SeqBuilder(this, f)
 
-	def pair[B](pb: Pickle[B, State]): Repr[(A, B)] = {
-		for {
-			a <- this.seq[(A, B)]({ case (a, _) => a })
-			b <- pb.seq[(A, B)]({ case (_, b) => b })
-		} yield (a, b)
-	}
-
-	def triple[B, C](pb: Pickle[B, State], pc: Pickle[C, State]): Repr[(A, B, C)] = {
-		for {
-			a <- this.seq[(A, B, C)]({ case (a, _, _) => a })
-			b <- pb.seq[(A, B, C)]({ case (_, b, _) => b })
-			c <- pc.seq[(A, B, C)]({ case (_, _, c) => c })
-		} yield (a, b, c)
-	}
-
-	def quad[B, C, D](pb: Pickle[B, State], pc: Pickle[C, State], pd: Pickle[D, State]): Repr[(A, B, C, D)] = {
-		for {
-			a <- this.seq[(A, B, C, D)]({ case (a, _, _, _) => a })
-			b <- pb.seq[(A, B, C, D)]({ case (_, b, _, _) => b })
-			c <- pc.seq[(A, B, C, D)]({ case (_, _, c, _) => c })
-			d <- pd.seq[(A, B, C, D)]({ case (_, _, _, d) => d })
-		} yield (a, b, c, d)
-	}
-
-	def wrap[B: ClassTag](f: A => B): WrapBuilder[A, B] = new WrapBuilder(this, f)
-
 	def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Repr[B] = {
-		new SeqBuilder[A, B](this, {
+		this.seq[B] {
 			case a: A => a
-			case _ => sys.error(s"undefined unwrapper for ${ classTag[B] }")
-		}).map(identity)
+			case _ => sys.error(s"can't cast ${ classTag[B] } to ${ classTag[A] }")
+		}.map(identity)
 	}
 
 	def orElse(other: => Pickle[A, State]): Repr[A] = {
@@ -64,14 +38,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 			unpickle = (this.unpickle <|> other.unpickle).run)
 	}
 
-	def satisfy(predicate: A => Boolean): Repr[A] = {
-		builder(
-			pickle = this.seq[A](identity)
-				.flatMap(a => if (predicate(a)) Pickle.lift[A, State, Repr](a)
-											else Pickle.empty[A, State, Repr])
-				.pickle,
-			unpickle = this.unpickle.satisfy(predicate).run)
-	}
+	def satisfy(predicate: A => Boolean): Repr[A] = this.seq.filter(predicate)
 
 	def filter(predicate: A => Boolean): Repr[A] = this.satisfy(predicate)
 
@@ -121,37 +88,35 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 		} yield x :: xs
 	}
 
-	class SeqBuilder[A2, B](pickleA: Pickle[A2, State], f: B => A2) {
-		def map(g: A2 => B): Repr[B] = {
+	class SeqBuilder[X, Y](pickleA: Pickle[X, State], f: Y => X) {
+		def map(g: X => Y): Repr[Y] = {
 			builder(
-				pickle = (b, state) => {
+				pickle = (y, state) => {
 					for {
-						a <- Try { f(b) }
-						state2 <- pickleA.pickle(a, state)
+						x <- Try { f(y) }
+						state2 <- pickleA.pickle(x, state)
 					} yield state2
 				},
 				unpickle = pickleA.unpickle.map(g).run)
 		}
 
-		def flatMap(g: A2 => Pickle[B, State]): Repr[B] = {
+		def flatMap(g: X => Pickle[Y, State]): Repr[Y] = {
 			builder(
-				pickle = (b, state) => {
+				pickle = (y, state) => {
 					for {
-						a <- Try { f(b) }
-						state2 <- g(a).pickle(b, state)
-						state3 <- pickleA.pickle(a, state2)
+						x <- Try { f(y) }
+						state2 <- g(x).pickle(y, state)
+						state3 <- pickleA.pickle(x, state2)
 					} yield state3
 				},
 				unpickle = pickleA.unpickle.flatMap(g(_).unpickle).run)
 		}
-	}
 
-	class WrapBuilder[A2, B: ClassTag](pickleA: Pickle[A2, State], f: A2 => B) {
-		def unwrap(g: PartialFunction[B, A2]): Repr[B] = {
-			// TODO replace with .seq call???
-			new SeqBuilder[A2, B](pickleA, b => if (g isDefinedAt b) g(b)
-																					else sys.error(s"undefined unwrapper for ${classTag[B]}"))
-				.map(f)
+		def filter(predicate: X => Boolean): Repr[X] = {
+			builder(
+				pickle = (x, state) => if (predicate(x)) Success(state)
+															 else Failure(new NoSuchElementException("empty pickle")),
+				unpickle = pickleA.unpickle.satisfy(predicate).run)
 		}
 	}
 }
