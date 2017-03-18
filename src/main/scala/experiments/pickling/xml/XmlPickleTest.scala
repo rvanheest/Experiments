@@ -1,5 +1,6 @@
 package experiments.pickling.xml
 
+import scala.language.postfixOps
 import scala.xml.{ NamespaceBinding, PrettyPrinter, TopScope }
 
 object XmlPickleTest extends App {
@@ -16,7 +17,7 @@ object XmlPickleTest extends App {
     address = RealAddress("Prins Bernhardlaan", Number("116"), "3241TA", "Middelharnis"),
     mail = Some("richard.v.heest@gmail.com"))
   val obj2 = obj1.copy(address = RealAddress("Prins Bernhardlaan", Number("116", Option("a")), "3241TA", "Middelharnis"))
-  val obj3 = obj1.copy(address = AntwoordnummerAddress("12345", "3241TA", "Middelharnis"), mail = None)
+  val obj3 = obj1.copy(address = AntwoordnummerAddress("12345", "3241TA", "Middelharnis"), mail = None, name = "foo")
 
   val street = XmlPickle.string("street")
   val number = XmlPickle.attribute("addition").maybe.pair(XmlPickle.string("number"))

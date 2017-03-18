@@ -2,13 +2,14 @@ package experiments.pickling.xml
 
 import experiments.parsec.Parser
 import experiments.parsec.xml.XmlParser
+import experiments.parsec.xml.XmlParser.XmlParser
 import experiments.pickling.{ Pickle, PickleBuilder }
 
 import scala.language.reflectiveCalls
 import scala.xml._
 
 case class XmlPickle[A](override val pickle: (A, Seq[Node]) => Seq[Node],
-												override val unpickle: Parser[Seq[Node], A])
+												override val unpickle: XmlParser[A])
 	extends Pickle[A, Seq[Node]](pickle, unpickle) {
 
 	type Repr[X] = XmlPickle[X]
