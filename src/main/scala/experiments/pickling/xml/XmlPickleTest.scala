@@ -60,7 +60,7 @@ object XmlPickleTest extends App {
        formatted <- xml.map(pp.format(_))) {
     println(formatted)
   }
-  val personRes1 = person.unpickle.run(personXml1.get)
+  val personRes1 = person.unpickle(personXml1.get)
   println(personRes1)
   println(personRes1._1.get == obj1)
   println
@@ -70,7 +70,7 @@ object XmlPickleTest extends App {
        formatted <- xml.map(pp.format(_))) {
     println(formatted)
   }
-  val personRes2 = person.unpickle.run(personXml2.get)
+  val personRes2 = person.unpickle(personXml2.get)
   println(personRes2)
   println(personRes2._1.get == obj2)
   println
@@ -80,7 +80,7 @@ object XmlPickleTest extends App {
        formatted <- xml.map(pp.format(_))) {
     println(formatted)
   }
-  val personRes3 = person.unpickle.run(personXml3.get)
+  val personRes3 = person.unpickle(personXml3.get)
   println(personRes3)
   println(personRes3._1.get == obj3)
 }
