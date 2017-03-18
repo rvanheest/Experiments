@@ -1,5 +1,7 @@
 package experiments.pickling.xml
 
+import experiments.pickling.xml.XmlPickle._
+
 import scala.language.postfixOps
 import scala.xml.{ NamespaceBinding, PrettyPrinter, TopScope }
 
@@ -21,28 +23,28 @@ object XmlPickleTest extends App {
 
   def pickleNumber(name: String): XmlPickle[Number] = {
     for {
-      addition <- XmlPickle.attribute("addition").maybe.seq[Number](_.addition)
-      number <- XmlPickle.string(name).seq[Number](_.number)
+      addition <- attribute("addition").maybe.seq[Number](_.addition)
+      number <- string(name).seq[Number](_.number)
     } yield Number(number, addition)
   }
 
   def pickleRealAddress(name: String): XmlPickle[RealAddress] = {
-    XmlPickle.branchNode(name) {
+    branchNode(name) {
       for {
-        s <- XmlPickle.string("street").seq[RealAddress](_.street)
+        s <- string("street").seq[RealAddress](_.street)
         n <- pickleNumber("number").seq[RealAddress](_.number)
-        z <- XmlPickle.string("zipCode").seq[RealAddress](_.zipCode)
-        c <- XmlPickle.string("city").seq[RealAddress](_.city)
+        z <- string("zipCode").seq[RealAddress](_.zipCode)
+        c <- string("city").seq[RealAddress](_.city)
       } yield RealAddress(s, n, z, c)
     }
   }
 
   def pickleAntwoordnummerAddress(name: String): XmlPickle[AntwoordnummerAddress] = {
-    XmlPickle.branchNode(name) {
+    branchNode(name) {
       for {
-        a <- XmlPickle.string("antwoordnummer").seq[AntwoordnummerAddress](_.number)
-        z <- XmlPickle.string("zipCode").seq[AntwoordnummerAddress](_.zipCode)
-        c <- XmlPickle.string("city").seq[AntwoordnummerAddress](_.city)
+        a <- string("antwoordnummer").seq[AntwoordnummerAddress](_.number)
+        z <- string("zipCode").seq[AntwoordnummerAddress](_.zipCode)
+        c <- string("city").seq[AntwoordnummerAddress](_.city)
       } yield AntwoordnummerAddress(a, z, c)
     }
   }
@@ -55,13 +57,13 @@ object XmlPickleTest extends App {
   def picklePerson: XmlPickle[Person] = {
     implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
-      a <- XmlPickle.attribute("age").toInt.seq[Person](_.age)
-      _ <- XmlPickle.namespaceAttribute("age").toInt.seq[Person](_.age)
-      p <- XmlPickle.branchNode("person") {
+      a <- attribute("age").toInt.seq[Person](_.age)
+      _ <- namespaceAttribute("age").toInt.seq[Person](_.age)
+      p <- branchNode("person") {
         for {
-          n <- XmlPickle.string("name").seq[Person](_.name)
+          n <- string("name").seq[Person](_.name)
           addr <- pickleAddress("address").seq[Person](_.address)
-          m <- XmlPickle.string("mail").maybe.seq[Person](_.mail)
+          m <- string("mail").maybe.seq[Person](_.mail)
         } yield Person(n, a, addr, m)
       }.seq
     } yield p

@@ -1,6 +1,6 @@
 package experiments.parsec.xml
 
-import experiments.parsec.xml.XmlParser.{ XmlParser, attribute, attributeId, branchNode, namespaceAttribute, xmlToString }
+import experiments.parsec.xml.XmlParser._
 
 import scala.xml.{ NamespaceBinding, TopScope, Utility }
 
