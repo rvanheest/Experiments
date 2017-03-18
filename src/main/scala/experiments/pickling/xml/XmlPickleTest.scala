@@ -19,68 +19,91 @@ object XmlPickleTest extends App {
   val obj2 = obj1.copy(address = RealAddress("Prins Bernhardlaan", Number("116", Option("a")), "3241TA", "Middelharnis"))
   val obj3 = obj1.copy(address = AntwoordnummerAddress("12345", "3241TA", "Middelharnis"), mail = None, name = "foo")
 
-  val street = XmlPickle.string("street")
-  val number = XmlPickle.attribute("addition").maybe.pair(XmlPickle.string("number"))
-    .wrap { case (a, n) => Number(n, a) }
-    .unwrap { case Number(n, a) => (a, n) }
-  val antwoordnummer = XmlPickle.string("antwoordnummer")
-  val zipCode = XmlPickle.string("zipCode")
-  val city = XmlPickle.string("city")
-
-  val address = {
-    val realAddress = street.quad(number, zipCode, city)
-      .wrap[Address] { case (s, n, z, c) => RealAddress(s, n, z, c) }
-      .unwrap { case RealAddress(s, n, z, c) => (s, n, z, c) }
-    val antwoordnummerAddress = antwoordnummer.triple(zipCode, city)
-      .wrap[Address] { case (a, z, c) => AntwoordnummerAddress(a, z, c) }
-      .unwrap { case AntwoordnummerAddress(a, z, c) => (a, z, c) }
-    XmlPickle.inside("address")(realAddress orElse antwoordnummerAddress)
+  def pickleNumber(name: String): XmlPickle[Number] = {
+    for {
+      addition <- XmlPickle.attribute("addition").maybe.seq[Number](_.addition)
+      number <- XmlPickle.string(name).seq[Number](_.number)
+    } yield Number(number, addition)
   }
 
-  val name = XmlPickle.string("name")
-//  val age = XmlPickle.attribute("age").seq[Int](_.toString).map(_.toInt)
-  val age = XmlPickle.attribute("age").toInt
-  implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-//  val prefixedAge = XmlPickle.namespaceAttribute("age")(xlinkNamespace).seq[Int](_.toString).map(_.toInt)
-  val prefixedAge = XmlPickle.namespaceAttribute("age").toInt
-  val mail = XmlPickle.string("mail").maybe
+  def pickleRealAddress(name: String): XmlPickle[RealAddress] = {
+    XmlPickle.branchNode(name) {
+      for {
+        s <- XmlPickle.string("street").seq[RealAddress](_.street)
+        n <- pickleNumber("number").seq[RealAddress](_.number)
+        z <- XmlPickle.string("zipCode").seq[RealAddress](_.zipCode)
+        c <- XmlPickle.string("city").seq[RealAddress](_.city)
+      } yield RealAddress(s, n, z, c)
+    }
+  }
 
-  val person = {
-    val person: XmlPickle[(String, Address, Option[String])] = XmlPickle.inside("person")(name.triple(address, mail))
-    val attrs: XmlPickle[(Int, Int)] = age.pair(prefixedAge)
-    attrs.pair(person)
-      .wrap { case ((a, _), (n, ad, m)) => Person(n, a, ad, m) }
-      .unwrap { case Person(n, a, ad, m) => ((a, a), (n, ad, m)) }
+  def pickleAntwoordnummerAddress(name: String): XmlPickle[AntwoordnummerAddress] = {
+    XmlPickle.branchNode(name) {
+      for {
+        a <- XmlPickle.string("antwoordnummer").seq[AntwoordnummerAddress](_.number)
+        z <- XmlPickle.string("zipCode").seq[AntwoordnummerAddress](_.zipCode)
+        c <- XmlPickle.string("city").seq[AntwoordnummerAddress](_.city)
+      } yield AntwoordnummerAddress(a, z, c)
+    }
+  }
+
+  def pickleAddress(name: String): XmlPickle[Address] = {
+    pickleRealAddress(name).upcast[Address] orElse pickleAntwoordnummerAddress(name).upcast[Address]
+  }
+
+  // root node doesn't have a name
+  def picklePerson: XmlPickle[Person] = {
+    implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    for {
+      a <- XmlPickle.attribute("age").toInt.seq[Person](_.age)
+      _ <- XmlPickle.namespaceAttribute("age").toInt.seq[Person](_.age)
+      p <- XmlPickle.branchNode("person") {
+        for {
+          n <- XmlPickle.string("name").seq[Person](_.name)
+          addr <- pickleAddress("address").seq[Person](_.address)
+          m <- XmlPickle.string("mail").maybe.seq[Person](_.mail)
+        } yield Person(n, a, addr, m)
+      }.seq
+    } yield p
   }
 
   val pp = new PrettyPrinter(80, 4)
 
-  val personXml1 = person.pickle(obj1, Nil)
+  val personXml1 = picklePerson.pickle(obj1, Nil)
   for (xml <- personXml1;
-       formatted <- xml.map(pp.format(_))) {
-    println(formatted)
+       node <- xml) {
+    println(pp.format(node))
   }
-  val personRes1 = person.unpickle(personXml1.get)
-  println(personRes1)
-  println(personRes1._1.get == obj1)
+  val (person1, rest1) = picklePerson.unpickle(personXml1.get)
+  println(person1)
+  println(rest1.isEmpty)
+  for (p <- person1) {
+    println(obj1 == p)
+  }
   println
 
-  val personXml2 = person.pickle(obj2, Nil)
+  val personXml2 = picklePerson.pickle(obj2, Nil)
   for (xml <- personXml2;
-       formatted <- xml.map(pp.format(_))) {
-    println(formatted)
+       node <- xml) {
+    println(pp.format(node))
   }
-  val personRes2 = person.unpickle(personXml2.get)
-  println(personRes2)
-  println(personRes2._1.get == obj2)
+  val (person2, rest2) = picklePerson.unpickle(personXml2.get)
+  println(person2)
+  println(rest2.isEmpty)
+  for (p <- person2) {
+    println(obj2 == p)
+  }
   println
 
-  val personXml3 = person.pickle(obj3, Nil)
+  val personXml3 = picklePerson.pickle(obj3, Nil)
   for (xml <- personXml3;
-       formatted <- xml.map(pp.format(_))) {
-    println(formatted)
+       node <- xml) {
+    println(pp.format(node))
   }
-  val personRes3 = person.unpickle(personXml3.get)
-  println(personRes3)
-  println(personRes3._1.get == obj3)
+  val (person3, rest3) = picklePerson.unpickle(personXml3.get)
+  println(person3)
+  println(rest3.isEmpty)
+  for (p <- person3) {
+    println(obj3 == p)
+  }
 }

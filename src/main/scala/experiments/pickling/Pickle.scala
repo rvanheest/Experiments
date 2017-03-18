@@ -21,6 +21,8 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 	protected[this] implicit def builder[X]: PickleBuilder[X, State, Repr[X]]
 
+	def seq: SeqBuilder[A, A] = new SeqBuilder(this, identity)
+
 	def seq[B](f: B => A): SeqBuilder[A, B] = new SeqBuilder(this, f)
 
 	def pair[B](pb: Pickle[B, State]): Repr[(A, B)] = {
@@ -49,6 +51,13 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 	def wrap[B: ClassTag](f: A => B): WrapBuilder[A, B] = new WrapBuilder(this, f)
 
+	def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Repr[B] = {
+		new SeqBuilder[A, B](this, {
+			case a: A => a
+			case _ => sys.error(s"undefined unwrapper for ${ classTag[B] }")
+		}).map(identity)
+	}
+
 	def orElse(other: => Pickle[A, State]): Repr[A] = {
 		builder(
 			pickle = (a, state) => this.pickle(a, state) orElse other.pickle(a, state),
@@ -63,6 +72,8 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 				.pickle,
 			unpickle = this.unpickle.satisfy(predicate).run)
 	}
+
+	def filter(predicate: A => Boolean): Repr[A] = this.satisfy(predicate)
 
 	def noneOf(as: List[A]): Repr[A] = {
 		satisfy(!as.contains(_))

@@ -64,7 +64,7 @@ object XmlPickle {
 			unpickle = XmlParser.namespaceAttribute(name).run)
 	}
 
-	def inside[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
+	def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
 		import Pickle.unpickleAsParser
 		XmlPickle(
 			pickle = (a: A, xml: Seq[Node]) => pickleA.pickle(a, Nil).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
