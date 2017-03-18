@@ -4,18 +4,16 @@ import experiments.parsec.Parser
 
 import scala.language.{ higherKinds, implicitConversions, reflectiveCalls }
 import scala.reflect.{ ClassTag, classTag }
-import scala.util.Try
+import scala.util.{ Failure, Try }
 
 trait PickleBuilder[A, State, Repr] {
-	def apply(pickle: (A, State) => State, unpickle: Parser[State, A]): Repr
+	def apply(pickle: (A, State) => Try[State], unpickle: Parser[State, A]): Repr
 }
 
-// TODO let pickle return a Try[State]
 // TODO improve error messages
 // TODO hide the parser in unpickle
-// TODO continue implementing operators (see copied stuff from parsec)
 // TODO look into whether or not we need things like `wrap`, `pair`, etc. now that `seq` can produce a monad
-abstract class Pickle[A, State](val pickle: (A, State) => State,
+abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 																val unpickle: Parser[State, A]) {
 
 	type Repr[X] <: Pickle[X, State]
@@ -52,9 +50,8 @@ abstract class Pickle[A, State](val pickle: (A, State) => State,
 
 	def orElse(other: => Pickle[A, State]): Repr[A] = {
 		builder(
-			pickle = (a, state) => Try { this.pickle(a, state) } getOrElse other.pickle(a, state),
-			unpickle = this.unpickle <|> other.unpickle
-		)
+			pickle = (a, state) => this.pickle(a, state) orElse other.pickle(a, state),
+			unpickle = this.unpickle <|> other.unpickle)
 	}
 
 	def satisfy(predicate: A => Boolean): Repr[A] = {
@@ -72,13 +69,13 @@ abstract class Pickle[A, State](val pickle: (A, State) => State,
 
 	def maybe: Repr[Option[A]] = {
 		builder(
-			pickle = (optA, state) => optA.map(this.pickle(_, state)).getOrElse(state),
+			pickle = (optA, state) => optA.map(this.pickle(_, state)).getOrElse(Try(state)),
 			unpickle = this.unpickle.maybe)
 	}
 
 	def many: Repr[List[A]] = {
 		builder(
-			pickle = (as, state) => as.foldRight(state)(this.pickle),
+			pickle = (as, state) => as.foldRight(Try(state))((a, triedState) => triedState.flatMap(this.pickle(a, _))),
 			unpickle = this.unpickle.many)
 	}
 
@@ -115,15 +112,23 @@ abstract class Pickle[A, State](val pickle: (A, State) => State,
 	class SeqBuilder[A2, B](pickleA: Pickle[A2, State], f: B => A2) {
 		def map(g: A2 => B): Repr[B] = {
 			builder(
-				pickle = (b, state) => pickleA.pickle(f(b), state),
+				pickle = (b, state) => {
+					for {
+						a <- Try { f(b) }
+						state2 <- pickleA.pickle(a, state)
+					} yield state2
+				},
 				unpickle = pickleA.unpickle.map(g))
 		}
 
 		def flatMap(g: A2 => Pickle[B, State]): Repr[B] = {
 			builder(
 				pickle = (b, state) => {
-					val a = f(b)
-					pickleA.pickle(a, g(a).pickle(b, state))
+					for {
+						a <- Try { f(b) }
+						state2 <- g(a).pickle(b, state)
+						state3 <- pickleA.pickle(a, state2)
+					} yield state3
 				},
 				unpickle = pickleA.unpickle.flatMap(g(_).unpickle))
 		}
@@ -131,6 +136,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => State,
 
 	class WrapBuilder[A2, B: ClassTag](pickleA: Pickle[A2, State], f: A2 => B) {
 		def unwrap(g: PartialFunction[B, A2]): Repr[B] = {
+			// TODO replace with .seq call???
 			new SeqBuilder[A2, B](pickleA, b => if (g isDefinedAt b) g(b)
 																					else sys.error(s"undefined unwrapper for ${classTag[B]}"))
 				.map(f)
@@ -142,13 +148,13 @@ object Pickle {
 
 	def lift[A, State, Repr[X] <: Pickle[X, State]](a: A)(implicit builder: PickleBuilder[A, State, Repr[A]]): Repr[A] = {
 		builder(
-			pickle = (_, s) => s,
+			pickle = (_, s) => Try(s),
 			unpickle = Parser.from(a))
 	}
 
 	def empty[A, State, Repr[X] <: Pickle[X, State]](implicit builder: PickleBuilder[A, State, Repr[A]]): Repr[A] = {
 		builder(
-			pickle = (_, _) => throw new NoSuchElementException("empty pickle"),
+			pickle = (_, _) => Failure(new NoSuchElementException("empty pickle")),
 			unpickle = Parser.empty
 		)
 	}

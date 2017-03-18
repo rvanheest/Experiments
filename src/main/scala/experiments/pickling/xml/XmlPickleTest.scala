@@ -56,22 +56,31 @@ object XmlPickleTest extends App {
   val pp = new PrettyPrinter(80, 4)
 
   val personXml1 = person.pickle(obj1, Nil)
-  personXml1.map(pp.format(_)).foreach(println)
-  val personRes1 = person.unpickle.run(personXml1)
+  for (xml <- personXml1;
+       formatted <- xml.map(pp.format(_))) {
+    println(formatted)
+  }
+  val personRes1 = person.unpickle.run(personXml1.get)
   println(personRes1)
   println(personRes1._1.get == obj1)
   println
 
   val personXml2 = person.pickle(obj2, Nil)
-  personXml2.map(pp.format(_)).foreach(println)
-  val personRes2 = person.unpickle.run(personXml2)
+  for (xml <- personXml2;
+       formatted <- xml.map(pp.format(_))) {
+    println(formatted)
+  }
+  val personRes2 = person.unpickle.run(personXml2.get)
   println(personRes2)
   println(personRes2._1.get == obj2)
   println
 
   val personXml3 = person.pickle(obj3, Nil)
-  personXml3.map(pp.format(_)).foreach(println)
-  val personRes3 = person.unpickle.run(personXml3)
+  for (xml <- personXml3;
+       formatted <- xml.map(pp.format(_))) {
+    println(formatted)
+  }
+  val personRes3 = person.unpickle.run(personXml3.get)
   println(personRes3)
   println(personRes3._1.get == obj3)
 }

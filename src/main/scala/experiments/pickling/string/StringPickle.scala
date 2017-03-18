@@ -6,20 +6,21 @@ import experiments.parsec.string.StringParser.StringParser
 import experiments.pickling.{ Pickle, PickleBuilder }
 
 import scala.language.postfixOps
+import scala.util.Try
 
-case class StringPickle[A](override val pickle: (A, String) => String,
+case class StringPickle[A](override val pickle: (A, String) => Try[String],
                            override val unpickle: StringParser[A])
   extends Pickle[A, String](pickle, unpickle) {
 
   type Repr[X] = StringPickle[X]
 
-  protected[this] def builder[X]: PickleBuilder[X, String, StringPickle[X]] = StringPickle.stringPickleBuilder
+  protected[this] implicit def builder[X]: PickleBuilder[X, String, StringPickle[X]] = StringPickle.stringPickleBuilder
 }
 
 object StringPickle {
   implicit def stringPickleBuilder[X]: PickleBuilder[X, String, StringPickle[X]] = {
     new PickleBuilder[X, String, StringPickle[X]] {
-      def apply(pickle: (X, String) => String, unpickle: Parser[String, X]): StringPickle[X] = {
+      def apply(pickle: (X, String) => Try[String], unpickle: Parser[String, X]): StringPickle[X] = {
         StringPickle(pickle, unpickle)
       }
     }
@@ -27,7 +28,7 @@ object StringPickle {
 
   def item: StringPickle[Char] = {
     StringPickle(
-      pickle = _ +: _,
+      pickle = (c, s) => Try(c +: s),
       unpickle = StringParser.item
     )
   }

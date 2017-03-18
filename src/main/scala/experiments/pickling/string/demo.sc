@@ -16,13 +16,13 @@ val digitPickle = digit
 digitPickle.unpickle.run("5")
 digitPickle.unpickle.run("a")
 digitPickle.pickle('5', "")
-//digitPickle.pickle('a', "")
+digitPickle.pickle('a', "")
 
 val numberPickle = number
 numberPickle.unpickle.run("345")
 numberPickle.unpickle.run("45a6")
 numberPickle.pickle("345", "")
-//numberPickle.pickle("45a6", "")
+numberPickle.pickle("45a6", "")
 
 val patternPickle = for {
   s1 <- number.seq[(String, String, String)] { case (s, _, _) => s }
@@ -46,4 +46,4 @@ number.separatedBy('-')(char('-')).pickle(Nil, "abc")
 number.separatedBy1('-')(char('-')).unpickle.run("12-345-6789-")
 number.separatedBy1('-')(char('-')).pickle(List("12", "345", "6789"), "-")
 number.separatedBy1('-')(char('-')).unpickle.run("abc")
-//number.separatedBy1('-')(char('-')).pickle(Nil, "-")
+number.separatedBy1('-')(char('-')).pickle(Nil, "-")
