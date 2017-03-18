@@ -2,16 +2,15 @@ package experiments.pickling
 
 import experiments.parsec.Parser
 
-import scala.language.{ higherKinds, implicitConversions, reflectiveCalls }
+import scala.language.{ higherKinds, implicitConversions }
 import scala.reflect.{ ClassTag, classTag }
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Try }
 
 trait PickleBuilder[A, State, Repr] {
 	def apply(pickle: (A, State) => Try[State], unpickle: State => (Try[A], State)): Repr
 }
 
 // TODO improve error messages
-// TODO look into whether or not we need things like `wrap`, `pair`, etc. now that `seq` can produce a monad
 abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 																val unpickle: State => (Try[A], State)) {
 
@@ -40,11 +39,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 	def satisfy(predicate: A => Boolean): Repr[A] = this.seq.filter(predicate)
 
-	def filter(predicate: A => Boolean): Repr[A] = this.satisfy(predicate)
-
-	def noneOf(as: List[A]): Repr[A] = {
-		satisfy(!as.contains(_))
-	}
+	def noneOf(as: List[A]): Repr[A] = satisfy(!as.contains(_))
 
 	def maybe: Repr[Option[A]] = {
 		builder(
@@ -65,9 +60,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 		} yield x :: xs
 	}
 
-	def takeUntil(predicate: A => Boolean): Repr[List[A]] = {
-		takeWhile(!predicate(_))
-	}
+	def takeUntil(predicate: A => Boolean): Repr[List[A]] = takeWhile(!predicate(_))
 
 	def takeWhile(predicate: A => Boolean): Repr[List[A]] = {
 		builder(
@@ -77,7 +70,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 	def separatedBy[Sep](separator: Sep)(sep: Repr[Sep]): Repr[List[A]] = {
 		builder(
-			pickle = this.separatedBy1(separator)(sep).orElse(Pickle.lift[List[A], State, Repr](Nil)).pickle,
+			pickle = (as, state) => this.separatedBy1(separator)(sep).pickle(as, state) orElse Try(state),
 			unpickle = this.unpickle.separatedBy(Parser(sep.unpickle)).run)
 	}
 
@@ -114,7 +107,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 
 		def filter(predicate: X => Boolean): Repr[X] = {
 			builder(
-				pickle = (x, state) => if (predicate(x)) Success(state)
+				pickle = (x, state) => if (predicate(x)) pickleA.pickle(x, state)
 															 else Failure(new NoSuchElementException("empty pickle")),
 				unpickle = pickleA.unpickle.satisfy(predicate).run)
 		}
@@ -124,26 +117,4 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 object Pickle {
 
 	private[pickling] implicit def unpickleAsParser[A, State](f: State => (Try[A], State)): Parser[State, A] = Parser(f)
-
-	def lift[A, State, Repr[X] <: Pickle[X, State]](a: A)(implicit builder: PickleBuilder[A, State, Repr[A]]): Repr[A] = {
-		builder(
-			pickle = (_, s) => Try(s),
-			unpickle = Parser.from(a).run)
-	}
-
-	def empty[A, State, Repr[X] <: Pickle[X, State]](implicit builder: PickleBuilder[A, State, Repr[A]]): Repr[A] = {
-		builder(
-			pickle = (_, _) => Failure(new NoSuchElementException("empty pickle")),
-			unpickle = Parser.empty.run)
-	}
-
-	def alt[A, State, Repr[X] <: Pickle[X, State]](as: Array[Pickle[A, State]])(selector: A => Int)(implicit builder: PickleBuilder[A, State, Repr[A]]): Repr[A] = {
-		builder(
-			pickle = (a, state) => as(selector(a)).pickle(a, state),
-			unpickle = as.view
-			  .map(p => Parser(p.unpickle))
-			  .reduceOption(_ <|> _)
-				.getOrElse(Parser.empty)
-				.run)
-	}
 }

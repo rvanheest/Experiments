@@ -34,7 +34,7 @@ patternPickle.pickle(("45", "[a-b-c]", "6"), "")
 
 val stringPickle = string("hello")
 stringPickle.unpickle("hello world")
-stringPickle.pickle("hello", "world")
+stringPickle.pickle("hello", " world")
 
 item.takeWhile(c => c == 'a').unpickle("aaabbc")
 item.takeWhile(c => c == 'a').pickle(List('a', 'a', 'a'), "bbc")

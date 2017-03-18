@@ -47,11 +47,18 @@ object StringPickle {
 
   def space: StringPickle[Char] = char(' ')
 
-  def string(s: String): StringPickle[String] = s.toList match {
-    case x :: xs => for {
-      _ <- char(x).seq[String](_.head)
-      _ <- string(xs.mkString).seq[String](_.tail)
-    } yield s
-    case Nil => Pickle.lift("")
+  def string(s: String): StringPickle[String] = {
+    StringPickle(
+      pickle = (str, state) => {
+        s.toList match {
+          case x :: xs => (for {
+            _ <- char(x).seq[String](_.head)
+            _ <- string(xs.mkString).seq[String](_.tail)
+          } yield s).pickle(str, state)
+          case Nil => Try(state)
+        }
+      },
+      unpickle = StringParser.string(s).run
+    )
   }
 }
