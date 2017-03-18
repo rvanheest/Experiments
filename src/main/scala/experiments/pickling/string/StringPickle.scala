@@ -16,7 +16,7 @@ case class StringPickle[A](override val pickle: (A, String) => Try[String],
 }
 
 object StringPickle {
-  implicit def stringPickleBuilder[X]: PickleBuilder[X, String, StringPickle[X]] = {
+  protected[StringPickle] implicit def stringPickleBuilder[X]: PickleBuilder[X, String, StringPickle[X]] = {
     new PickleBuilder[X, String, StringPickle[X]] {
       def apply(pickle: (X, String) => Try[String], unpickle: String => (Try[X], String)): StringPickle[X] = {
         StringPickle(pickle, unpickle)
@@ -49,15 +49,14 @@ object StringPickle {
 
   def string(s: String): StringPickle[String] = {
     StringPickle(
-      pickle = (str, state) => {
+      pickle = (str, state) =>
         s.toList match {
           case x :: xs => (for {
             _ <- char(x).seq[String](_.head)
             _ <- string(xs.mkString).seq[String](_.tail)
           } yield s).pickle(str, state)
           case Nil => Try(state)
-        }
-      },
+        },
       unpickle = StringParser.string(s).run
     )
   }

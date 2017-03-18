@@ -22,7 +22,7 @@ case class XmlPickle[A](override val pickle: (A, Seq[Node]) => Try[Seq[Node]],
 
 object XmlPickle {
 
-	implicit def xmlPickleBuilder[X]: PickleBuilder[X, Seq[Node], XmlPickle[X]] = {
+	protected[XmlPickle] implicit def xmlPickleBuilder[X]: PickleBuilder[X, Seq[Node], XmlPickle[X]] = {
 		new PickleBuilder[X, Seq[Node], XmlPickle[X]] {
 			def apply(pickle: (X, Seq[Node]) => Try[Seq[Node]], unpickle: Seq[Node] => (Try[X], Seq[Node])): XmlPickle[X] = {
 				XmlPickle(pickle, unpickle)
@@ -65,9 +65,8 @@ object XmlPickle {
 	}
 
 	def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
-		import Pickle.unpickleAsParser
 		XmlPickle(
 			pickle = (a: A, xml: Seq[Node]) => pickleA.pickle(a, Nil).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
-			unpickle = XmlParser.branchNode(name)(pickleA.unpickle).run)
+			unpickle = XmlParser.branchNode(name)(pickleA.parse).run)
 	}
 }
