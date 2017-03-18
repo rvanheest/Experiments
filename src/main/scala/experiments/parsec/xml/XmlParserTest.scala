@@ -1,8 +1,8 @@
 package experiments.parsec.xml
 
-import experiments.parsec.xml.XmlParser.{ XmlParser, attribute, attributeId, branchNode, xmlToString }
+import experiments.parsec.xml.XmlParser.{ XmlParser, attribute, attributeId, branchNode, namespaceAttribute, xmlToString }
 
-import scala.xml.Utility
+import scala.xml.{ NamespaceBinding, TopScope, Utility }
 
 object XmlParserTest extends App {
 
@@ -52,8 +52,10 @@ object XmlParserTest extends App {
 
   // root node doesn't have a name
   def parsePerson: XmlParser[Person] = {
+    implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
       age <- attribute("age")(_.toInt)
+      _ <- namespaceAttribute("age").map(_.toInt)
       p <- branchNode("person") {
         for {
           pName <- xmlToString("name")
@@ -64,7 +66,7 @@ object XmlParserTest extends App {
     } yield p
   }
 
-  val xml1 = <person age="24">
+  val xml1 = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <street>Prins Bernhardlaan</street>
@@ -75,7 +77,7 @@ object XmlParserTest extends App {
     <mail>richard.v.heest@gmail.com</mail>
   </person>
 
-  val xml2 = <person age="24">
+  val xml2 = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <street>Prins Bernhardlaan</street>
@@ -86,7 +88,7 @@ object XmlParserTest extends App {
     <mail>richard.v.heest@gmail.com</mail>
   </person>
 
-  val xml3 = <person age="24">
+  val xml3 = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <antwoordnummer>12345</antwoordnummer>
