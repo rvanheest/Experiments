@@ -36,7 +36,12 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 			unpickle = (this.parse <|> other.parse).run)
 	}
 
-	def satisfy(predicate: A => Boolean): Repr[A] = this.seq.filter(predicate)
+	def satisfy(predicate: A => Boolean): Repr[A] = {
+		builder(
+			pickle = (a, state) => if (predicate(a)) this.pickle(a, state)
+														 else Failure(new NoSuchElementException("empty pickle")),
+			unpickle = this.parse.satisfy(predicate).run)
+	}
 
 	def noneOf(as: List[A]): Repr[A] = satisfy(!as.contains(_))
 
@@ -70,7 +75,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 	def separatedBy[Sep](separator: Sep)(sep: Repr[Sep]): Repr[List[A]] = {
 		builder(
 			pickle = (as, state) => this.separatedBy1(separator)(sep).pickle(as, state) orElse Try(state),
-			unpickle = this.parse.separatedBy(Parser(sep.unpickle)).run)
+			unpickle = this.parse.separatedBy(sep.parse).run)
 	}
 
 	def separatedBy1[Sep](separator: Sep)(sep: Repr[Sep]): Repr[List[A]] = {
@@ -102,13 +107,6 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 					} yield state3
 				},
 				unpickle = pickleA.parse.flatMap(g(_).parse).run)
-		}
-
-		def filter(predicate: X => Boolean): Repr[X] = {
-			builder(
-				pickle = (x, state) => if (predicate(x)) pickleA.pickle(x, state)
-															 else Failure(new NoSuchElementException("empty pickle")),
-				unpickle = pickleA.parse.satisfy(predicate).run)
 		}
 	}
 }
