@@ -1,5 +1,5 @@
 package experiments.action
-import scala.util.{Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object Example extends App {
 
@@ -13,15 +13,15 @@ object Example extends App {
 	val act4: Action[Unit] = unrelated.andThen(dependend).applyLeft(getOnce)
 	val act5: Action[Unit] = dependend.thenAnd(unrelated).applyLeft(getOnce)
 
-	println(act1.run())
-	println
-	println(act2.run())
-	println
+//	println(act1.run())
+//	println
+//	println(act2.run())
+//	println
 	println(act3.run())
-	println
-	println(act4.run())
-	println
-	println(act5.run())
+//	println
+//	println(act4.run())
+//	println
+//	println(act5.run())
 
 	case class GetOnceAction() extends Action[Int] {
 		lazy val computeOnce: Int = {
@@ -31,23 +31,27 @@ object Example extends App {
 
 		override def checkPreconditions: Try[Unit] = {
 			println("GetOnceAction precondition")
+//			Failure(ActionException(1, "foo"))
 			Success(())
 		}
 
 		override def execute(): Try[Int] = {
 			println("GetOnceAction execute")
+//			Failure(ActionException(1, "foo"))
 			Success(computeOnce)
 		}
 
 		override def rollback(): Try[Unit] = {
 			println("GetOnceAction rollback")
-			Success(())
+			Failure(ActionException(1, "foo undo"))
+//			Success(())
 		}
 	}
 
 	case class DependendAction() extends Action[Int => Unit] {
 		override def checkPreconditions: Try[Unit] = {
 			println("DependendAction precondition")
+//			Failure(ActionException(2, "bar"))
 			Success(())
 		}
 
@@ -58,24 +62,28 @@ object Example extends App {
 
 		override def rollback(): Try[Unit] = {
 			println("DependendAction rollback")
-			Success(())
+			Failure(ActionException(2, "bar undo"))
+//			Success(())
 		}
 	}
 
 	case class UnrelatedAction() extends Action[Unit] {
 		override def checkPreconditions: Try[Unit] = {
 			println("UnrelatedAction precondition")
+//			Failure(ActionException(3, "baz"))
 			Success(())
 		}
 
 		override def execute(): Try[Unit] = {
 			println("UnrelatedAction execute")
-			Success(())
+			Failure(ActionException(3, "baz"))
+//			Success(())
 		}
 
 		override def rollback(): Try[Unit] = {
 			println("UnrelatedAction rollback")
-			Success(())
+			Failure(ActionException(3, "baz undo"))
+//			Success(())
 		}
 	}
 }

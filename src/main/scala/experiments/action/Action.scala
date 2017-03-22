@@ -29,6 +29,16 @@ trait Action[T] { self =>
 	def rollback(): Try[Unit]
 
 	def run(): Try[T] = {
+		def runFailed(t: Throwable): Try[T] = {
+			Failure(ActionRunFailedException(
+				report = generateReport(
+					header = "Errors in Multi-Deposit Instructions file:",
+					t = t,
+					footer = "The actions that were already performed, were rolled back."),
+				cause = t
+			))
+		}
+
 		for {
 			_ <- checkPreconditions.recoverWith {
 				case NonFatal(e) => Failure(PreconditionsFailedException(
@@ -39,19 +49,18 @@ trait Action[T] { self =>
 					cause = e))
 			}
 			t <- execute().recoverWith {
-				case NonFatal(e1) =>
-					def runFailed(t: Throwable): Try[T] = {
-						Failure(ActionRunFailedException(
-							report = generateReport(
-								header = "Errors in Multi-Deposit Instructions file:",
-								t = t,
-								footer = "The actions that were already performed, were rolled back."),
-							cause = t
-						))
+				case e1@CompositeException(es) =>
+					rollback() match {
+						case Success(_) => runFailed(e1)
+						case Failure(CompositeException(es2)) => runFailed(CompositeException(es ++ es2))
+						case Failure(e2) => runFailed(CompositeException(es ++ List(e2)))
 					}
-
-					rollback().flatMap(_ => runFailed(e1))
-					  .recoverWith { case NonFatal(e2) => runFailed(CompositeException(List(e1, e2))) }
+				case NonFatal(e1) =>
+					rollback() match {
+						case Success(_) => runFailed(e1)
+						case Failure(CompositeException(es2)) => runFailed(CompositeException(List(e1) ++ es2))
+						case Failure(e2) => runFailed(CompositeException(List(e1, e2)))
+					}
 			}
 		} yield t
 	}
@@ -60,16 +69,16 @@ trait Action[T] { self =>
 		def toOption(s: String): Option[String] = if (s.trim.isEmpty) Option.empty else Option(s)
 
 		@tailrec
-		def report(es: List[Throwable], rpt: String = ""): String = {
+		def report(es: List[Throwable], rpt: List[String] = Nil): List[String] = {
 			es match {
 				case Nil => rpt
-				case ActionException(row, msg, _) :: xs => report(xs, s" - row $row: $msg" + rpt)
+				case ActionException(row, msg, _) :: xs => report(xs, s" - row $row: $msg" :: rpt)
 				case CompositeException(ths) :: xs => report(ths.toList ::: xs, rpt)
-				case NonFatal(ex) :: xs => report(xs, s" - unexpected error: ${ex.getMessage}" + rpt)
+				case NonFatal(ex) :: xs => report(xs, s" - unexpected error: ${ex.getMessage}" :: rpt)
 			}
 		}
 
-		toOption(header).fold("")(_ + "\n") + report(List(t)) + toOption(footer).fold("")("\n" + _)
+		toOption(header).fold("")(_ + "\n") + report(List(t)).reverse.mkString("\n") + toOption(footer).fold("")("\n" + _)
 	}
 
 	// fmap
@@ -81,13 +90,12 @@ trait Action[T] { self =>
 		override def rollback(): Try[Unit] = self.rollback()
 	}
 
-	// <*>
 	/*
 	  Note that this operator will change the order of operations in the 'execute' phase.
 	  First 'other' is executed, then 'self'.
-	  The order in the preconditions is preserved.
-	  TODO is the order preserved or reversed in 'rollback' phase?
+	  The order in the preconditions and rollback phases is preserved.
 	 */
+	// <*>
 	def applyLeft[S, R](other: Action[S])(implicit ev: T <:< (S => R)): Action[R] = combineWith(other)((f, t) => f(t))
 
 	// <**>
@@ -121,7 +129,7 @@ trait Action[T] { self =>
 		}
 
 		override def rollback(): Try[Unit] = {
-			(self :: (if (pastSelf) other :: Nil else Nil))
+			(if (pastSelf) List(other, self) else List(self))
 				.map(_.rollback())
 				.collectResults
 				.map(_ => ())
