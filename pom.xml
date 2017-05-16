@@ -26,6 +26,12 @@
             <artifactId>scala-xml_2.11</artifactId>
             <version>1.0.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-core_2.11</artifactId>
+            <version>0.9.0</version>
+        </dependency>
     </dependencies>
 
     <build>
