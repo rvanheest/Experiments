@@ -1,6 +1,6 @@
 package monadics.test
 
-import monadics.instances.NonEmptyList
+import monadics.instances.{Identity, NonEmptyList, Reader}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 
@@ -12,4 +12,12 @@ package object instances {
       ts <- arbitrary[List[T]]
     } yield NonEmptyList(t, ts))
   }
+
+	implicit def arbIdentity[T](implicit a: Arbitrary[T]): Arbitrary[Identity[T]] = {
+		Arbitrary(arbitrary[T].map(Identity(_)))
+	}
+
+	implicit def arbReader[T, R](implicit a: Arbitrary[T]): Arbitrary[Reader[R, T]] = {
+		Arbitrary(arbitrary[T].map(t => new Reader(_ => t)))
+	}
 }

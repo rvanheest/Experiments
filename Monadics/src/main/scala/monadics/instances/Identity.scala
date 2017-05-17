@@ -2,13 +2,19 @@ package monadics.instances
 
 import monadics.structures.{ Comonad, Equals, Monad }
 
-class Identity[A](id: A)(implicit monad: Monad[Identity]) {
+class Identity[A](id: => A)(implicit monad: Monad[Identity]) {
 
 	def run: A = id
 
 	def map[B](f: A => B): Identity[B] = monad.map(this)(f)
 
-	def <*>[B, C](other: Identity[B])(implicit ev: Identity[A] <:< Identity[(B => C)]): Identity[C] = monad.<*>(this, other)
+	def as[B](b: => B): Identity[B] = monad.as(this, b)
+
+	def void: Identity[Unit] = monad.void(this)
+
+	def zipWith[B](f: A => B): Identity[(A, B)] = monad.zipWith(this)(f)
+
+	def <*>[B, C](other: Identity[B])(implicit ev: Identity[A] <:< Identity[B => C]): Identity[C] = monad.<*>(this, other)
 
 	def *>[B](other: Identity[B]): Identity[B] = monad.*>(this, other)
 
@@ -22,12 +28,12 @@ class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
 	def thenAnd[B](other: Identity[B]): Identity[A] = monad.thenAnd(this, other)
 
-	def flatten[B](implicit ev: A <:< Identity[B]): Identity[B] = monad.flatten(this)(ev)
+	def flatten[B](implicit ev: A <:< Identity[B]): Identity[B] = monad.flatten(this)
 }
 
 object Identity {
 
-	def apply[A](a: A)(implicit monad: Monad[Identity]): Identity[A] = {
+	def apply[A](a: => A)(implicit monad: Monad[Identity]): Identity[A] = {
 		new Identity(a)
 	}
 
@@ -40,11 +46,11 @@ object Identity {
 		def create[A](a: A): Identity[A] = new Identity(a)(self)
 
 		override def map[A, B](identity: Identity[A])(f: A => B): Identity[B] = {
-			new Identity(f(identity.run))(self)
+			Identity(f(identity.run))(self)
 		}
 
 		def flatMap[A, B](identity: Identity[A])(f: A => Identity[B]): Identity[B] = {
-			f(identity.run)
+			Identity(f(identity.run).run)(self)
 		}
 
 		def extract[A](identity: Identity[A]): A = identity.run

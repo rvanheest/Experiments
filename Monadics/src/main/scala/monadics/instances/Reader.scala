@@ -10,12 +10,32 @@ class Reader[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]) {
 
   def map[B](f: A => B): Reader[R, B] = monad.map(this)(f)
 
+  def as[B](b: => B): Reader[R, B] = monad.as(this, b)
+
+  def void: Reader[R, Unit] = monad.void(this)
+
+  def zipWith[B](f: A => B): Reader[R, (A, B)] = monad.zipWith(this)(f)
+
   def <*>[B, C](other: Reader[R, B])(implicit ev: Reader[R, A] <:< Reader[R, (B => C)]): Reader[R, C] = monad.<*>(this, other)
 
+  def *>[B](other: Reader[R, B]): Reader[R, B] = monad.*>(this, other)
+
+  def <*[B](other: Reader[R, B]): Reader[R, A] = monad.<*(this, other)
+
+  def <**>[B](other: Reader[R, A => B]): Reader[R, B] = monad.<**>(this, other)
+
   def flatMap[B](f: A => Reader[R, B]): Reader[R, B] = monad.flatMap(this)(f)
+
+  def andThen[B](other: Reader[R, B]): Reader[R, B] = monad.andThen(this, other)
+
+  def thenAnd[B](other: Reader[R, B]): Reader[R, A] = monad.thenAnd(this, other)
+
+  def flatten[B](implicit ev: A <:< Reader[R, B]): Reader[R, B] = monad.flatten(this)
 }
 
 object Reader {
+
+  def apply[R, A](f: R => A)(implicit monad: Monad[Reader[R, ?]]): Reader[R, A] = new Reader(f)
 
   implicit def readerIsFunction[R, A](reader: Reader[R, A]): R => A = reader.run
 
@@ -27,15 +47,15 @@ object Reader {
     def create[A](a: A): Reader[R, A] = new Reader(_ => a)
 
     override def map[A, B](functor: Reader[R, A])(f: A => B): Reader[R, B] = {
-      new Reader(f compose functor.run)
+      Reader(f compose functor.run)
     }
 
     override def <*>[A, B](appFunc: Reader[R, A => B], appA: Reader[R, A]): Reader[R, B] = {
-      new Reader(r => appFunc.run(r)(appA.run(r)))
+      Reader(r => appFunc.run(r)(appA.run(r)))
     }
 
     def flatMap[A, B](monad: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = {
-      new Reader(r => f(monad.run(r)).run(r))
+      Reader(r => f(monad.run(r)).run(r))
     }
   }
 
