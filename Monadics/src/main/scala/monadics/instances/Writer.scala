@@ -49,7 +49,7 @@ object Writer {
     })
   }
 
-  implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] = new Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] {
+  implicit def writerIsMonad[W](implicit wIsMonoid: Monoid[W]): Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] with Comonad[Writer[W, ?]] = new Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] with Comonad[Writer[W, ?]] {
     implicit val self: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]] = this
 
     def create[A](a: A): Writer[W, A] = Writer(a, wIsMonoid.empty)
@@ -92,6 +92,14 @@ object Writer {
     def traverse[G[_], A, B](writer: Writer[W, A])(f: A => G[B])(implicit applicative: Applicative[G]): G[Writer[W, B]] = {
       val (a, w) = writer.run
       applicative.map(f(a))(b => Writer(b, w))
+    }
+
+    def extract[A](writer: Writer[W, A]): A = writer.value
+
+    def extend[A, B](writer: Writer[W, A])(f: (Writer[W, A]) => B): Writer[W, B] = {
+      val w = writer.log
+      val b = f(writer)
+      Writer(b, w)
     }
   }
 }

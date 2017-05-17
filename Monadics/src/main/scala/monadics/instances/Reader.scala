@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Equals, Monad}
+import monadics.structures.{ Comonad, Equals, Monad, Monoid }
 
 import scala.language.implicitConversions
 
@@ -36,6 +36,18 @@ object Reader {
 
     def flatMap[A, B](monad: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = {
       new Reader(r => f(monad.run(r)).run(r))
+    }
+  }
+
+  implicit def readerIsComonad[R](implicit ev: Monoid[R]): Comonad[Reader[R, ?]] = new Comonad[Reader[R, ?]] {
+    def map[A, B](reader: Reader[R, A])(f: A => B): Reader[R, B] = {
+      new Reader(f compose reader.run)
+    }
+
+    def extract[A](reader: Reader[R, A]): A = reader.run(ev.empty)
+
+    def extend[A, B](reader: Reader[R, A])(f: Reader[R, A] => B): Reader[R, B] = {
+      new Reader(r => f((r2: R) => reader.run(ev.combine(r2, r))))
     }
   }
 }

@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Equals, Monad}
+import monadics.structures.{ Comonad, Equals, Monad, Monoid }
 
 class Continuation[R, A](c: (A => R) => R)(implicit monad: Monad[Continuation[R, ?]]) {
 
@@ -32,16 +32,16 @@ object Continuation {
   implicit def continuationIsMonad[R]: Monad[Continuation[R, ?]] = new Monad[Continuation[R, ?]] {
     def create[A](a: A): Continuation[R, A] = new Continuation(_(a))
 
-    override def map[A, B](functor: Continuation[R, A])(f: A => B): Continuation[R, B] = {
-      new Continuation(bToR => functor.run(f andThen bToR))
+    override def map[A, B](continuation: Continuation[R, A])(f: A => B): Continuation[R, B] = {
+      new Continuation(bToR => continuation.run(f andThen bToR))
     }
 
-    override def <*>[A, B](appFunc: Continuation[R, (A) => B], appA: Continuation[R, A]): Continuation[R, B] = {
-      new Continuation(bToR => appFunc.run(aToB => appA.run(aToB andThen bToR)))
+    override def <*>[A, B](continuation: Continuation[R, (A) => B], appA: Continuation[R, A]): Continuation[R, B] = {
+      new Continuation(bToR => continuation.run(aToB => appA.run(aToB andThen bToR)))
     }
 
-    def flatMap[A, B](monad: Continuation[R, A])(f: A => Continuation[R, B]): Continuation[R, B] = {
-      new Continuation(bToR => monad.run(f(_).run(bToR)))
+    def flatMap[A, B](continuation: Continuation[R, A])(f: A => Continuation[R, B]): Continuation[R, B] = {
+      new Continuation(bToR => continuation.run(g => f(g).run(bToR)))
     }
   }
 }

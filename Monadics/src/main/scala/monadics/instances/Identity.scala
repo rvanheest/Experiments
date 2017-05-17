@@ -1,6 +1,6 @@
 package monadics.instances
 
-import monadics.structures.{Equals, Monad}
+import monadics.structures.{ Comonad, Equals, Monad }
 
 class Identity[A](id: A)(implicit monad: Monad[Identity]) {
 
@@ -35,7 +35,7 @@ object Identity {
 		Equals.create((id1, id2) => aEquals.equals(id1.run, id2.run))
 	}
 
-	implicit def identityIsMonad = new Monad[Identity] { self =>
+	implicit def identityIsMonad = new Monad[Identity] with Comonad[Identity] { self =>
 
 		def create[A](a: A): Identity[A] = new Identity(a)(self)
 
@@ -45,6 +45,12 @@ object Identity {
 
 		def flatMap[A, B](identity: Identity[A])(f: A => Identity[B]): Identity[B] = {
 			f(identity.run)
+		}
+
+		def extract[A](identity: Identity[A]): A = identity.run
+
+		def extend[A, B](identity: Identity[A])(f: Identity[A] => B): Identity[B] = {
+			new Identity[B](f(identity))
 		}
 	}
 }
