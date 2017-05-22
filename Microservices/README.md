@@ -13,7 +13,7 @@ workflow, we assume that the customer places an order, pays, and then waits for 
 Between placing and paying for the order, the customer can usually amend it – by, for example,
 asking for semi-skimmed milk to be used.
 
-![img/Workflow_client.jpg]
+![client workflow](img/Workflow_client.jpg)
 
 A second workflow captures the set of actions performed by a barista, which has his own state
 machine, though it's not visible to the customer. As shown in the figure below, the barista loops
@@ -21,4 +21,4 @@ around looking for the next order to be made, preparing the drink, and taking th
 An instance of the loop can begin when an order is added to the barista's queue. The outputs of the
 workflow are available to the customer when the barista finishes the order and releases the drink.
 
-![img/Workflow_barista.jpg]
+![barista workflow](img/Workflow_barista.jpg)
