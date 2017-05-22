@@ -17,19 +17,17 @@ package com.github.rvanheest.starbux.client
 
 import java.nio.file.Paths
 
-import com.github.rvanheest.starbux.client.service.{ ClientServerComponent, ClientServletMounterComponent, OrderServletComponent }
+import com.github.rvanheest.starbux.client.cmd.{ CommandLineInterfaceComponent, CommandLineRunComponent }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-object ClientWiring extends ClientServerComponent
-  with ClientServletMounterComponent
-  with OrderServletComponent
+class ClientWiring(params: Seq[String]) extends CommandLineInterfaceComponent
+  with CommandLineRunComponent
   with PropertiesComponent
   with DebugEnhancedLogging {
 
   private lazy val home = Paths.get(System.getProperty("app.home"))
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
-  override lazy val orderServlet: StarBuxServlet = new StarBuxServlet {}
-  override lazy val mounter: ServletMounter = new ServletMounter {}
-  override lazy val server: StarBuxServer = new StarBuxServer(properties.properties.getInt("client.daemon.http.port"))
+  override lazy val cli: CommandLineInterface = CommandLineInterface(params)
+  override lazy val run: CommandLineRun = new CommandLineRun {}
 }

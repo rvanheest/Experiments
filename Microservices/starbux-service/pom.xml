@@ -34,7 +34,7 @@
     <inceptionYear>2017</inceptionYear>
 
     <properties>
-        <main-class>com.github.rvanheest.starbux.service.Command</main-class>
+        <main-class>com.github.rvanheest.starbux.StarBuxService</main-class>
     </properties>
 
     <dependencies>
@@ -95,33 +95,7 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>javax.servlet</groupId>-->
-        <!--<artifactId>javax.servlet-api</artifactId>-->
-        <!--<version>3.1.0</version>-->
-        <!--</dependency>-->
     </dependencies>
-
-    <!--<repositories>-->
-    <!--<repository>-->
-    <!--<id>DANS</id>-->
-    <!--<releases>-->
-    <!--<enabled>true</enabled>-->
-    <!--</releases>-->
-    <!--<url>http://maven.dans.knaw.nl/</url>-->
-    <!--</repository>-->
-    <!--</repositories>-->
-
-    <!--<pluginRepositories>-->
-    <!--<pluginRepository>-->
-    <!--<id>DANS</id>-->
-    <!--<releases>-->
-    <!--<enabled>true</enabled>-->
-    <!--</releases>-->
-    <!--<url>http://maven.dans.knaw.nl/</url>-->
-    <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
@@ -145,4 +119,22 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>service</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <classpathScope>test</classpathScope>
+                            <mainClass>${main-class}</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

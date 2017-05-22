@@ -34,7 +34,7 @@
     <inceptionYear>2017</inceptionYear>
 
     <properties>
-        <main-class>com.github.rvanheest.starbux.client.Command</main-class>
+        <main-class>com.github.rvanheest.starbux.client.Main</main-class>
     </properties>
 
     <dependencies>
@@ -88,6 +88,10 @@
         <dependency>
             <groupId>org.scalatra</groupId>
             <artifactId>scalatra_2.12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalaj</groupId>
+            <artifactId>scalaj-http_2.12</artifactId>
         </dependency>
 
         <!-- logging -->

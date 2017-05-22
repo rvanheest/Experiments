@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.rvanheest.starbux.client.service
+package com.github.rvanheest.starbux.client
 
-import org.scalatra.{ Ok, ScalatraServlet }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-trait OrderServletComponent {
+object Main extends DebugEnhancedLogging {
 
-  val orderServlet: StarBuxServlet
+  def main(args: Array[String]): Unit = {
+    logger.info("Starting StarBux Client Service")
 
-  trait StarBuxServlet extends ScalatraServlet {
-
-    get("/") {
-      contentType = "text/plain"
-      Ok("Starbux Client Service running ...")
-    }
+    val client = new ClientWiring(args)
+    println(client.run.run())
   }
 }

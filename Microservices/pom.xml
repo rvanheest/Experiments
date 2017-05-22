@@ -29,7 +29,6 @@
     <inceptionYear>2017</inceptionYear>
 
     <modules>
-        <module>starbux-barista</module>
         <module>starbux-client</module>
         <module>starbux-service</module>
     </modules>
@@ -103,6 +102,11 @@
                 <groupId>org.scalatra</groupId>
                 <artifactId>scalatra_2.12</artifactId>
                 <version>2.5.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scalaj</groupId>
+                <artifactId>scalaj-http_2.12</artifactId>
+                <version>2.3.0</version>
             </dependency>
 
             <!-- logging -->

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration scan="true" scanPeriod="1 minute">
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>[%date{ISO8601}] %-5level %msg%n</pattern>
         </encoder>
@@ -13,7 +13,7 @@
     </appender>
     <root level="warn">
         <appender-ref ref="FILE" />
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="CONSOLE" />
     </root>
     <logger name="nl.knaw.dans.easy" level="trace" />
 </configuration>
