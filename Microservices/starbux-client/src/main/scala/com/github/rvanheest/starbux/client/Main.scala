@@ -20,7 +20,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 object Main extends DebugEnhancedLogging {
 
   def main(args: Array[String]): Unit = {
-    logger.info("Starting StarBux Client Service")
+    logger.debug("Starting StarBux client CLI")
 
     val client = new ClientWiring(args)
     println(client.run.run())

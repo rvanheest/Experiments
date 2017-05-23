@@ -15,13 +15,18 @@
  */
 package com.github.rvanheest.starbux.client.cmd
 
+import com.github.rvanheest.starbux.client.logic.OrdererComponent
+import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
+import scala.language.reflectiveCalls
+import scala.util.control.NonFatal
 import scala.util.{ Failure, Try }
-import nl.knaw.dans.lib.error._
+import scala.xml.PrettyPrinter
 
 trait CommandLineRunComponent {
   this: CommandLineInterfaceComponent
+    with OrdererComponent
     with DebugEnhancedLogging =>
 
   val run: CommandLineRun
@@ -34,12 +39,21 @@ trait CommandLineRunComponent {
       cli.verify()
 
       val result: Try[String] = cli.subcommand match {
-        case Some(cmd @ cli.sc1) => ???
+        case Some(cmd @ cli.order) =>
+          logger.info("order a drink")
+          orderer.order(cmd.drink()).map(elem => "\n" + new PrettyPrinter(160, 2).format(elem))
         case None => ???
         case _ => Failure(new IllegalArgumentException(s"Unknown command: ${ cli.subcommands }"))
       }
 
-      result.map(msg => s"OK: $msg").getOrRecover(e => s"FAILED: ${ e.getMessage }")
+
+      result
+        .doIfSuccess(msg => logger.info(msg))
+        .map(msg => s"OK: $msg")
+        .doIfFailure {
+          case NonFatal(e) => logger.error(e.getMessage, e)
+        }
+        .getOrRecover(e => s"FAILED: ${ e.getMessage }")
     }
   }
 }

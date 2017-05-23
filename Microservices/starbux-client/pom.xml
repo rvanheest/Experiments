@@ -41,25 +41,25 @@
         <!-- testing -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
+            <artifactId>scalatest_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalamock</groupId>
-            <artifactId>scalamock-scalatest-support_2.12</artifactId>
+            <artifactId>scalamock-scalatest-support_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalatra</groupId>
-            <artifactId>scalatra-scalatest_2.12</artifactId>
+            <artifactId>scalatra-scalatest_2.11</artifactId>
         </dependency>
 
         <!-- Scala utils -->
         <dependency>
             <groupId>org.rogach</groupId>
-            <artifactId>scallop_2.12</artifactId>
+            <artifactId>scallop_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jsuereth</groupId>
-            <artifactId>scala-arm_2.12</artifactId>
+            <artifactId>scala-arm_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>nl.knaw.dans.lib</groupId>
@@ -87,11 +87,11 @@
         </dependency>
         <dependency>
             <groupId>org.scalatra</groupId>
-            <artifactId>scalatra_2.12</artifactId>
+            <artifactId>scalatra_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalaj</groupId>
-            <artifactId>scalaj-http_2.12</artifactId>
+            <artifactId>scalaj-http_2.11</artifactId>
         </dependency>
 
         <!-- logging -->
@@ -99,33 +99,7 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>javax.servlet</groupId>-->
-            <!--<artifactId>javax.servlet-api</artifactId>-->
-            <!--<version>3.1.0</version>-->
-        <!--</dependency>-->
     </dependencies>
-
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>DANS</id>-->
-            <!--<releases>-->
-                <!--<enabled>true</enabled>-->
-            <!--</releases>-->
-            <!--<url>http://maven.dans.knaw.nl/</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
-
-    <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>DANS</id>-->
-            <!--<releases>-->
-                <!--<enabled>true</enabled>-->
-            <!--</releases>-->
-            <!--<url>http://maven.dans.knaw.nl/</url>-->
-        <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>

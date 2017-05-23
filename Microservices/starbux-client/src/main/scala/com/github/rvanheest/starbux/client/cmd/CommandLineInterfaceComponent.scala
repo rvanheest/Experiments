@@ -16,7 +16,7 @@
 package com.github.rvanheest.starbux.client.cmd
 
 import com.github.rvanheest.starbux.client.PropertiesComponent
-import org.rogach.scallop.{ ScallopConf, Subcommand }
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand }
 
 trait CommandLineInterfaceComponent {
   this: PropertiesComponent =>
@@ -47,11 +47,13 @@ trait CommandLineInterfaceComponent {
          |Options:
          |""".stripMargin)
 
-    val sc1 = new Subcommand("sc1") {
-      descr("description")
+    val order = new Subcommand("order") {
+      descr("make an order to the StarBux service")
+      val drink: ScallopOption[String] = trailArg("drink", "the drink to order")
       footer(SUBCOMMAND_SEPARATOR)
     }
-    addSubcommand(sc1)
+
+    addSubcommand(order)
 
     footer("")
   }

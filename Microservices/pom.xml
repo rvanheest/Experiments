@@ -42,31 +42,31 @@
             <!-- testing -->
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.12</artifactId>
+                <artifactId>scalatest_2.11</artifactId>
                 <version>3.0.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalamock</groupId>
-                <artifactId>scalamock-scalatest-support_2.12</artifactId>
+                <artifactId>scalamock-scalatest-support_2.11</artifactId>
                 <version>3.6.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalatra</groupId>
-                <artifactId>scalatra-scalatest_2.12</artifactId>
+                <artifactId>scalatra-scalatest_2.11</artifactId>
                 <version>2.5.0</version>
             </dependency>
 
             <!-- Scala utils -->
             <dependency>
                 <groupId>org.rogach</groupId>
-                <artifactId>scallop_2.12</artifactId>
+                <artifactId>scallop_2.11</artifactId>
                 <version>2.1.1</version>
             </dependency>
             <dependency>
                 <groupId>com.jsuereth</groupId>
-                <artifactId>scala-arm_2.12</artifactId>
+                <artifactId>scala-arm_2.11</artifactId>
                 <version>2.0</version>
             </dependency>
             <dependency>
@@ -100,12 +100,12 @@
             </dependency>
             <dependency>
                 <groupId>org.scalatra</groupId>
-                <artifactId>scalatra_2.12</artifactId>
+                <artifactId>scalatra_2.11</artifactId>
                 <version>2.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.scalaj</groupId>
-                <artifactId>scalaj-http_2.12</artifactId>
+                <artifactId>scalaj-http_2.11</artifactId>
                 <version>2.3.0</version>
             </dependency>
 
@@ -199,8 +199,8 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <scalaCompatVersion>2.12</scalaCompatVersion>
-                        <scalaVersion>2.12.1</scalaVersion>
+                        <scalaCompatVersion>2.11</scalaCompatVersion>
+                        <scalaVersion>2.11.8</scalaVersion>
                         <args>
                             <arg>-target:jvm-1.8</arg>
                             <arg>-deprecation</arg>

@@ -15,13 +15,17 @@
  */
 package com.github.rvanheest.starbux.client
 
+import java.net.URL
 import java.nio.file.Paths
 
 import com.github.rvanheest.starbux.client.cmd.{ CommandLineInterfaceComponent, CommandLineRunComponent }
+import com.github.rvanheest.starbux.client.logic.{ HttpConnectionComponent, OrdererComponent }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class ClientWiring(params: Seq[String]) extends CommandLineInterfaceComponent
   with CommandLineRunComponent
+  with OrdererComponent
+  with HttpConnectionComponent
   with PropertiesComponent
   with DebugEnhancedLogging {
 
@@ -29,5 +33,9 @@ class ClientWiring(params: Seq[String]) extends CommandLineInterfaceComponent
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
   override lazy val cli: CommandLineInterface = CommandLineInterface(params)
+  override lazy val httpConnection: HttpConnection = new HttpConnection {
+    val baseUrl: URL = new URL(properties.properties.getString("client.service.baseUrl"))
+  }
+  override lazy val orderer: Orderer = new Orderer {}
   override lazy val run: CommandLineRun = new CommandLineRun {}
 }
