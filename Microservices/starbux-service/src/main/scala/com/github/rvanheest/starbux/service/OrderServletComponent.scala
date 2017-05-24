@@ -50,8 +50,10 @@ trait OrderServletComponent {
               uri={s"http://localhost:$serverPort/payment/order/$orderNumber"}
               type="application/xml"/>
       </order>
+      contentType = "application/xml"
 
-      Created(Utility.trim(result).toString(), headers = Map("content-type" -> "application/xml"), reason = "")
+      Created(body = result,
+        headers = Map("Location" -> s"http://localhost:$serverPort/order/$orderNumber"))
     }
   }
 }

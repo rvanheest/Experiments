@@ -35,7 +35,7 @@ trait HttpConnectionComponent {
       debug(url.toString)
       Http(url.toString)
         .postForm(Map("order" -> Utility.trim(xml).toString()).toSeq)
-        .header("content-type", "application/xml")
+        .header("Content-Type", "application/xml")
         .asString
     }
   }

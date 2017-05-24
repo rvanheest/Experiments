@@ -37,7 +37,9 @@ trait OrdererComponent {
       }
 
       response.code match {
-        case 201 => Success(XML.loadString(response.body))
+        case 201 =>
+          logger.info(response.headers.map { case (k, v) => s"$k -> $v" }.mkString("[", ", ", "]"))
+          Success(XML.loadString(response.body))
         case x => Failure(new Exception(
           s"""Received invalid response while placing an order.
              |  Code:    $x
