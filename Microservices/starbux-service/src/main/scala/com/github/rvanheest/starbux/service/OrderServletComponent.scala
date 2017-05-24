@@ -15,17 +15,43 @@
  */
 package com.github.rvanheest.starbux.service
 
-import org.scalatra.{ Ok, ScalatraServlet }
+import java.net.InetAddress
+
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.scalatra.{ Created, Ok, ScalatraServlet }
+
+import scala.xml.{ Utility, XML }
 
 trait OrderServletComponent {
+  this: DebugEnhancedLogging =>
 
   val orderServlet: StarBuxServlet
 
   trait StarBuxServlet extends ScalatraServlet {
 
+    val serverPort: Int
+
     get("/") {
       contentType = "text/plain"
       Ok("Starbux Coffee Service running ...")
+    }
+
+    post("/") {
+      val order = XML.loadString(params("order"))
+
+      val drink = (order \ "drink").text
+      val cost = drink.length.toDouble
+      val orderNumber = "1234" // this could come from a database returning the ID after the order has been stored
+
+      val result = <order>
+        <drink>{drink}</drink>
+        <cost>{cost}</cost>
+        <next rel={s"http://localhost:$serverPort/payment"}
+              uri={s"http://localhost:$serverPort/payment/order/$orderNumber"}
+              type="application/xml"/>
+      </order>
+
+      Created(Utility.trim(result).toString(), headers = Map("content-type" -> "application/xml"), reason = "")
     }
   }
 }

@@ -14,5 +14,5 @@
     <root level="warn">
         <appender-ref ref="FILE" />
     </root>
-    <logger name="nl.knaw.dans.easy" level="info" />
+    <logger name="com.github.rvanheest.starbux" level="info" />
 </configuration>

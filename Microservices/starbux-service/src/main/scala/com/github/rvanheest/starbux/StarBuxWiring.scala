@@ -29,7 +29,10 @@ object StarBuxWiring extends StarBuxServerComponent
   private lazy val home = Paths.get(System.getProperty("app.home"))
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
-  override lazy val orderServlet: StarBuxServlet = new StarBuxServlet {}
+  private val port = properties.properties.getInt("service.daemon.http.port")
+  override lazy val orderServlet: StarBuxServlet = new StarBuxServlet {
+    val serverPort: Int = port
+  }
   override lazy val mounter: ServletMounter = new ServletMounter {}
-  override lazy val server: StarBuxServer = new StarBuxServer(properties.properties.getInt("service.daemon.http.port"))
+  override lazy val server: StarBuxServer = new StarBuxServer(port)
 }

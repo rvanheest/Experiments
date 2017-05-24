@@ -48,7 +48,6 @@ trait CommandLineRunComponent {
 
 
       result
-        .doIfSuccess(msg => logger.info(msg))
         .map(msg => s"OK: $msg")
         .doIfFailure {
           case NonFatal(e) => logger.error(e.getMessage, e)
