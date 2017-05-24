@@ -17,12 +17,14 @@ package com.github.rvanheest.starbux.client
 
 import java.nio.file.Path
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 import resource.managed
 
 import scala.io.Source
 
 trait PropertiesComponent {
+  this: DebugEnhancedLogging =>
 
   val properties: GeneralProperties
 
@@ -33,8 +35,16 @@ trait PropertiesComponent {
 
   object GeneralProperties {
     def apply(home: Path): GeneralProperties = new GeneralProperties {
-      override val version: String = managed(Source.fromFile(home.resolve("version").toFile)).acquireAndGet(_.mkString)
-      override val properties = new PropertiesConfiguration(home.resolve("cfg/application.properties").toFile)
+      override lazy val version: String = managed(Source.fromFile(home.resolve("version").toFile)).acquireAndGet(_.mkString)
+      override lazy val properties = new PropertiesConfiguration(home.resolve("cfg/application.properties").toFile)
+
+      private val key = "client.service.baseUrl"
+      private val value = properties.getString(key)
+      if (!value.endsWith("/")) {
+        logger.info(s"adding a '/' to the end of property '$key'")
+        properties.setProperty(key, value + "/")
+        properties.save()
+      }
     }
   }
 }

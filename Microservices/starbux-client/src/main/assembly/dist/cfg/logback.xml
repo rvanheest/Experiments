@@ -20,5 +20,5 @@
         <appender-ref ref="FILE" />
         <appender-ref ref="CONSOLE" />
     </root>
-    <logger name="com.github.rvanheest.starbux.client" level="info" />
+    <logger name="com.github.rvanheest.starbux.client" level="trace" />
 </configuration>
