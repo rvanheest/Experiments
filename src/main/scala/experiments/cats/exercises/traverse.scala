@@ -16,8 +16,8 @@ object traverse extends App {
   println(List("1", "2", "3").traverseU(parseIntValidated).isValid)
   println
 
-  println(List(Option(1), Option(2), Option(3)).traverse[Option, Int](identity))
-  println(List(Option(1), None, Option(3)).traverse[Option, Int](identity))
+  println(List(Option(1), Option(2), Option(3)).traverse[Option, Int](x => x))
+  println(List(Option(1), None, Option(3)).traverse[Option, Int](x => x))
   println
 
   println(List(Option(1), Option(2), Option(3)).sequence)

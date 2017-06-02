@@ -23,7 +23,7 @@ object monoid extends App {
   println
 
   val l = List(1, 2, 3, 4, 5)
-  println(l.foldMap(identity))
+  println(l.foldMap(x => x))
   println(l.foldMap(_.toString))
   println
 
