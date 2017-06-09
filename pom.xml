@@ -32,6 +32,12 @@
             <artifactId>cats-core_2.11</artifactId>
             <version>0.9.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-async_2.11</artifactId>
+            <version>0.9.6</version>
+        </dependency>
     </dependencies>
 
     <build>
