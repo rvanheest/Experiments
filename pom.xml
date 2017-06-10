@@ -38,6 +38,12 @@
             <artifactId>scala-async_2.11</artifactId>
             <version>0.9.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.julien-truffaut</groupId>
+            <artifactId>monocle-core_2.11</artifactId>
+            <version>1.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
