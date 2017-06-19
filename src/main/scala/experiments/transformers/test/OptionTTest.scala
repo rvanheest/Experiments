@@ -3,6 +3,8 @@ package experiments.transformers.test
 import experiments.transformers.OptionT
 import experiments.transformers._
 
+import scala.language.postfixOps
+
 object OptionTTest extends App {
 
 	val list1 = Option(1) :: Option(2) :: Option(3) :: Option(4) :: Nil

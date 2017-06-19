@@ -5,7 +5,7 @@ import java.sql.{Connection, DriverManager}
 object Hardcoded {
 	// function that updates password of user in database
 	// everything hardcoded, not very reusable
-	def setUserPassword(id: String, password: String) = {
+	def setUserPassword(id: String, password: String): Unit = {
 		Class.forName("org.sqlite.JDBC")
 		val c = DriverManager.getConnection("jdbc:sqlite::memory:")
 		val statement = c.prepareStatement("UPDATE users SET pwd = ? WHERE id = ?;")
@@ -25,7 +25,7 @@ object WithGlobalFactory {
 			DriverManager.getConnection("jdbc:sqlite::memory:")
 		}
 	}
-	def setUserPassword(id: String, password: String) = {
+	def setUserPassword(id: String, password: String): Unit = {
 		val c = ConnectionFactory.getConnection
 		val statement = c.prepareStatement("UPDATE users SET pwd = ? WHERE id = ?;")
 		statement.setString(1, password)
@@ -45,7 +45,7 @@ object WithGlobalFactory {
 
 object InversionOfControl {
 	// better solution: inversion of control - taking the connection as an argument of the function
-	def setUserPassword(id: String, password: String, c: Connection) = {
+	def setUserPassword(id: String, password: String, c: Connection): Unit = {
 		val statement = c.prepareStatement("UPDATE users SET pwd = ? WHERE id = ?;")
 		statement.setString(1, password)
 		statement.setString(2, id)
@@ -71,7 +71,7 @@ object WithDatatype {
 	// curry function in data type for convenience
 	// we can also define map and flatMap on it
 	case class DB[T](f: Connection => T) {
-		def apply(c: Connection) = f(c)
+		def apply(c: Connection): T = f(c)
 
 		def map[S](g: T => S): DB[S] = {
 			DB(g compose f)
@@ -138,26 +138,3 @@ object WithDatatype {
 
 	mkProvider("a", "b")(changePassword("c", "d", "e"))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

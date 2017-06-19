@@ -10,9 +10,9 @@ package object base {
   }
 
   implicit def evalNumber = new Expr[Number] {
-    def eval(e: Number) = e.value
+    def eval(e: Number): Int = e.value
   }
   implicit def evalPlus[A: Expr, B: Expr] = new Expr[Plus[A, B]] {
-    def eval(e: Plus[A, B]) = implicitly[Expr[A]].eval(e.left) + implicitly[Expr[B]].eval(e.right)
+    def eval(e: Plus[A, B]): Int = implicitly[Expr[A]].eval(e.left) + implicitly[Expr[B]].eval(e.right)
   }
 }

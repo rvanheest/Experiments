@@ -2,6 +2,8 @@ package experiments.transformers
 
 import experiments.monadics.MonadPlus
 
+import scala.language.higherKinds
+
 case class ListT[M[_], A](run: M[List[A]])(implicit m: MonadPlus[M]) {
 	import ListT.lift
 
@@ -18,7 +20,7 @@ case class ListT[M[_], A](run: M[List[A]])(implicit m: MonadPlus[M]) {
 		lift(res)
 	}
 
-	def ++(that: ListT[M, A]) = {
+	def ++(that: ListT[M, A]): ListT[M, A] = {
 		lift(m.flatMap(run)(list1 => m.map(that.run)(list1 ++ _)))
 	}
 

@@ -1,8 +1,10 @@
-package experiments.parsec
+package experiments.parsec.string
 
+import experiments.parsec.Parser
 import experiments.parsec.Parser.from
 
 import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
 object StringParser {
 
@@ -10,8 +12,8 @@ object StringParser {
 
 	def item: StringParser[Char] = {
 		Parser(_.toList match {
-			case x :: xs => Some((x, xs.mkString))
-			case Nil => None
+			case x :: xs => (Success(x), xs.mkString)
+			case Nil => (Failure(new NoSuchElementException("you're trying to parse a character in an empty String")), "")
 		})
 	}
 

@@ -45,7 +45,7 @@ case class Function[A, B](f: A => B)(implicit arrow: Arrow[Function], monad: Mon
 	}
 }
 object Function {
-	def identity[A](implicit arrow: Arrow[Function]) = arrow.id[A]
+	def identity[A](implicit arrow: Arrow[Function]): Function[A, A] = arrow.id[A]
 
-	def create[A, B](f: A => B)(implicit arrow: Arrow[Function]) = arrow.create(f)
+	def create[A, B](f: A => B)(implicit arrow: Arrow[Function]): Function[A, B] = arrow.create(f)
 }

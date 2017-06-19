@@ -6,10 +6,10 @@ sealed abstract class Doc {
   import experiments.prettyprinter.Doc._
 
   def layout: String
-  def ~(that: Doc) = Cons(this, that)
-  def ~~(that: Doc) = this ~ space ~ that
-  def <~(that: Doc) = this ~ line ~ that
-  def ~>(that: Doc) = this ~ nest(2, line ~ that)
+  def ~(that: Doc): Doc = Cons(this, that)
+  def ~~(that: Doc): Doc = this ~ space ~ that
+  def <~(that: Doc): Doc = this ~ line ~ that
+  def ~>(that: Doc): Doc = this ~ nest(2, line ~ that)
 }
 object Doc {
   implicit def string(s: String): Doc = Text(s)
@@ -20,19 +20,19 @@ object Doc {
 }
 
 case object Empty extends Doc {
-  def layout = ""
+  def layout: String = ""
 }
 
 case object Line extends Doc {
-  def layout = "\n"
+  def layout: String = "\n"
 }
 
 case class Text(s: String) extends Doc {
-  def layout = s
+  def layout: String = s
 }
 
 case class Nest(n: Int, d: Doc) extends Doc {
-  def layout = d match {
+  def layout: String = d match {
     case e@Empty => e.layout
     case Line => "\n" + (" " * n)
     case s@Text(_) => s.layout
@@ -42,5 +42,5 @@ case class Nest(n: Int, d: Doc) extends Doc {
 }
 
 case class Cons(left: Doc, right: Doc) extends Doc {
-  def layout = left.layout + right.layout
+  def layout: String = left.layout + right.layout
 }

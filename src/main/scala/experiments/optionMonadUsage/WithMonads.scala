@@ -9,8 +9,8 @@ object WithMonads {
 	}
 
 	def computeBaz(baz: Baz2): Int = baz.compute
-	def computeBar(bar: Bar2) = bar.baz.map(computeBaz)
-	def computeFoo(foo: Foo2) = foo.bar.flatMap(computeBar)
+	def computeBar(bar: Bar2): Option[Int] = bar.baz.map(computeBaz)
+	def computeFoo(foo: Foo2): Option[Int] = foo.bar.flatMap(computeBar)
 	def compute(maybeFoo: Option[Foo2]): Option[Int] = maybeFoo.flatMap(computeFoo)
 
 	def compute2(maybeFoo: Option[Foo2]): Option[Int] = {

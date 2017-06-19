@@ -8,6 +8,8 @@ sealed trait Try[+T] {
 
   def getOrCatch[U >: T](handle: Throwable => U): U
 
+  def getOrThrow: T
+
   def orElse[U >: T](default: => Try[U]): Try[U]
 
   def recoverWith[U >: T](f: PartialFunction[Throwable, Try[U]]): Try[U]
@@ -52,6 +54,8 @@ private final case class Success[+T](value: T) extends Try[T] {
 
   def getOrCatch[U >: T](handle: Throwable => U): U = value
 
+  def getOrThrow: T = value
+
   def orElse[U >: T](default: => Try[U]): Try[U] = this
 
   def recoverWith[U >: T](f: PartialFunction[Throwable, Try[U]]): Try[U] = this
@@ -93,6 +97,8 @@ private final case class Failure[+T](exception: Throwable) extends Try[T] {
   def getOrElse[U >: T](default: => U): U = default
 
   def getOrCatch[U >: T](handle: Throwable => U): U = handle(exception)
+
+  def getOrThrow: T = throw exception
 
   def orElse[U >: T](default: => Try[U]): Try[U] = {
     try {

@@ -11,18 +11,18 @@ object cakePatternUpdate extends App {
 		}
 	}
 
+	trait HeaterComponent extends OnOffDeviceComponent {
+		class Heater extends OnOffDevice {
+			def on() = println("heater.on")
+			def off() = println("heater.off")
+		}
+	}
+
 	trait SensorDeviceComponent {
 		val sensor: SensorDevice
 
 		trait SensorDevice {
 			def isCoffeePresent: Boolean
-		}
-	}
-
-	trait HeaterComponent extends OnOffDeviceComponent {
-		class Heater extends OnOffDevice {
-			def on() = println("heater.on")
-			def off() = println("heater.off")
 		}
 	}
 
