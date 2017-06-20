@@ -33,11 +33,11 @@ class Writer[W, A](tuple: (A, W))(implicit wIsMonoid: Monoid[W], monad: Monad[Wr
 
 object Writer {
 
-  def apply[W, A](a: A, w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]): Writer[W, A] = {
+  def apply[W, A](a: A, w: W)(implicit wIsMonoid: Monoid[W]): Writer[W, A] = {
     new Writer((a, w))
   }
 
-  def tell[W, A](w: W)(implicit wIsMonoid: Monoid[W], monad: Monad[Writer[W, ?]] with Traverse[Writer[W, ?]]): Writer[W, Unit] = {
+  def tell[W, A](w: W)(implicit wIsMonoid: Monoid[W]): Writer[W, Unit] = {
     new Writer((), w)
   }
 

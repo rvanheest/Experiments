@@ -55,5 +55,5 @@ class StateTFunctorSpec extends AbstractFunctorLawsSpec[StateT[Int, ?, List]]("S
 class TreeFunctorSpec extends AbstractFunctorLawsSpec[Tree]("Tree")
 class NonEmptyListFunctorSpec extends AbstractFunctorLawsSpec[NonEmptyList]("NonEmptyList")
 class WriterFunctorSpec extends AbstractFunctorLawsSpec[Writer[String, ?]]("Writer[String, ?]")
-class ReaderFunctorSpec extends AbstractFunctorLawsSpec[Reader[Int, ?]]("Reader[Int, ?]")
+class ReaderFunctorSpec extends AbstractFunctorLawsSpec[Reader[Int, ?]]("Reader[Int, ?]")(Reader.readerIsMonad, arbReader[Int], Reader.readerIsEquals, Reader.readerIsEquals)
 class ContinuationFunctorSpec extends AbstractFunctorLawsSpec[Continuation[Int, ?]]("Continuation[Int, ?]")

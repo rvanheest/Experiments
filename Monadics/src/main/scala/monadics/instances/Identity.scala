@@ -2,7 +2,7 @@ package monadics.instances
 
 import monadics.structures.{ Comonad, Equals, Monad }
 
-class Identity[A](id: => A)(implicit monad: Monad[Identity]) {
+class Identity[A](id: => A)(implicit monad: Monad[Identity] with Comonad[Identity]) {
 
 	def run: A = id
 
@@ -33,7 +33,7 @@ class Identity[A](id: => A)(implicit monad: Monad[Identity]) {
 
 object Identity {
 
-	def apply[A](a: => A)(implicit monad: Monad[Identity]): Identity[A] = {
+	def apply[A](a: => A): Identity[A] = {
 		new Identity(a)
 	}
 
@@ -41,22 +41,22 @@ object Identity {
 		Equals.create((id1, id2) => aEquals.equals(id1.run, id2.run))
 	}
 
-	implicit def identityIsMonad = new Monad[Identity] with Comonad[Identity] { self =>
+	implicit def identityIsMonad: Monad[Identity] with Comonad[Identity] = new Monad[Identity] with Comonad[Identity] {
 
-		def create[A](a: A): Identity[A] = new Identity(a)(self)
+		def create[A](a: A): Identity[A] = Identity(a)
 
 		override def map[A, B](identity: Identity[A])(f: A => B): Identity[B] = {
-			Identity(f(identity.run))(self)
+			Identity(f(identity.run))
 		}
 
 		def flatMap[A, B](identity: Identity[A])(f: A => Identity[B]): Identity[B] = {
-			Identity(f(identity.run).run)(self)
+			Identity(f(identity.run).run)
 		}
 
 		def extract[A](identity: Identity[A]): A = identity.run
 
 		def extend[A, B](identity: Identity[A])(f: Identity[A] => B): Identity[B] = {
-			new Identity[B](f(identity))
+			Identity[B](f(identity))
 		}
 	}
 }
