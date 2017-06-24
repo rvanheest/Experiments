@@ -27,7 +27,9 @@ if [ -e $TEMPDIR ]; then
 fi
 
 mkdir $TEMPDIR
+sqlite3 $TEMPDIR/database.db < src/test/resources/database/database.sql
 touch $TEMPDIR/starbux-service.log
+chmod -R 777 $TEMPDIR
 
 echo "A fresh application home directory for debugging has been set up at $APPHOME"
 echo "Output and logging will go to $TEMPDIR"

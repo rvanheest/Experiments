@@ -29,16 +29,16 @@ trait StarBuxServerComponent {
   val server: StarBuxServer
 
   class StarBuxServer(serverPort: Int) {
-    private val server = new Server(serverPort)
-
-    new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
-      addEventListener(new ScalatraListener() {
-        override def probeForCycleClass(classLoader: ClassLoader): (String, LifeCycle) = {
-          (mounter.getClass.getSimpleName, mounter)
-        }
+    private val server = new Server(serverPort) {
+      setHandler(new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
+        addEventListener(new ScalatraListener() {
+          override def probeForCycleClass(classLoader: ClassLoader): (String, LifeCycle) = {
+            (mounter.getClass.getSimpleName, mounter)
+          }
+        })
       })
-      server.setHandler(this)
     }
+
     logger.info(s"HTTP port is $serverPort")
 
     def start(): Try[Unit] = Try {
