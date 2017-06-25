@@ -31,9 +31,15 @@ trait ServerTestSupportFixture {
 
   def order(xml: Node): Node = {
     XML.loadString {
-      callService(s"service/order?order=${Utility.trim(xml).toString}", "POST") { conn =>
+      callService(s"service/order?order=${Utility.trim(xml).toString()}", "POST") { conn =>
         conn.addRequestProperty("Content-Type", "application/xml")
       }
+    }
+  }
+
+  def failing(xml: Node): String = {
+    callService(s"service/order?order=${Utility.trim(xml).toString()}", "POST") { conn =>
+      conn.addRequestProperty("Content-Type", "application/xml")
     }
   }
 

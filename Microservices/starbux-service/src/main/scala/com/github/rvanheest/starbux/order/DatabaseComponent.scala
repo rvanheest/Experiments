@@ -8,7 +8,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
 import scala.language.postfixOps
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 trait DatabaseComponent {
   this: DebugEnhancedLogging =>
@@ -26,7 +26,10 @@ trait DatabaseComponent {
         _ <- order.drinks.map(drink => for {
           _ <- addToOrderDrinkTable(drink, orderId)
           _ <- drink.addition.map(addToOrderDrinkAdditionTable(_, drink.id)).collectResults
-        } yield ()).collectResults
+        } yield ()).collectResults.recoverWith {
+          case CompositeException(e :: Nil) => Failure(e)
+          case e => Failure(e)
+        }
       } yield orderId
     }
 
@@ -37,13 +40,16 @@ trait DatabaseComponent {
           prepStatement.executeUpdate()
         })
         .tried
-        .flatMap(_ => managed(connection.prepareStatement("SELECT last_insert_rowid();"))
-          .flatMap(query => managed(query.executeQuery()))
-          .map(result => {
-            result.next()
-            result.getInt(1)
-          })
-          .tried)
+        .flatMap {
+          case 1 => managed(connection.prepareStatement("SELECT last_insert_rowid();"))
+            .flatMap(query => managed(query.executeQuery()))
+            .map(result => {
+              result.next()
+              result.getInt(1)
+            })
+            .tried
+          case _ => Failure(DatabaseException(s"Unknown status: ${ order.status }"))
+        }
     }
 
     private def addToOrderDrinkTable(drink: Drink, orderId: OrderId)(implicit connection: Connection): Try[Unit] = {
@@ -55,7 +61,10 @@ trait DatabaseComponent {
           prepStatement.executeUpdate()
         })
         .tried
-        .map(_ => ())
+        .flatMap {
+          case 1 => Success(())
+          case _ => Failure(DatabaseException(s"Unknown drink: ${ drink.drink }"))
+        }
     }
 
     private def addToOrderDrinkAdditionTable(addition: Addition, drinkId: ID)(implicit connection: Connection): Try[Unit] = {
@@ -66,7 +75,10 @@ trait DatabaseComponent {
           prepStatement.executeUpdate()
         })
         .tried
-        .map(_ => ())
+        .flatMap {
+          case 1 => Success(())
+          case _ => Failure(DatabaseException(s"Unknown addition: $addition"))
+        }
     }
 
     def calculateCost(orderId: OrderId)(implicit connection: Connection): Try[Int] = {

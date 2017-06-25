@@ -32,7 +32,55 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
     callService()() shouldBe successful
   }
 
-  "post order" should "order a single drink" in {
+  "post order" should "order a single drink without addition" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+        </drink>
+      </order>
+
+    val output =
+      <order>
+        <drink>
+          <name>coffee</name>
+        </drink>
+        <cost>1</cost>
+        <next type="application/xml"
+              uri="http://localhost:20000/payment/order/1"
+              rel="http://localhost:20000/payment"/>
+      </order>
+
+    order(input) shouldBe Utility.trim(output)
+  }
+
+  it should "order a single drink with additions" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>sugar</addition>
+          <addition>milk</addition>
+        </drink>
+      </order>
+
+    val output =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>sugar</addition>
+          <addition>milk</addition>
+        </drink>
+        <cost>3</cost>
+        <next type="application/xml"
+              uri="http://localhost:20000/payment/order/1"
+              rel="http://localhost:20000/payment"/>
+      </order>
+
+    order(input) shouldBe Utility.trim(output)
+  }
+
+  it should "order multiple drinks with additions" in {
     val input =
       <order>
         <drink>
@@ -64,5 +112,16 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
       </order>
 
     order(input) shouldBe Utility.trim(output)
+  }
+
+  it should "order a drink that StarBux doesn't have" in {
+    val input =
+      <order>
+        <drink>
+          <name>cola</name>
+        </drink>
+      </order>
+
+    failing(input) shouldBe "Unknown drink: cola"
   }
 }

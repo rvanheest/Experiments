@@ -18,10 +18,10 @@ package com.github.rvanheest.starbux.service
 import java.net.URL
 
 import com.github.rvanheest.starbux.DatabaseAccessComponent
-import com.github.rvanheest.starbux.order.{ DatabaseComponent, Drink, Order, Ordered }
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import com.github.rvanheest.starbux.order._
 import nl.knaw.dans.lib.error._
-import org.scalatra.{ Created, InternalServerError, Ok, ScalatraServlet }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.scalatra._
 
 import scala.util.Try
 import scala.xml.{ Node, XML }
@@ -70,10 +70,11 @@ trait OrderServletComponent {
           body = input.copy(child = input.child ++ append))
       }
 
-      result.getOrRecover(e => {
-        logger.error(e.getMessage, e)
-        InternalServerError(e.getMessage)
-      })
+      result.doIfFailure { case e => logger.error(e.getMessage, e) }
+        .getOrRecover {
+          case DatabaseException(msg) => BadRequest(msg)
+          case e => InternalServerError(e.getMessage)
+        }
     }
   }
 }

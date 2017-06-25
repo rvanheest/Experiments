@@ -15,4 +15,6 @@ package object order {
   case object Prepared extends Status("Prepared")
   case object Payed extends Status("Payed")
   case object Served extends Status("Served")
+
+  case class DatabaseException(msg: String) extends Exception(msg)
 }
