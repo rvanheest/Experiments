@@ -1,23 +1,24 @@
 package com.github.rvanheest.starbux.order
 
-import java.sql.Connection
+import java.sql.{ Connection, ResultSet }
 import java.util.UUID
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
+import scala.language.postfixOps
 import scala.util.Try
 
 trait DatabaseComponent {
   this: DebugEnhancedLogging =>
 
+  type OrderId = Int
+  type Cost = Int
+
   val database: Database
 
   trait Database {
-
-    type OrderId = Int
-    type Cost = Int
 
     def addOrder(order: Order)(implicit connection: Connection): Try[OrderId] = {
       for {
@@ -75,25 +76,26 @@ trait DatabaseComponent {
         resultSet <- managed(prepStatement.executeQuery())
       } yield resultSet
 
-      resultSet
-        .map(result => Stream.continually(result.next())
-          .takeWhile(b => b)
+      def getResults(resultSet: ResultSet) = {
+        Stream.continually(resultSet.next())
+          .takeWhile(true ==)
           .flatMap(_ => {
             for {
-              drinkId <- Option(result.getString("drinkId"))
-              drinkCost = result.getInt("drinkCost")
-              additionCost = Option(result.getInt("additionCost"))
+              drinkId <- Option(resultSet.getString("drinkId"))
+              drinkCost = resultSet.getInt("drinkCost")
+              additionCost = Option(resultSet.getInt("additionCost"))
             } yield (UUID.fromString(drinkId), drinkCost, additionCost)
           })
           .groupBy { case (drinkId, _, _) => drinkId }
           .flatMap { case (_, values) =>
             val drinkCost = values.headOption.map { case (_, cost, _) => cost }
             val additionCost = values.flatMap { case (_, _, cost) => cost }
-            drinkCost.fold(additionCost)(_ #:: additionCost)
+            drinkCost.toStream #::: additionCost
           }
           .sum
-        )
-        .tried
+      }
+
+      resultSet.map(getResults).tried
     }
   }
 }

@@ -15,73 +15,65 @@
  */
 package com.github.rvanheest.starbux.service
 
+import java.net.URL
+
 import com.github.rvanheest.starbux.DatabaseAccessComponent
 import com.github.rvanheest.starbux.order.{ DatabaseComponent, Drink, Order, Ordered }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import org.scalatra.{ Created, Ok, ScalatraServlet }
+import nl.knaw.dans.lib.error._
+import org.scalatra.{ Created, InternalServerError, Ok, ScalatraServlet }
 
-import scala.xml.XML
+import scala.util.Try
+import scala.xml.{ Node, XML }
 
 trait OrderServletComponent {
   this: DatabaseAccessComponent with DatabaseComponent with DebugEnhancedLogging =>
 
-  val orderServlet: StarBuxServlet
+  val orderServlet: OrderServlet
 
-  trait StarBuxServlet extends ScalatraServlet {
+  trait OrderServlet extends ScalatraServlet {
 
-    val serverPort: Int
+    val baseUrl: URL
+
+    logger.info("Starbux Coffee Order Servlet running ...")
 
     get("/") {
       contentType = "text/plain"
-      Ok("Starbux Coffee Service running ...")
+      Ok("Starbux Coffee Service running")
     }
 
-    post("/") {
-      <order>
-        <drink>
-          <name>coffee</name>
-          <addition>sugar</addition>
-          <addition>milk</addition>
-        </drink>
-        <drink>
-          <name>tea</name>
-          <addition>honey</addition>
-        </drink>
-      </order>
-
-      val xml = XML.loadString(params("order"))
-
-      val drinks = (xml \ "drink").map(n => {
+    def parseInput(input: Node): Try[Order] = Try {
+      val drinks = (input \ "drink").map(n => {
         val name = (n \ "name").text
         val additions = (n \ "addition").map(_.text).toList
         Drink(drink = name, addition = additions)
       }).toList
-      val order = Order(Ordered, drinks)
+      Order(Ordered, drinks)
+    }
 
-      for {
+    post("/") {
+      contentType = "application/xml"
+
+      val result = for {
+        input <- Try { XML.loadString(params("order")) }
+        order <- parseInput(input)
         orderNumber <- databaseAccess.doTransaction(implicit connection => database.addOrder(order))
         cost <- databaseAccess.doTransaction(implicit connection => database.calculateCost(orderNumber))
       } yield {
-        val response = <order>
-          <drink>
-            <name>coffee</name>
-            <addition>sugar</addition>
-            <addition>milk</addition>
-          </drink>
-          <drink>
-            <name>tea</name>
-            <addition>honey</addition>
-          </drink>
-          <cost>{cost}</cost>
-          <next rel={s"http://localhost:$serverPort/payment"}
-                uri={s"http://localhost:$serverPort/payment/order/$orderNumber"}
+        val append = Seq(
+          <cost>{cost}</cost>,
+          <next rel={baseUrl.toURI.resolve("payment").toString}
+                uri={baseUrl.toURI.resolve(s"/payment/order/$orderNumber").toString}
                 type="application/xml"/>
-        </order>
-        contentType = "application/xml"
-
-        Created(body = response,
-          headers = Map("Location" -> s"http://localhost:$serverPort/order/$orderNumber"))
+        )
+        Created(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderNumber").toString),
+          body = input.copy(child = input.child ++ append))
       }
+
+      result.getOrRecover(e => {
+        logger.error(e.getMessage, e)
+        InternalServerError(e.getMessage)
+      })
     }
   }
 }

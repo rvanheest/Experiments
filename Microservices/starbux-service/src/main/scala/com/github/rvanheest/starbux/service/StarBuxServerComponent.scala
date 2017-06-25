@@ -28,10 +28,12 @@ trait StarBuxServerComponent {
 
   val server: StarBuxServer
 
-  class StarBuxServer(serverPort: Int) {
-    private val server = new Server(serverPort) {
-      setHandler(new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
-        addEventListener(new ScalatraListener() {
+  trait StarBuxServer {
+    val serverPort: Int
+
+    private lazy val server = new Server(serverPort) {
+      this.setHandler(new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
+        this.addEventListener(new ScalatraListener() {
           override def probeForCycleClass(classLoader: ClassLoader): (String, LifeCycle) = {
             (mounter.getClass.getSimpleName, mounter)
           }

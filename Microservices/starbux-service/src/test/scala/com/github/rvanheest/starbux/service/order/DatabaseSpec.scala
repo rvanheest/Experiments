@@ -1,14 +1,11 @@
 package com.github.rvanheest.starbux.service.order
 
-import java.util.UUID
-
-import com.github.rvanheest.starbux.order.{ Drink, ID, Order, Ordered, Payed, Prepared, Served }
+import com.github.rvanheest.starbux.order._
 import com.github.rvanheest.starbux.service.DatabaseFixture
-import resource.managed
 
 import scala.util.Success
 
-class DatabaseSpec extends DatabaseFixture {
+class DatabaseSpec extends DatabaseFixture with DatabaseComponent {
   val database: Database = new Database {}
 
   val add1 = "sugar"
@@ -24,51 +21,6 @@ class DatabaseSpec extends DatabaseFixture {
   val order2 = Order(Prepared, List(drink1))
   val order3 = Order(Payed, List(drink2))
   val order4 = Order(Served, List(drink3, drink4))
-
-  def inspectOrderTable: List[(Int, Int)] = {
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement("SELECT * FROM `Order`;"))
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
-
-    resultSet
-      .acquireAndGet(result => Stream.continually(result.next())
-        .takeWhile(b => b)
-        .map(_ => {
-          (result.getInt("orderId"), result.getInt("statusId"))
-        })
-        .toList)
-  }
-
-  def inspectOrderDrinkTable: List[(ID, Int, Int, Int)] = {
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement("SELECT * FROM order_drink;"))
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
-
-    resultSet
-      .acquireAndGet(result => Stream.continually(result.next())
-        .takeWhile(b => b)
-        .map(_ => {
-          (UUID.fromString(result.getString("id")), result.getInt("orderId"), result.getInt("drinkId"), result.getInt("drinkCost"))
-        })
-        .toList)
-  }
-
-  def inspectOrderDrinkAdditionsTable: List[(ID, Int, Int)] = {
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement("SELECT * FROM order_drink_additions;"))
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
-
-    resultSet
-      .acquireAndGet(result => Stream.continually(result.next())
-        .takeWhile(b => b)
-        .map(_ => {
-          (UUID.fromString(result.getString("orderDrinkId")), result.getInt("additionId"), result.getInt("additionCost"))
-        })
-        .toList)
-  }
 
   "addOrder" should "insert an empty order" in {
     val expectedOrderId = 1

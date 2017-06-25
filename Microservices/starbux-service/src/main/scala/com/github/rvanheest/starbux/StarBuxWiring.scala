@@ -17,22 +17,24 @@ package com.github.rvanheest.starbux
 
 import java.nio.file.Paths
 
-import com.github.rvanheest.starbux.service.{ OrderServletComponent, StarBuxServerComponent, StarBuxServletMounterComponent }
+import com.github.rvanheest.starbux.order.DatabaseComponent
+import com.github.rvanheest.starbux.service.ServerWiring
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-object StarBuxWiring extends StarBuxServerComponent
-  with StarBuxServletMounterComponent
-  with OrderServletComponent
+object StarBuxWiring extends ServerWiring
+  with DatabaseAccessComponent
+  with DatabaseComponent
   with PropertiesComponent
   with DebugEnhancedLogging {
 
   private lazy val home = Paths.get(System.getProperty("app.home"))
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
-  private val port = properties.properties.getInt("service.daemon.http.port")
-  override lazy val orderServlet: StarBuxServlet = new StarBuxServlet {
-    val serverPort: Int = port
+  override lazy val databaseAccess: DatabaseAccess = new DatabaseAccess {
+    override val dbDriverClassName: String = properties.properties.getString("starbux-service.database.driver-class")
+    override val dbUrl: String = properties.properties.getString("starbux-service.database.url")
+    override val dbUsername: Option[String] = Option(properties.properties.getString("starbux-service.database.username"))
+    override val dbPassword: Option[String] = Option(properties.properties.getString("starbux-service.database.password"))
   }
-  override lazy val mounter: ServletMounter = new ServletMounter {}
-  override lazy val server: StarBuxServer = new StarBuxServer(port)
+  override lazy val database: Database = new Database {}
 }
