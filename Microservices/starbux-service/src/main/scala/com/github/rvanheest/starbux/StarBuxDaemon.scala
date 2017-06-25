@@ -21,9 +21,7 @@ import org.apache.commons.daemon.{ Daemon, DaemonContext }
 
 import scala.util.control.NonFatal
 
-class StarBuxDaemon extends Daemon with DebugEnhancedLogging {
-
-  import StarBuxWiring._
+class StarBuxDaemon extends Daemon with StarBuxWiring with DebugEnhancedLogging {
 
   override def init(context: DaemonContext): Unit = {
     logger.info("Initializing service ...")
@@ -35,9 +33,8 @@ class StarBuxDaemon extends Daemon with DebugEnhancedLogging {
 
   override def start(): Unit = {
     logger.info("Starting service ...")
-//    databaseAccess.initConnectionPool()
-//      .flatMap(_ => server.start())
-    server.start()
+    databaseAccess.initConnectionPool()
+      .flatMap(_ => server.start())
       .doIfSuccess(_ => logger.info("Service started."))
       .doIfFailure {
         case NonFatal(e) => logger.error(s"Service startup failed: ${ e.getMessage }", e)
@@ -47,9 +44,8 @@ class StarBuxDaemon extends Daemon with DebugEnhancedLogging {
 
   override def stop(): Unit = {
     logger.info("Stopping service ...")
-//    databaseAccess.closeConnectionPool()
-//      .flatMap(_ => server.stop())
-    server.stop()
+    databaseAccess.closeConnectionPool()
+      .flatMap(_ => server.stop())
       .doIfSuccess(_ => logger.info("Cleaning up ..."))
       .doIfFailure {
         case NonFatal(e) => logger.error(s"Service stop failed: ${ e.getMessage }", e)

@@ -15,7 +15,5 @@ trait ServerWiring extends OrderServletComponent with StarBuxServletMounterCompo
     override val baseUrl: URL = new URL(s"http://localhost:$port/")
   }
   override val mounter: ServletMounter = new ServletMounter {}
-  override val server: StarBuxServer = new StarBuxServer {
-    override val serverPort: Int = port
-  }
+  override val server: StarBuxServer = new StarBuxServer(port)
 }

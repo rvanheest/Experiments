@@ -28,8 +28,7 @@ trait StarBuxServerComponent {
 
   val server: StarBuxServer
 
-  trait StarBuxServer {
-    val serverPort: Int
+  class StarBuxServer(val serverPort: Int) {
 
     private lazy val server = new Server(serverPort) {
       this.setHandler(new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
@@ -40,7 +39,6 @@ trait StarBuxServerComponent {
         })
       })
     }
-
     logger.info(s"HTTP port is $serverPort")
 
     def start(): Try[Unit] = Try {

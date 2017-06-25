@@ -21,9 +21,9 @@ import com.github.rvanheest.starbux.order.DatabaseComponent
 import com.github.rvanheest.starbux.service.ServerWiring
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-object StarBuxWiring extends ServerWiring
-  with DatabaseAccessComponent
+trait StarBuxWiring extends ServerWiring
   with DatabaseComponent
+  with DatabaseAccessComponent
   with PropertiesComponent
   with DebugEnhancedLogging {
 
