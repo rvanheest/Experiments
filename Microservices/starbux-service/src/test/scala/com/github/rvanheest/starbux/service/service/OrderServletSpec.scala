@@ -3,8 +3,9 @@ package com.github.rvanheest.starbux.service.service
 import java.net.URL
 import java.sql.Connection
 
-import com.github.rvanheest.starbux.order.{ DatabaseComponent, DatabaseException, Order }
+import com.github.rvanheest.starbux.order.{ DatabaseComponent, UnknownItemException, Order }
 import com.github.rvanheest.starbux.service.{ DatabaseFixture, OrderServletComponent }
+import nl.knaw.dans.lib.error.CompositeException
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalamock.scalatest.MockFactory
 import org.scalatra.test.scalatest.ScalatraSuite
@@ -84,12 +85,31 @@ class OrderServletSpec extends DatabaseFixture
         </drink>
       </order>
 
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(DatabaseException("error message"))
+    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(UnknownItemException("error message"))
     (database.addOrder(_: Order)(_: Connection)) expects (*, *) never()
 
     post("/", "order" -> Utility.trim(input).toString()) {
       status shouldBe 400
       body shouldBe "error message"
+    }
+  }
+
+  it should "return an error response when giving a corrupt input that causes multiple errors" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>whiskey</addition>
+          <addition>vodka</addition>
+        </drink>
+      </order>
+
+    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(CompositeException(UnknownItemException("error message") :: UnknownItemException("error message 2") :: Nil))
+    (database.addOrder(_: Order)(_: Connection)) expects (*, *) never()
+
+    post("/", "order" -> Utility.trim(input).toString()) {
+      status shouldBe 400
+      body shouldBe "error message\nerror message 2"
     }
   }
 }

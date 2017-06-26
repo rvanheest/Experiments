@@ -2,6 +2,7 @@ package com.github.rvanheest.starbux.service.order
 
 import com.github.rvanheest.starbux.order._
 import com.github.rvanheest.starbux.service.DatabaseFixture
+import nl.knaw.dans.lib.error.CompositeException
 
 import scala.util.{ Failure, Success }
 
@@ -13,10 +14,10 @@ class DatabaseSpec extends DatabaseFixture with DatabaseComponent {
   val add2 = "milk"
   val add3 = "honey"
 
-  val drink1 = Drink(drink = "coffee", addition = List.empty)
-  val drink2 = Drink(drink = "coffee", addition = List(add1))
-  val drink3 = Drink(drink = "coffee", addition = List(add1, add2))
-  val drink4 = Drink(drink = "tea", addition = List(add3))
+  val drink1 = Drink(drink = "coffee")
+  val drink2 = Drink(drink = "coffee", additions = List(add1))
+  val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
+  val drink4 = Drink(drink = "tea", additions = List(add3))
 
   val order1 = Order(Ordered, List.empty)
   val order2 = Order(Prepared, List(drink1))
@@ -65,9 +66,20 @@ class DatabaseSpec extends DatabaseFixture with DatabaseComponent {
   }
 
   it should "fail if the drink is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola", addition = List.empty)))
+    val invalidOrder = Order(Ordered, List(Drink(drink = "cola")))
     doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(DatabaseException("Unknown drink: cola")) =>
+      case Failure(UnknownItemException("Unknown drink: cola")) =>
+    }
+
+    inspectOrderTable shouldBe empty
+    inspectOrderDrinkTable shouldBe empty
+    inspectOrderDrinkAdditionsTable shouldBe empty
+  }
+
+  it should "fail if multiple drinks are unknown" in {
+    val invalidOrder = Order(Ordered, List(Drink(drink = "cola"), Drink(drink = "ice tea")))
+    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
+      case Failure(CompositeException(UnknownItemException("Unknown drink: cola") :: UnknownItemException("Unknown drink: ice tea") :: Nil)) =>
     }
 
     inspectOrderTable shouldBe empty
@@ -76,9 +88,42 @@ class DatabaseSpec extends DatabaseFixture with DatabaseComponent {
   }
 
   it should "fail if the addition is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", addition = List("whiskey"))))
+    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey"))))
     doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(DatabaseException("Unknown addition: whiskey")) =>
+      case Failure(UnknownItemException("Unknown addition: whiskey")) =>
+    }
+
+    inspectOrderTable shouldBe empty
+    inspectOrderDrinkTable shouldBe empty
+    inspectOrderDrinkAdditionsTable shouldBe empty
+  }
+
+  it should "fail if multiple additions are unknown" in {
+    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey", "vodka"))))
+    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
+      case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown addition: vodka") :: Nil)) =>
+    }
+
+    inspectOrderTable shouldBe empty
+    inspectOrderDrinkTable shouldBe empty
+    inspectOrderDrinkAdditionsTable shouldBe empty
+  }
+
+  it should "fail if both drink and addition are unknown" in {
+    val invalidOrder = Order(Ordered, List(Drink(drink = "cola", additions = List("whiskey"))))
+    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
+      case Failure(UnknownItemException("Unknown drink: cola")) =>
+    }
+
+    inspectOrderTable shouldBe empty
+    inspectOrderDrinkTable shouldBe empty
+    inspectOrderDrinkAdditionsTable shouldBe empty
+  }
+
+  it should "fail if some drinks and addition are unknown" in {
+    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey")), Drink(drink = "cola")))
+    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
+      case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown drink: cola") :: Nil)) =>
     }
 
     inspectOrderTable shouldBe empty

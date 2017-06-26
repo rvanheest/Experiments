@@ -1,6 +1,6 @@
 package com.github.rvanheest.starbux.service
 
-import java.net.{ HttpURLConnection, URL }
+import java.net.{ HttpURLConnection, URL, URLEncoder }
 import java.nio.charset.StandardCharsets
 
 import org.apache.commons.io.IOUtils
@@ -10,7 +10,7 @@ import scala.xml.{ Node, Utility, XML }
 
 trait ServerTestSupportFixture {
 
-  def callService(path: String = "service/order", method: String = "GET")(f: HttpURLConnection => Unit = _ => {}): String = {
+  def callService(path: String = "service/order", method: String = "GET")(f: HttpURLConnection => Unit = _ => {}): (Int, String) = {
     new URL(s"http://localhost:20000/$path").openConnection() match {
       case conn: HttpURLConnection =>
         managed {
@@ -22,26 +22,29 @@ trait ServerTestSupportFixture {
         }
           .map(_.getResponseCode)
           .acquireAndGet {
-            case code if code >= 200 && code < 300 => IOUtils.toString(conn.getInputStream, StandardCharsets.UTF_8)
-            case _ => IOUtils.toString(conn.getErrorStream, StandardCharsets.UTF_8)
+            case code if code >= 200 && code < 300 => (code, IOUtils.toString(conn.getInputStream, StandardCharsets.UTF_8))
+            case code => (code, IOUtils.toString(conn.getErrorStream, StandardCharsets.UTF_8))
           }
       case _ => throw new Exception
     }
   }
 
-  def order(xml: Node): Node = {
-    XML.loadString {
-      callService(s"service/order?order=${Utility.trim(xml).toString()}", "POST") { conn =>
-        conn.addRequestProperty("Content-Type", "application/xml")
-      }
-    }
+  private def encode(xml: Node) = {
+    URLEncoder.encode(Utility.trim(xml).toString(), StandardCharsets.UTF_8.toString)
   }
 
-  def failing(xml: Node): String = {
-    callService(s"service/order?order=${Utility.trim(xml).toString()}", "POST") { conn =>
+  def order(xml: Node): (Int, Node) = {
+    val (code, body) = callService(s"service/order?order=${encode(xml)}", "POST") { conn =>
+      conn.addRequestProperty("Content-Type", "application/xml")
+    }
+    (code, XML.loadString(body))
+  }
+
+  def failing(xml: Node): (Int, String) = {
+    callService(s"service/order?order=${encode(xml)}", "POST") { conn =>
       conn.addRequestProperty("Content-Type", "application/xml")
     }
   }
 
-  def successful: String = "Starbux Coffee Service running"
+  def successful: (Int, String) = (200, "Starbux Coffee Service running")
 }

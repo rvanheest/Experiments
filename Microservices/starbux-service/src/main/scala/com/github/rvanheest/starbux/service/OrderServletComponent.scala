@@ -23,7 +23,7 @@ import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalatra._
 
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Node, XML }
 
 trait OrderServletComponent {
@@ -46,7 +46,7 @@ trait OrderServletComponent {
       val drinks = (input \ "drink").map(n => {
         val name = (n \ "name").text
         val additions = (n \ "addition").map(_.text).toList
-        Drink(drink = name, addition = additions)
+        Drink(drink = name, additions = additions)
       }).toList
       Order(Ordered, drinks)
     }
@@ -57,6 +57,8 @@ trait OrderServletComponent {
       val result = for {
         input <- Try { XML.loadString(params("order")) }
         order <- parseInput(input)
+        _ <- if (order.drinks.isEmpty) Failure(EmptyRequestException())
+             else Success(())
         orderNumber <- databaseAccess.doTransaction(implicit connection => database.addOrder(order))
         cost <- databaseAccess.doTransaction(implicit connection => database.calculateCost(orderNumber))
       } yield {
@@ -72,7 +74,9 @@ trait OrderServletComponent {
 
       result.doIfFailure { case e => logger.error(e.getMessage, e) }
         .getOrRecover {
-          case DatabaseException(msg) => BadRequest(msg)
+          case e @ EmptyRequestException() => BadRequest(e.getMessage)
+          case UnknownItemException(msg) => BadRequest(msg)
+          case CompositeException(es) if es.forall(_.isInstanceOf[UnknownItemException]) => BadRequest(es.map(_.getMessage).mkString("\n"))
           case e => InternalServerError(e.getMessage)
         }
     }

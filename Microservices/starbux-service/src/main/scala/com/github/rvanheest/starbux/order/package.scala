@@ -7,7 +7,7 @@ package object order {
   type ID = UUID
 
   case class Order(status: Status, drinks: List[Drink])
-  case class Drink(id: ID = UUID.randomUUID(), drink: String, addition: List[Addition])
+  case class Drink(id: ID = UUID.randomUUID(), drink: String, additions: List[Addition] = List.empty)
   type Addition = String
 
   sealed abstract class Status(name: String)
@@ -16,5 +16,6 @@ package object order {
   case object Payed extends Status("Payed")
   case object Served extends Status("Served")
 
-  case class DatabaseException(msg: String) extends Exception(msg)
+  case class UnknownItemException(msg: String) extends Exception(msg)
+  case class EmptyRequestException() extends Exception("The order did not contain any drinks")
 }

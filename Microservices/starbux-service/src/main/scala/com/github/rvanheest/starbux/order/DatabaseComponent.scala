@@ -25,7 +25,7 @@ trait DatabaseComponent {
         orderId <- addToOrderTable(order)
         _ <- order.drinks.map(drink => for {
           _ <- addToOrderDrinkTable(drink, orderId)
-          _ <- drink.addition.map(addToOrderDrinkAdditionTable(_, drink.id)).collectResults
+          _ <- drink.additions.map(addToOrderDrinkAdditionTable(_, drink.id)).collectResults
         } yield ()).collectResults.recoverWith {
           case CompositeException(e :: Nil) => Failure(e)
           case e => Failure(e)
@@ -48,7 +48,7 @@ trait DatabaseComponent {
               result.getInt(1)
             })
             .tried
-          case _ => Failure(DatabaseException(s"Unknown status: ${ order.status }"))
+          case _ => Failure(UnknownItemException(s"Unknown status: ${ order.status }"))
         }
     }
 
@@ -63,7 +63,7 @@ trait DatabaseComponent {
         .tried
         .flatMap {
           case 1 => Success(())
-          case _ => Failure(DatabaseException(s"Unknown drink: ${ drink.drink }"))
+          case _ => Failure(UnknownItemException(s"Unknown drink: ${ drink.drink }"))
         }
     }
 
@@ -77,7 +77,7 @@ trait DatabaseComponent {
         .tried
         .flatMap {
           case 1 => Success(())
-          case _ => Failure(DatabaseException(s"Unknown addition: $addition"))
+          case _ => Failure(UnknownItemException(s"Unknown addition: $addition"))
         }
     }
 

@@ -32,7 +32,13 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
     callService()() shouldBe successful
   }
 
-  "post order" should "order a single drink without addition" in {
+  "post order" should "order nothing" in {
+    val input = <order/>
+
+    failing(input) shouldBe (400, "The order did not contain any drinks")
+  }
+
+  it should "order a single drink without addition" in {
     val input =
       <order>
         <drink>
@@ -51,7 +57,7 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
               rel="http://localhost:20000/payment"/>
       </order>
 
-    order(input) shouldBe Utility.trim(output)
+    order(input) shouldBe (201, Utility.trim(output))
   }
 
   it should "order a single drink with additions" in {
@@ -77,7 +83,7 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
               rel="http://localhost:20000/payment"/>
       </order>
 
-    order(input) shouldBe Utility.trim(output)
+    order(input) shouldBe (201, Utility.trim(output))
   }
 
   it should "order multiple drinks with additions" in {
@@ -111,7 +117,7 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
               rel="http://localhost:20000/payment"/>
       </order>
 
-    order(input) shouldBe Utility.trim(output)
+    order(input) shouldBe (201, Utility.trim(output))
   }
 
   it should "order a drink that StarBux doesn't have" in {
@@ -122,6 +128,72 @@ class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture wit
         </drink>
       </order>
 
-    failing(input) shouldBe "Unknown drink: cola"
+    failing(input) shouldBe (400, "Unknown drink: cola")
+  }
+
+  it should "order multiple drinks that StarBux doesn't have" in {
+    val input =
+      <order>
+        <drink>
+          <name>cola</name>
+        </drink>
+        <drink>
+          <name>ice tea</name>
+        </drink>
+      </order>
+
+    failing(input) shouldBe (400, "Unknown drink: cola\nUnknown drink: ice tea")
+  }
+
+  it should "order an addition that StarBux doesn't have" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>whiskey</addition>
+        </drink>
+      </order>
+
+    failing(input) shouldBe (400, "Unknown addition: whiskey")
+  }
+
+  it should "order additions that StarBux doesn't have" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>whiskey</addition>
+          <addition>vodka</addition>
+        </drink>
+      </order>
+
+    failing(input) shouldBe (400, "Unknown addition: whiskey\nUnknown addition: vodka")
+  }
+
+  it should "order a drink and addition that StarBux doesn't have" in {
+    val input =
+      <order>
+        <drink>
+          <name>cola</name>
+          <addition>whiskey</addition>
+        </drink>
+      </order>
+
+    failing(input) shouldBe (400, "Unknown drink: cola")
+  }
+
+  it should "order drinks and additions for which StarBux doesn't have some of them" in {
+    val input =
+      <order>
+        <drink>
+          <name>coffee</name>
+          <addition>whiskey</addition>
+        </drink>
+        <drink>
+          <name>cola</name>
+        </drink>
+      </order>
+
+    failing(input) shouldBe (400, "Unknown addition: whiskey\nUnknown drink: cola")
   }
 }
