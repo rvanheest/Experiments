@@ -42,19 +42,51 @@ trait OrderServletComponent {
       Ok("Starbux Coffee Service running")
     }
 
+    def toXml(orderId: OrderId, order: Order, cost: Cost): Node = {
+      <order>{
+        order.drinks.map(drink => {
+          <drink>
+            <name>{drink.drink}</name>
+            {drink.additions.map(addition => <addition>{addition}</addition>)}
+          </drink>
+        })
+        <cost>{cost}</cost>
+        <next rel={baseUrl.toURI.resolve("payment").toString}
+                uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
+                type="application/xml"/>
+      }</order>
+    }
+
+    get("/:orderId") {
+      val response = for {
+        orderId <- Try { params("orderId").toInt }
+        order <- databaseAccess.doTransaction(implicit connection => database.getOrder(orderId))
+        cost <- databaseAccess.doTransaction(implicit connection => database.calculateCost(orderId))
+      } yield {
+        Ok(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderId").toString),
+          body = toXml(orderId, order, cost))
+      }
+
+      response.doIfFailure { case e => logger.error(e.getMessage, e) }
+        .getOrRecover {
+          case e: NoSuchElementException => BadRequest(e.getMessage)
+          case e => InternalServerError(e.getMessage)
+        }
+    }
+
     def parseInput(input: Node): Try[Order] = Try {
       val drinks = (input \ "drink").map(n => {
         val name = (n \ "name").text
         val additions = (n \ "addition").map(_.text).toList
         Drink(drink = name, additions = additions)
-      }).toList
+      }).toSet
       Order(Ordered, drinks)
     }
 
     post("/") {
       contentType = "application/xml"
 
-      val result = for {
+      val response = for {
         input <- Try { XML.loadString(params("order")) }
         order <- parseInput(input)
         _ <- if (order.drinks.isEmpty) Failure(EmptyRequestException())
@@ -72,7 +104,7 @@ trait OrderServletComponent {
           body = input.copy(child = input.child ++ append))
       }
 
-      result.doIfFailure { case e => logger.error(e.getMessage, e) }
+      response.doIfFailure { case e => logger.error(e.getMessage, e) }
         .getOrRecover {
           case e @ EmptyRequestException() => BadRequest(e.getMessage)
           case UnknownItemException(msg) => BadRequest(msg)

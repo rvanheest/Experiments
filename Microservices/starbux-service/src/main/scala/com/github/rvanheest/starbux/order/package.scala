@@ -20,9 +20,21 @@ import java.util.UUID
 package object order {
 
   type ID = UUID
+  type OrderId = Int
+  type Cost = Int
 
-  case class Order(status: Status, drinks: List[Drink])
-  case class Drink(id: ID = UUID.randomUUID(), drink: String, additions: List[Addition] = List.empty)
+  case class Order(status: Status, drinks: Set[Drink])
+  case class Drink(id: ID = UUID.randomUUID(), drink: String, additions: List[Addition] = List.empty) {
+    override def equals(other: Any): Boolean = {
+      other match {
+        case Drink(thatId, thatDrink, thoseAdditions) =>
+          id == thatId &&
+            drink == thatDrink &&
+            additions.sorted == thoseAdditions.sorted
+        case _ => false
+      }
+    }
+  }
   type Addition = String
 
   sealed abstract class Status(name: String)
@@ -30,7 +42,18 @@ package object order {
   case object Prepared extends Status("Prepared")
   case object Payed extends Status("Payed")
   case object Served extends Status("Served")
+  object Status {
+    def fromString(s: String): Option[Status] = s match {
+      case "Ordered" => Some(Ordered)
+      case "Prepared" => Some(Prepared)
+      case "Payed" => Some(Payed)
+      case "Served" => Some(Served)
+      case _ => None
+    }
+  }
 
+  case class UnknownOrderException(orderId: OrderId) extends Exception(s"Order $orderId does not exist")
   case class UnknownItemException(msg: String) extends Exception(msg)
+  case class UnknownOrderStateException(orderId: OrderId) extends Exception(s"Order status is unknown for $orderId")
   case class EmptyRequestException() extends Exception("The order did not contain any drinks")
 }

@@ -22,14 +22,12 @@ import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
+import scala.collection.immutable.Stream.Empty
 import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 
 trait DatabaseComponent {
   this: DebugEnhancedLogging =>
-
-  type OrderId = Int
-  type Cost = Int
 
   val database: Database
 
@@ -98,21 +96,34 @@ trait DatabaseComponent {
 
     def calculateCost(orderId: OrderId)(implicit connection: Connection): Try[Int] = {
       val resultSet = for {
-        prepStatement <- managed(connection.prepareStatement("SELECT drinkId, drinkCost, additionCost FROM OrderView WHERE orderId = ?;"))
+        prepStatement <- managed(connection.prepareStatement("SELECT status, drinkId, drinkCost, additionCost FROM OrderView WHERE orderId = ?;"))
         _ = prepStatement.setInt(1, orderId)
         resultSet <- managed(prepStatement.executeQuery())
       } yield resultSet
 
       def getResults(resultSet: ResultSet) = {
-        Stream.continually(resultSet.next())
+        val data = Stream.continually(resultSet.next())
           .takeWhile(true ==)
-          .flatMap(_ => {
-            for {
-              drinkId <- Option(resultSet.getString("drinkId"))
-              drinkCost = resultSet.getInt("drinkCost")
-              additionCost = Option(resultSet.getInt("additionCost"))
-            } yield (UUID.fromString(drinkId), drinkCost, additionCost)
+          .map(_ => {
+            val status = resultSet.getString("status")
+            val drinkId = Option(resultSet.getString("drinkId"))
+            val drinkCost = resultSet.getInt("drinkCost")
+            val additionCost = Option(resultSet.getInt("additionCost"))
+            (status, drinkId, drinkCost, additionCost)
           })
+
+        Option(data)
+          .filterNot(_.isEmpty)
+          .map(data => Success(cost(data)))
+          .getOrElse(Failure(UnknownOrderException(orderId)))
+      }
+
+      def cost(data: Stream[(Addition, Option[Addition], Cost, Option[Cost])]): Cost = {
+        data
+          .flatMap {
+            case (_, None, _, _) => Option.empty[(ID, Cost, Option[Cost])]
+            case (_, Some(drinkId), drinkCost, additionCost) => Option(UUID.fromString(drinkId), drinkCost, additionCost)
+          }
           .groupBy { case (drinkId, _, _) => drinkId }
           .flatMap { case (_, values) =>
             val drinkCost = values.headOption.map { case (_, cost, _) => cost }
@@ -122,7 +133,68 @@ trait DatabaseComponent {
           .sum
       }
 
-      resultSet.map(getResults).tried
+      resultSet.map(getResults).tried.flatten
+    }
+
+    def getOrder(orderId: OrderId)(implicit connection: Connection): Try[Order] = {
+      val resultSet = for {
+        prepStatement <- managed(connection.prepareStatement("SELECT status, drinkId, drink, addition FROM OrderView WHERE orderId = ?;"))
+        _ = prepStatement.setInt(1, orderId)
+        resultSet <- managed(prepStatement.executeQuery())
+      } yield resultSet
+
+      def getResults(resultSet: ResultSet): Try[Order] = {
+        val data = Stream.continually(resultSet.next())
+          .takeWhile(true ==)
+          .map(_ => {
+            val status = resultSet.getString("status")
+            val drinkId = Option(resultSet.getString("drinkId"))
+            val drink = resultSet.getString("drink")
+            val addition = Option(resultSet.getString("addition"))
+            (status, drinkId, drink, addition)
+          })
+
+        data match {
+          case Empty => Failure(UnknownOrderException(orderId))
+          case (status, None, _, _) #:: Empty =>
+            Status.fromString(status)
+              .map(st => Success(Order(st, Set.empty)))
+              .getOrElse(Failure(UnknownOrderStateException(orderId)))
+          case _ =>
+            val statusAndDrinks = data
+              .flatMap {
+                case (_, None, _, _) => Stream.empty[(String, ID, String, Option[String])]
+                case (status, Some(drinkId), drinkCost, additionCost) => (status, UUID.fromString(drinkId), drinkCost, additionCost) #:: Empty
+              }
+              .groupBy { case (_, drinkId, _, _) => drinkId }
+              .toList
+              .flatMap { case (drinkId, values) => mkDrink(drinkId, values) }
+
+            mkOrder(statusAndDrinks)
+        }
+      }
+
+      def mkDrink(drinkId: ID, values: Stream[(String, ID, String, Option[Addition])]): Option[(String, Drink)] = {
+        values match {
+          case Empty => None
+          case (status, _, drink, _) #:: _ =>
+            val additions = values.flatMap { case (_, _, _, add) => add }.toList
+            Some(status, Drink(drinkId, drink, additions))
+        }
+      }
+
+      def mkOrder(statusAndDrinks: List[(String, Drink)]): Try[Order] = {
+        statusAndDrinks match {
+          case Nil => Failure(UnknownOrderException(orderId))
+          case order @ ((st, _) :: _) =>
+            val drinks = order.map { case (_, drink) => drink }.toSet
+            Status.fromString(st)
+              .map(s => Success(Order(s, drinks)))
+              .getOrElse(Failure(UnknownOrderStateException(orderId)))
+        }
+      }
+
+      resultSet.map(getResults).tried.flatten
     }
   }
 }

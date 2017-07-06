@@ -18,7 +18,7 @@ package com.github.rvanheest.starbux.service.service
 import java.net.URL
 import java.sql.Connection
 
-import com.github.rvanheest.starbux.order.{ DatabaseComponent, UnknownItemException, Order }
+import com.github.rvanheest.starbux.order.{ DatabaseComponent, Order, OrderId, UnknownItemException }
 import com.github.rvanheest.starbux.service.{ DatabaseFixture, OrderServletComponent }
 import nl.knaw.dans.lib.error.CompositeException
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
