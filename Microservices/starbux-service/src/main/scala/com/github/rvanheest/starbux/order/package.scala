@@ -52,8 +52,8 @@ package object order {
     }
   }
 
-  case class UnknownOrderException(orderId: OrderId) extends Exception(s"Order $orderId does not exist")
+  case class UnknownOrderException(orderId: OrderId) extends Exception(s"Order $orderId does not exist.")
   case class UnknownItemException(msg: String) extends Exception(msg)
-  case class UnknownOrderStateException(orderId: OrderId) extends Exception(s"Order status is unknown for $orderId")
-  case class EmptyRequestException() extends Exception("The order did not contain any drinks")
+  case class UnknownOrderStateException(orderId: OrderId) extends Exception(s"Order status is unknown for $orderId.")
+  case class EmptyRequestException() extends Exception("The order did not contain any drinks.")
 }

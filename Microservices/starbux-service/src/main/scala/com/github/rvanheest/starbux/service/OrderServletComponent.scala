@@ -52,8 +52,8 @@ trait OrderServletComponent {
         })
         <cost>{cost}</cost>
         <next rel={baseUrl.toURI.resolve("payment").toString}
-                uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
-                type="application/xml"/>
+              uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
+              type="application/xml"/>
       }</order>
     }
 
@@ -70,6 +70,8 @@ trait OrderServletComponent {
       response.doIfFailure { case e => logger.error(e.getMessage, e) }
         .getOrRecover {
           case e: NoSuchElementException => BadRequest(e.getMessage)
+          case UnknownOrderException(msg) => BadRequest(msg)
+          case UnknownOrderStateException(msg) => InternalServerError(msg + " Consult your barista for more info.")
           case e => InternalServerError(e.getMessage)
         }
     }
