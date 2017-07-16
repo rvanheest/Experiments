@@ -18,3 +18,8 @@
 
 # Maven
 /**/target/
+
+# Specific files for testing...
+src/main/resources/better-files
+src/main/resources/better-files-unzipped
+src/main/resources/better-files.zip
