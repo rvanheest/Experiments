@@ -17,7 +17,7 @@ package object instances {
 	implicit def productIsMonoid[A: Numeric] = new Monoid[Product[A]] {
 		implicit val m: Monoid[Product[A]] = this
 
-		def empty: Product[A] = Product(implicitly[Numeric[A]].zero)
+		def empty: Product[A] = Product(implicitly[Numeric[A]].one)
 
 		def append(a1: Product[A], a2: Product[A]): Product[A] = {
 			Product(implicitly[Numeric[A]].times(a1.product, a2.product))
