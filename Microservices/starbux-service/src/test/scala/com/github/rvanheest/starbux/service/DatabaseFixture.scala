@@ -20,7 +20,7 @@ import java.util.UUID
 
 import better.files.File
 import com.github.rvanheest.starbux.DatabaseAccessComponent
-import com.github.rvanheest.starbux.order.ID
+import com.github.rvanheest.starbux.order.{DatabaseComponent, ID}
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalatest.BeforeAndAfterEach
 import resource._

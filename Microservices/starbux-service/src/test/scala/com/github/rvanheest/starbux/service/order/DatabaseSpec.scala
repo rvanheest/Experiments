@@ -17,160 +17,121 @@ package com.github.rvanheest.starbux.service.order
 
 import com.github.rvanheest.starbux.order._
 import com.github.rvanheest.starbux.service.{DatabaseFixture, TestSupportFixture}
-import nl.knaw.dans.lib.error.CompositeException
 
+import scala.collection.immutable.Stream.Empty
 import scala.util.{Failure, Success}
 
 class DatabaseSpec extends TestSupportFixture with DatabaseFixture with DatabaseComponent {
-  import databaseAccess.doTransaction
   val database: Database = new Database {}
 
-  val add1 = "sugar"
-  val add2 = "milk"
-  val add3 = "honey"
+  private val add1 = "sugar"
+  private val add2 = "milk"
+  private val add3 = "honey"
 
-  val drink1 = Drink(drink = "coffee")
-  val drink2 = Drink(drink = "coffee", additions = List(add1))
-  val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
-  val drink4 = Drink(drink = "tea", additions = List(add3))
+  private val drink1 = Drink(drink = "coffee")
+  private val drink2 = Drink(drink = "coffee", additions = List(add1))
+  private val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
+  private val drink4 = Drink(drink = "tea", additions = List(add3))
 
-  val order1 = Order(Ordered, List.empty)
-  val order2 = Order(Prepared, List(drink1))
-  val order3 = Order(Payed, List(drink2))
-  val order4 = Order(Served, List(drink3, drink4))
+  private val order1 = Order(Ordered, List.empty)
+  private val order2 = Order(Prepared, List(drink1))
+  private val order3 = Order(Payed, List(drink2))
+  private val order4 = Order(Served, List(drink3, drink4))
 
-  "addOrder" should "insert an empty order" in {
-    val expectedOrderId = 1
-    doTransaction(implicit connection => database.addOrder(order1)) should matchPattern {
-      case Success(`expectedOrderId`) =>
-    }
+  "addToOrderTable" should "create a new order" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
 
-    inspectOrderTable should (have size 1 and contain only((expectedOrderId, 1)))
+    inspectOrderTable should (have size 1 and contain only((orderId, 1)))
   }
 
-  it should "insert an order with one drink and no additions on it" in {
-    val expectedOrderId = 1
-    doTransaction(implicit connection => database.addOrder(order2)) should matchPattern {
-      case Success(`expectedOrderId`) =>
-    }
+  "addToOrderDrinkTable" should "add a drink to the order" in {
+    val orderId = 1
+    database.addToOrderTable(Prepared) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(drink1, orderId) shouldBe a[Success[_]]
 
-    inspectOrderTable should (have size 1 and contain only((expectedOrderId, 2)))
+    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
     inspectOrderDrinkTable should (have size 1 and contain only((drink1.id, 1, 1, 1)))
   }
 
-  it should "insert an order with one drink and one addition on it" in {
-    val expectedOrderId = 1
-    doTransaction(implicit connection => database.addOrder(order3)) should matchPattern {
-      case Success(`expectedOrderId`) =>
+  it should "fail if the drink is unknown" in {
+    val orderId = 1
+    database.addToOrderTable(Prepared) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(Drink(drink = "cola"), orderId) should matchPattern {
+      case Failure(UnknownItemException("Unknown drink: cola")) =>
     }
 
-    inspectOrderTable should (have size 1 and contain only((expectedOrderId, 3)))
+    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
+    inspectOrderDrinkTable shouldBe empty
+  }
+
+  "addToOrderDrinkAdditionTable" should "add an addition to a drink" in {
+    val orderId = 1
+    database.addToOrderTable(Prepared) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(drink2, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add1, drink2.id) shouldBe a[Success[_]]
+
+    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
     inspectOrderDrinkTable should (have size 1 and contain only((drink2.id, 1, 1, 1)))
     inspectOrderDrinkAdditionsTable should (have size 1 and contain only((drink2.id, 2, 1)))
   }
 
-  it should "insert an order with multiple drinks and additions on them" in {
-    val expectedOrderId = 1
-    doTransaction(implicit connection => database.addOrder(order4)) should matchPattern {
-      case Success(`expectedOrderId`) =>
-    }
-
-    inspectOrderTable should (have size 1 and contain only((expectedOrderId, 4)))
-    inspectOrderDrinkTable should (have size 2 and contain only((drink3.id, 1, 1, 1), (drink4.id, 1, 2, 2)))
-    inspectOrderDrinkAdditionsTable should (have size 3 and contain only((drink3.id, 2, 1), (drink3.id, 1, 1), (drink4.id, 3, 2)))
-  }
-
-  it should "fail if the drink is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola")))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(UnknownItemException("Unknown drink: cola")) =>
-    }
-
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
-    inspectOrderDrinkAdditionsTable shouldBe empty
-  }
-
-  it should "fail if multiple drinks are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola"), Drink(drink = "ice tea")))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(CompositeException(UnknownItemException("Unknown drink: cola") :: UnknownItemException("Unknown drink: ice tea") :: Nil)) =>
-    }
-
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
-    inspectOrderDrinkAdditionsTable shouldBe empty
-  }
-
   it should "fail if the addition is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey"))))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
+    val orderId = 1
+    database.addToOrderTable(Prepared) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(drink2, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable("whiskey", drink2.id) should matchPattern {
       case Failure(UnknownItemException("Unknown addition: whiskey")) =>
     }
 
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
+    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
+    inspectOrderDrinkTable should (have size 1 and contain only((drink2.id, 1, 1, 1)))
     inspectOrderDrinkAdditionsTable shouldBe empty
   }
 
-  it should "fail if multiple additions are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey", "vodka"))))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown addition: vodka") :: Nil)) =>
+  "costView" should "list the costs of an empty order" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+
+    database.costView(orderId) should matchPattern { case Success(Empty) => }
+  }
+
+  it should "list the costs of an order with one drink and no additions on it" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink1, orderId) shouldBe a[Success[_]]
+
+    inside(database.costView(orderId)) {
+      case Success(view) => view should (have size 1 and contain only((drink1.id, 1, 0)))
     }
-
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
-    inspectOrderDrinkAdditionsTable shouldBe empty
   }
 
-  it should "fail if both drink and addition are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola", additions = List("whiskey"))))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(UnknownItemException("Unknown drink: cola")) =>
+  it should "list the costs of an order with one drink and one addition on it" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink2, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add1, drink2.id) shouldBe a[Success[_]]
+
+    inside(database.costView(orderId)) {
+      case Success(view) => view should (have size 1 and contain only((drink2.id, 1, 1)))
     }
-
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
-    inspectOrderDrinkAdditionsTable shouldBe empty
   }
 
-  it should "fail if some drinks and addition are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey")), Drink(drink = "cola")))
-    doTransaction(implicit connection => database.addOrder(invalidOrder)) should matchPattern {
-      case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown drink: cola") :: Nil)) =>
+  it should "list the costs of an order with multiple drinks and additions on them" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink3, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add1, drink3.id) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add2, drink3.id) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(drink4, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add3, drink4.id) shouldBe a[Success[_]]
+
+    inside(database.costView(orderId)) {
+      case Success(view) => view should (have size 3 and contain inOrder (
+        (drink3.id, 1, 1),
+//        (drink3.id, 1, 1),
+        (drink4.id, 2, 2)
+      ))
     }
-
-    inspectOrderTable shouldBe empty
-    inspectOrderDrinkTable shouldBe empty
-    inspectOrderDrinkAdditionsTable shouldBe empty
-  }
-
-  "calculateCost" should "calculate the cost of an empty order" in {
-    val expectedOrderId = 1
-    database.addOrder(order1) should matchPattern { case Success(`expectedOrderId`) => }
-
-    database.calculateCost(expectedOrderId) should matchPattern { case Success(0) => }
-  }
-
-  it should "calculate the cost of an order with one drink and no additions on it" in {
-    val expectedOrderId = 1
-    database.addOrder(order2) should matchPattern { case Success(`expectedOrderId`) => }
-
-    database.calculateCost(expectedOrderId) should matchPattern { case Success(1) => }
-  }
-
-  it should "calculate the cost of an order with one drink and one addition on it" in {
-    val expectedOrderId = 1
-    database.addOrder(order3) should matchPattern { case Success(`expectedOrderId`) => }
-
-    database.calculateCost(expectedOrderId) should matchPattern { case Success(2) => }
-  }
-
-  it should "calculate the cost of an order with multiple drinks and additions on them" in {
-    val expectedOrderId = 1
-    database.addOrder(order4) should matchPattern { case Success(`expectedOrderId`) => }
-
-    database.calculateCost(expectedOrderId) should matchPattern { case Success(7) => }
   }
 }

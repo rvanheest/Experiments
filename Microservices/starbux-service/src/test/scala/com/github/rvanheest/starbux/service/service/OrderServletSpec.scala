@@ -18,7 +18,7 @@ package com.github.rvanheest.starbux.service.service
 import java.net.URL
 import java.sql.Connection
 
-import com.github.rvanheest.starbux.order.{DatabaseComponent, Order, UnknownItemException}
+import com.github.rvanheest.starbux.order.{DatabaseComponent, Order, OrderManagementComponent, UnknownItemException}
 import com.github.rvanheest.starbux.service.{DatabaseFixture, OrderServletComponent, TestSupportFixture}
 import nl.knaw.dans.lib.error.CompositeException
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -33,10 +33,12 @@ class OrderServletSpec extends TestSupportFixture
   with MockFactory
   with ScalatraSuite
   with OrderServletComponent
+  with OrderManagementComponent
   with DatabaseComponent
   with DebugEnhancedLogging {
 
   override val database: Database = mock[Database]
+  override val orderManagement: OrderManagement = mock[OrderManagement]
   override val orderServlet: OrderServlet = new OrderServlet {
     val baseUrl: URL = new URL("http://localhost:8060/")
   }
@@ -82,8 +84,8 @@ class OrderServletSpec extends TestSupportFixture
               type="application/xml"/>
       </order>
 
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Success(orderId)
-    (database.calculateCost(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Success(cost)
+    (orderManagement.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Success(orderId)
+    (orderManagement.calculateCost(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Success(cost)
 
     post("/", "order" -> Utility.trim(input).toString()) {
       status shouldBe 201
@@ -101,8 +103,8 @@ class OrderServletSpec extends TestSupportFixture
         </drink>
       </order>
 
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(UnknownItemException("error message"))
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) never()
+    (orderManagement.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(UnknownItemException("error message"))
+    (orderManagement.addOrder(_: Order)(_: Connection)) expects (*, *) never()
 
     post("/", "order" -> Utility.trim(input).toString()) {
       status shouldBe 400
@@ -120,8 +122,8 @@ class OrderServletSpec extends TestSupportFixture
         </drink>
       </order>
 
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(CompositeException(UnknownItemException("error message") :: UnknownItemException("error message 2") :: Nil))
-    (database.addOrder(_: Order)(_: Connection)) expects (*, *) never()
+    (orderManagement.addOrder(_: Order)(_: Connection)) expects (*, *) once() returning Failure(CompositeException(UnknownItemException("error message") :: UnknownItemException("error message 2") :: Nil))
+    (orderManagement.addOrder(_: Order)(_: Connection)) expects (*, *) never()
 
     post("/", "order" -> Utility.trim(input).toString()) {
       status shouldBe 400

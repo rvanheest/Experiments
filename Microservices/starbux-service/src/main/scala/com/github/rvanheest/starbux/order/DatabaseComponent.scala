@@ -15,15 +15,14 @@
  */
 package com.github.rvanheest.starbux.order
 
-import java.sql.{ Connection, ResultSet }
+import java.sql.Connection
 import java.util.UUID
 
-import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 trait DatabaseComponent {
   this: DebugEnhancedLogging =>
@@ -35,23 +34,10 @@ trait DatabaseComponent {
 
   trait Database {
 
-    def addOrder(order: Order)(implicit connection: Connection): Try[OrderId] = {
-      for {
-        orderId <- addToOrderTable(order)
-        _ <- order.drinks.map(drink => for {
-          _ <- addToOrderDrinkTable(drink, orderId)
-          _ <- drink.additions.map(addToOrderDrinkAdditionTable(_, drink.id)).collectResults
-        } yield ()).collectResults.recoverWith {
-          case CompositeException(e :: Nil) => Failure(e)
-          case e => Failure(e)
-        }
-      } yield orderId
-    }
-
-    private def addToOrderTable(order: Order)(implicit connection: Connection): Try[OrderId] = {
+    def addToOrderTable(status: Status)(implicit connection: Connection): Try[OrderId] = {
       managed(connection.prepareStatement("INSERT INTO `Order` (statusId) SELECT Status.statusId FROM Status WHERE Status.status = ?;"))
         .map(prepStatement => {
-          prepStatement.setString(1, order.status.toString)
+          prepStatement.setString(1, status.toString)
           prepStatement.executeUpdate()
         })
         .tried
@@ -63,11 +49,11 @@ trait DatabaseComponent {
               result.getInt(1)
             })
             .tried
-          case _ => Failure(UnknownItemException(s"Unknown status: ${ order.status }"))
+          case _ => Failure(UnknownItemException(s"Unknown status: $status"))
         }
     }
 
-    private def addToOrderDrinkTable(drink: Drink, orderId: OrderId)(implicit connection: Connection): Try[Unit] = {
+    def addToOrderDrinkTable(drink: Drink, orderId: OrderId)(implicit connection: Connection): Try[Unit] = {
       managed(connection.prepareStatement("INSERT INTO order_drink (id, orderId, drinkId, drinkCost) SELECT ?, ?, Drink.drinkId, Drink.cost FROM Drink WHERE Drink.drink = ?;"))
         .map(prepStatement => {
           prepStatement.setString(1, drink.id.toString)
@@ -82,7 +68,7 @@ trait DatabaseComponent {
         }
     }
 
-    private def addToOrderDrinkAdditionTable(addition: Addition, drinkId: ID)(implicit connection: Connection): Try[Unit] = {
+    def addToOrderDrinkAdditionTable(addition: Addition, drinkId: ID)(implicit connection: Connection): Try[Unit] = {
       managed(connection.prepareStatement("INSERT INTO order_drink_additions (orderDrinkId, additionId, additionCost) SELECT ?, Addition.additionId, Addition.cost FROM Addition WHERE Addition.addition = ?;"))
         .map(prepStatement => {
           prepStatement.setString(1, drinkId.toString)
@@ -96,33 +82,27 @@ trait DatabaseComponent {
         }
     }
 
-    def calculateCost(orderId: OrderId)(implicit connection: Connection): Try[Int] = {
+    def costView(orderId: OrderId)(implicit connection: Connection): Try[Seq[(UUID, Cost, Cost)]] = {
       val resultSet = for {
         prepStatement <- managed(connection.prepareStatement("SELECT drinkId, drinkCost, additionCost FROM OrderView WHERE orderId = ?;"))
         _ = prepStatement.setInt(1, orderId)
         resultSet <- managed(prepStatement.executeQuery())
       } yield resultSet
 
-      def getResults(resultSet: ResultSet) = {
-        Stream.continually(resultSet.next())
-          .takeWhile(true ==)
-          .flatMap(_ => {
-            for {
-              drinkId <- Option(resultSet.getString("drinkId"))
-              drinkCost = resultSet.getInt("drinkCost")
-              additionCost = Option(resultSet.getInt("additionCost"))
-            } yield (UUID.fromString(drinkId), drinkCost, additionCost)
-          })
-          .groupBy { case (drinkId, _, _) => drinkId }
-          .flatMap { case (_, values) =>
-            val drinkCost = values.headOption.map { case (_, cost, _) => cost }
-            val additionCost = values.flatMap { case (_, _, cost) => cost }
-            drinkCost.toStream #::: additionCost
-          }
-          .sum
-      }
-
-      resultSet.map(getResults).tried
+      resultSet
+        .map(result => {
+          Stream.continually(result.next())
+            .takeWhile(true ==)
+            .flatMap(_ => {
+              for {
+                drinkId <- Option(result.getString("drinkId"))
+                drinkCost = result.getInt("drinkCost")
+                additionCost = result.getInt("additionCost")
+              } yield (UUID.fromString(drinkId), drinkCost, additionCost)
+            })
+            .toList
+        })
+        .tried
     }
   }
 }

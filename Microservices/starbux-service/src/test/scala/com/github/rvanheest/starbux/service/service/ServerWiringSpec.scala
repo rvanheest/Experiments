@@ -23,12 +23,12 @@ import scala.util.Success
 import scala.xml.Utility
 
 class ServerWiringSpec extends TestSupportFixture
-                               with ConfigurationSupportFixture
-                               with DatabaseFixture
-                               with ServerTestSupportFixture
-                               with OneInstancePerTest
-                               with ServerWiring
-                               with DatabaseComponent {
+  with ConfigurationSupportFixture
+  with DatabaseFixture
+  with ServerTestSupportFixture
+  with OneInstancePerTest
+  with ServerWiring
+  with DatabaseComponent {
 
   override val database: Database = new Database {}
 

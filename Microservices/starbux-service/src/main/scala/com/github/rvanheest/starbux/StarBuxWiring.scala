@@ -16,15 +16,13 @@
 package com.github.rvanheest.starbux
 
 import better.files.File
-import com.github.rvanheest.starbux.order.DatabaseComponent
 import com.github.rvanheest.starbux.service.ServerWiring
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 trait StarBuxWiring extends ServerWiring
-                            with DatabaseComponent
-                            with DatabaseAccessComponent
-                            with ConfigurationComponent
-                            with DebugEnhancedLogging {
+  with DatabaseAccessComponent
+  with ConfigurationComponent
+  with DebugEnhancedLogging {
 
   private lazy val home = File.home
 
@@ -35,5 +33,4 @@ trait StarBuxWiring extends ServerWiring
     override val dbUsername: Option[String] = Option(configuration.properties.getString("starbux-service.database.username"))
     override val dbPassword: Option[String] = Option(configuration.properties.getString("starbux-service.database.password"))
   }
-  override lazy val database: Database = new Database {}
 }

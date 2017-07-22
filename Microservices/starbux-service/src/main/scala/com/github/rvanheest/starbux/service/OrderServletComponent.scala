@@ -27,7 +27,7 @@ import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Node, XML }
 
 trait OrderServletComponent {
-  this: DatabaseAccessComponent with DatabaseComponent with DebugEnhancedLogging =>
+  this: OrderManagementComponent with DatabaseAccessComponent with DebugEnhancedLogging =>
 
   val orderServlet: OrderServlet
 
@@ -59,16 +59,20 @@ trait OrderServletComponent {
         order <- parseInput(input)
         _ <- if (order.drinks.isEmpty) Failure(EmptyRequestException())
              else Success(())
-        orderNumber <- databaseAccess.doTransaction(implicit connection => database.addOrder(order))
-        cost <- databaseAccess.doTransaction(implicit connection => database.calculateCost(orderNumber))
+        (orderId, cost) <- databaseAccess.doTransaction(implicit connection =>
+          for {
+            orderNumber <- orderManagement.addOrder(order)
+            cost <- orderManagement.calculateCost(orderNumber)
+          } yield (orderNumber, cost)
+        )
       } yield {
         val append = Seq(
           <cost>{cost}</cost>,
           <next rel={baseUrl.toURI.resolve("payment").toString}
-                uri={baseUrl.toURI.resolve(s"/payment/order/$orderNumber").toString}
+                uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
                 type="application/xml"/>
         )
-        Created(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderNumber").toString),
+        Created(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderId").toString),
           body = input.copy(child = input.child ++ append))
       }
 

@@ -17,12 +17,12 @@ package com.github.rvanheest.starbux.service
 
 import java.net.URL
 
-import com.github.rvanheest.starbux.order.DatabaseComponent
-import com.github.rvanheest.starbux.{ DatabaseAccessComponent, ConfigurationComponent }
+import com.github.rvanheest.starbux.order.OrderWiring
+import com.github.rvanheest.starbux.{ConfigurationComponent, DatabaseAccessComponent}
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-trait ServerWiring extends OrderServletComponent with StarBuxServerComponent {
-  this: DatabaseAccessComponent with DatabaseComponent with ConfigurationComponent with DebugEnhancedLogging =>
+trait ServerWiring extends OrderServletComponent with StarBuxServerComponent with OrderWiring {
+  this: DatabaseAccessComponent with ConfigurationComponent with DebugEnhancedLogging =>
 
   private val port = configuration.properties.getInt("service.daemon.http.port")
 
