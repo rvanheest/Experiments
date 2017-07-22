@@ -65,6 +65,10 @@
             <groupId>nl.knaw.dans.lib</groupId>
             <artifactId>dans-scala-lib</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.pathikrit</groupId>
+            <artifactId>better-files_2.11</artifactId>
+        </dependency>
 
         <!-- Apache utils -->
         <dependency>

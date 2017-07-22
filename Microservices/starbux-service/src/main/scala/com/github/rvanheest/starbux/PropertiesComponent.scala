@@ -15,12 +15,8 @@
  */
 package com.github.rvanheest.starbux
 
-import java.nio.file.Path
-
+import better.files.File
 import org.apache.commons.configuration.PropertiesConfiguration
-import resource.managed
-
-import scala.io.Source
 
 trait PropertiesComponent {
 
@@ -32,9 +28,9 @@ trait PropertiesComponent {
   }
 
   object GeneralProperties {
-    def apply(home: Path): GeneralProperties = new GeneralProperties {
-      override val version: String = managed(Source.fromFile(home.resolve("version").toFile)).acquireAndGet(_.mkString)
-      override val properties = new PropertiesConfiguration(home.resolve("cfg/application.properties").toFile)
+    def apply(home: File): GeneralProperties = new GeneralProperties {
+      override val version: String = (home / "version").contentAsString
+      override val properties = new PropertiesConfiguration((home / "cfg" / "application.properties").toJava)
     }
   }
 }

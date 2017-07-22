@@ -16,8 +16,8 @@
 package com.github.rvanheest.starbux.client
 
 import java.net.URL
-import java.nio.file.Paths
 
+import better.files.File
 import com.github.rvanheest.starbux.client.cmd.{ CommandLineInterfaceComponent, CommandLineRunComponent }
 import com.github.rvanheest.starbux.client.logic.{ HttpConnectionComponent, OrdererComponent }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -29,11 +29,19 @@ class ClientWiring(params: Seq[String]) extends CommandLineInterfaceComponent
   with PropertiesComponent
   with DebugEnhancedLogging {
 
-  private lazy val home = Paths.get(System.getProperty("app.home"))
+  private lazy val home = File.home
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
   override lazy val cli: CommandLineInterface = CommandLineInterface(params)
   override lazy val httpConnection: HttpConnection = new HttpConnection {
+    private val key = "client.service.baseUrl"
+    private val value = properties.properties.getString(key)
+    if (!value.endsWith("/")) {
+      logger.warn(s"adding a '/' to the end of property '$key'")
+      properties.properties.setProperty(key, value + "/")
+      properties.properties.save()
+    }
+
     val baseUrl: URL = new URL(properties.properties.getString("client.service.baseUrl"))
   }
   override lazy val orderer: Orderer = new Orderer {}

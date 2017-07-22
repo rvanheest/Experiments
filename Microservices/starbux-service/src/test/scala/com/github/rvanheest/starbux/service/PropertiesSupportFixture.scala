@@ -15,23 +15,19 @@
  */
 package com.github.rvanheest.starbux.service
 
-import java.nio.file.{ Files, Paths }
-
+import better.files.File
 import com.github.rvanheest.starbux.PropertiesComponent
 
-import scala.collection.JavaConverters._
-
-trait PropertiesSupportFixture extends TestSupportFixture with PropertiesComponent {
+trait PropertiesSupportFixture extends PropertiesComponent {
+  this: TestSupportFixture =>
 
   override val properties: GeneralProperties = {
-    val versionFile = testDir.resolve("version")
-    Files.createFile(versionFile)
-    Files.write(versionFile, List("version x.y.z").asJava)
+    (testDir / "version")
+      .createIfNotExists(createParents = true)
+      .write("version x.y.z")
 
-    Files.createDirectory(testDir.resolve("cfg/"))
-    Files.copy(
-      Paths.get(getClass.getResource("/debug-config/application.properties").toURI),
-      testDir.resolve("cfg/application.properties"))
+    (testDir / "cfg").createDirectories()
+    File(getClass.getResource("/debug-config/application.properties").toURI).copyTo(testDir / "cfg" / "application.properties")
 
     GeneralProperties(testDir)
   }

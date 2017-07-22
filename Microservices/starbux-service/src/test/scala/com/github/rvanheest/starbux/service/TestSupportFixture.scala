@@ -15,17 +15,15 @@
  */
 package com.github.rvanheest.starbux.service
 
-import java.nio.file.{ Files, Path, Paths }
-
-import org.apache.commons.io.FileUtils
+import better.files.File
+import better.files.File._
 import org.scalatest._
 
 trait TestSupportFixture extends FlatSpec with Matchers with Inside {
 
-  lazy val testDir: Path = {
-    val path = Paths.get(s"target/test/${ getClass.getSimpleName }").toAbsolutePath
-    FileUtils.deleteQuietly(path.toFile)
-    Files.createDirectories(path)
-    path
+  lazy val testDir: File = {
+    (currentWorkingDirectory / "target" / "test" / getClass.getSimpleName)
+      .delete(swallowIOExceptions = true)
+      .createDirectories()
   }
 }

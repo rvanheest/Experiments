@@ -16,13 +16,17 @@
 package com.github.rvanheest.starbux.service.service
 
 import com.github.rvanheest.starbux.order.DatabaseComponent
-import com.github.rvanheest.starbux.service.{ DatabaseFixture, PropertiesSupportFixture, ServerTestSupportFixture, ServerWiring }
+import com.github.rvanheest.starbux.service._
 import org.scalatest.OneInstancePerTest
 
 import scala.util.Success
 import scala.xml.Utility
 
-class ServerWiringSpec extends PropertiesSupportFixture with DatabaseFixture with ServerTestSupportFixture with OneInstancePerTest
+class ServerWiringSpec extends TestSupportFixture
+  with PropertiesSupportFixture
+  with DatabaseFixture
+  with ServerTestSupportFixture
+  with OneInstancePerTest
   with ServerWiring
   with DatabaseComponent {
 

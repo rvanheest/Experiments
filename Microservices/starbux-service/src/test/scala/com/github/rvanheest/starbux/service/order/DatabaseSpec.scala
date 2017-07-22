@@ -16,12 +16,12 @@
 package com.github.rvanheest.starbux.service.order
 
 import com.github.rvanheest.starbux.order._
-import com.github.rvanheest.starbux.service.DatabaseFixture
+import com.github.rvanheest.starbux.service.{DatabaseFixture, TestSupportFixture}
 import nl.knaw.dans.lib.error.CompositeException
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
-class DatabaseSpec extends DatabaseFixture with DatabaseComponent {
+class DatabaseSpec extends TestSupportFixture with DatabaseFixture with DatabaseComponent {
   import databaseAccess.doTransaction
   val database: Database = new Database {}
 

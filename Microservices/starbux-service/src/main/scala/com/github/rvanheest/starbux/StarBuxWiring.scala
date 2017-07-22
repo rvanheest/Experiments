@@ -15,8 +15,7 @@
  */
 package com.github.rvanheest.starbux
 
-import java.nio.file.Paths
-
+import better.files.File
 import com.github.rvanheest.starbux.order.DatabaseComponent
 import com.github.rvanheest.starbux.service.ServerWiring
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -27,7 +26,7 @@ trait StarBuxWiring extends ServerWiring
   with PropertiesComponent
   with DebugEnhancedLogging {
 
-  private lazy val home = Paths.get(System.getProperty("app.home"))
+  private lazy val home = File.home
 
   override lazy val properties: GeneralProperties = GeneralProperties(home)
   override lazy val databaseAccess: DatabaseAccess = new DatabaseAccess {

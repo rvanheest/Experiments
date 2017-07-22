@@ -18,17 +18,18 @@ package com.github.rvanheest.starbux.service.service
 import java.net.URL
 import java.sql.Connection
 
-import com.github.rvanheest.starbux.order.{ DatabaseComponent, UnknownItemException, Order }
-import com.github.rvanheest.starbux.service.{ DatabaseFixture, OrderServletComponent }
+import com.github.rvanheest.starbux.order.{DatabaseComponent, Order, UnknownItemException}
+import com.github.rvanheest.starbux.service.{DatabaseFixture, OrderServletComponent, TestSupportFixture}
 import nl.knaw.dans.lib.error.CompositeException
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalamock.scalatest.MockFactory
 import org.scalatra.test.scalatest.ScalatraSuite
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import scala.xml.Utility
 
-class OrderServletSpec extends DatabaseFixture
+class OrderServletSpec extends TestSupportFixture
+  with DatabaseFixture
   with MockFactory
   with ScalatraSuite
   with OrderServletComponent

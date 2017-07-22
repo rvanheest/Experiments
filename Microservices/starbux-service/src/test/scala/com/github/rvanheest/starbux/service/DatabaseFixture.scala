@@ -15,27 +15,24 @@
  */
 package com.github.rvanheest.starbux.service
 
-import java.nio.file.{ Files, Path }
 import java.sql.Connection
 import java.util.UUID
 
+import better.files.File
 import com.github.rvanheest.starbux.DatabaseAccessComponent
 import com.github.rvanheest.starbux.order.ID
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalatest.BeforeAndAfterEach
 import resource._
 
-import scala.io.Source
 import scala.util.Success
 
-trait DatabaseFixture extends TestSupportFixture
-  with BeforeAndAfterEach
-  with DatabaseAccessComponent
-  with DebugEnhancedLogging {
+trait DatabaseFixture extends BeforeAndAfterEach with DatabaseAccessComponent with DebugEnhancedLogging {
+  this: TestSupportFixture =>
 
   implicit var connection: Connection = _
 
-  val databaseFile: Path = testDir.resolve("database.db")
+  val databaseFile: File = testDir / "database.db"
 
   override val databaseAccess = new DatabaseAccess {
     override val dbDriverClassName: String = "org.sqlite.JDBC"
@@ -48,7 +45,7 @@ trait DatabaseFixture extends TestSupportFixture
 
       managed(pool.getConnection)
         .flatMap(connection => managed(connection.createStatement))
-        .and(managed(Source.fromFile(getClass.getClassLoader.getResource("database/database.sql").toURI)).map(_.mkString))
+        .and(constant(File(getClass.getClassLoader.getResource("database/database.sql").toURI).contentAsString))
         .map { case (statement, query) =>
           statement.executeUpdate(query)
         }
@@ -62,7 +59,7 @@ trait DatabaseFixture extends TestSupportFixture
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    Files.deleteIfExists(databaseFile)
+    if (databaseFile.exists) databaseFile.delete()
     databaseAccess.initConnectionPool()
   }
 
