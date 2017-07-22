@@ -15,6 +15,8 @@
  */
 package com.github.rvanheest.starbux.service
 
+import javax.servlet.ServletContext
+
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -24,7 +26,7 @@ import org.scalatra.servlet.ScalatraListener
 import scala.util.Try
 
 trait StarBuxServerComponent {
-  this: StarBuxServletMounterComponent with DebugEnhancedLogging =>
+  this: OrderServletComponent with DebugEnhancedLogging =>
 
   val server: StarBuxServer
 
@@ -34,7 +36,11 @@ trait StarBuxServerComponent {
       this.setHandler(new ServletContextHandler(ServletContextHandler.NO_SESSIONS) {
         this.addEventListener(new ScalatraListener() {
           override def probeForCycleClass(classLoader: ClassLoader): (String, LifeCycle) = {
-            (mounter.getClass.getSimpleName, mounter)
+            ("starbux-service-lifecycle", new LifeCycle {
+              override def init(context: ServletContext): Unit = {
+                context.mount(orderServlet, "/service/order")
+              }
+            })
           }
         })
       })
