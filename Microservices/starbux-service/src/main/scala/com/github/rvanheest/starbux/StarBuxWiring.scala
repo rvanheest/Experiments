@@ -21,19 +21,19 @@ import com.github.rvanheest.starbux.service.ServerWiring
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 trait StarBuxWiring extends ServerWiring
-  with DatabaseComponent
-  with DatabaseAccessComponent
-  with PropertiesComponent
-  with DebugEnhancedLogging {
+                            with DatabaseComponent
+                            with DatabaseAccessComponent
+                            with ConfigurationComponent
+                            with DebugEnhancedLogging {
 
   private lazy val home = File.home
 
-  override lazy val properties: GeneralProperties = GeneralProperties(home)
+  override lazy val configuration: Configuration = Configuration(home)
   override lazy val databaseAccess: DatabaseAccess = new DatabaseAccess {
-    override val dbDriverClassName: String = properties.properties.getString("starbux-service.database.driver-class")
-    override val dbUrl: String = properties.properties.getString("starbux-service.database.url")
-    override val dbUsername: Option[String] = Option(properties.properties.getString("starbux-service.database.username"))
-    override val dbPassword: Option[String] = Option(properties.properties.getString("starbux-service.database.password"))
+    override val dbDriverClassName: String = configuration.properties.getString("starbux-service.database.driver-class")
+    override val dbUrl: String = configuration.properties.getString("starbux-service.database.url")
+    override val dbUsername: Option[String] = Option(configuration.properties.getString("starbux-service.database.username"))
+    override val dbPassword: Option[String] = Option(configuration.properties.getString("starbux-service.database.password"))
   }
   override lazy val database: Database = new Database {}
 }

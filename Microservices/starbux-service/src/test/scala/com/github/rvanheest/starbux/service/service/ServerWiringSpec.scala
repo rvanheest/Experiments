@@ -23,14 +23,14 @@ import scala.util.Success
 import scala.xml.Utility
 
 class ServerWiringSpec extends TestSupportFixture
-  with PropertiesSupportFixture
-  with DatabaseFixture
-  with ServerTestSupportFixture
-  with OneInstancePerTest
-  with ServerWiring
-  with DatabaseComponent {
+                               with ConfigurationSupportFixture
+                               with DatabaseFixture
+                               with ServerTestSupportFixture
+                               with OneInstancePerTest
+                               with ServerWiring
+                               with DatabaseComponent {
 
-  val database: Database = new Database {}
+  override val database: Database = new Database {}
 
   override def beforeEach(): Unit = {
     super.beforeEach()

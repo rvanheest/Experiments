@@ -15,11 +15,11 @@
  */
 package com.github.rvanheest.starbux.client.cmd
 
-import com.github.rvanheest.starbux.client.PropertiesComponent
+import com.github.rvanheest.starbux.client.ConfigurationComponent
 import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand }
 
 trait CommandLineInterfaceComponent {
-  this: PropertiesComponent =>
+  this: ConfigurationComponent =>
 
   val cli: CommandLineInterface
 
@@ -35,7 +35,7 @@ trait CommandLineInterfaceComponent {
          |      <synopsis of command line parameters> \\
          |      <...possibly continued again, or all joined on one line>""".stripMargin
 
-    version(s"$printedName v${properties.version}")
+    version(s"$printedName v${configuration.version}")
     banner(
       s"""
          |  $description

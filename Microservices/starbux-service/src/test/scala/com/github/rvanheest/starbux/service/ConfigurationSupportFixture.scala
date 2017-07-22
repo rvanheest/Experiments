@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.rvanheest.starbux
+package com.github.rvanheest.starbux.service
 
 import better.files.File
-import org.apache.commons.configuration.PropertiesConfiguration
+import com.github.rvanheest.starbux.ConfigurationComponent
 
-trait PropertiesComponent {
+trait ConfigurationSupportFixture extends ConfigurationComponent {
+  this: TestSupportFixture =>
 
-  val properties: GeneralProperties
+  override val configuration: Configuration = {
+    (testDir / "version")
+      .createIfNotExists(createParents = true)
+      .write("version x.y.z")
 
-  trait GeneralProperties {
-    def version: String
-    def properties: PropertiesConfiguration
-  }
+    (testDir / "cfg").createDirectories()
+    File(getClass.getResource("/debug-config/application.properties").toURI).copyTo(testDir / "cfg" / "application.properties")
 
-  object GeneralProperties {
-    def apply(home: File): GeneralProperties = new GeneralProperties {
-      override val version: String = (home / "version").contentAsString
-      override val properties = new PropertiesConfiguration((home / "cfg" / "application.properties").toJava)
-    }
+    Configuration(testDir)
   }
 }

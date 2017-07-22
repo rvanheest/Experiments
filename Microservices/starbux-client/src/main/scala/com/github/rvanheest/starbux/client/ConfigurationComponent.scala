@@ -15,24 +15,30 @@
  */
 package com.github.rvanheest.starbux.client
 
+import java.nio.file.{Files, Paths}
+
 import better.files.File
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
-trait PropertiesComponent {
+trait ConfigurationComponent {
   this: DebugEnhancedLogging =>
 
-  val properties: GeneralProperties
+  val configuration: Configuration
 
-  trait GeneralProperties {
+  trait Configuration {
     def version: String
     def properties: PropertiesConfiguration
   }
 
-  object GeneralProperties {
-    def apply(home: File): GeneralProperties = new GeneralProperties {
+  object Configuration {
+    def apply(home: File): Configuration = new Configuration {
       override lazy val version: String = (home / "version").contentAsString
-      override lazy val properties = new PropertiesConfiguration((home / "cfg" / "application.properties").toJava)
+
+      private val cfgPath = Seq(Paths.get(s"/etc/opt/starbux.nl/starbux-client/"), (home / "cfg").path)
+        .find(Files.exists(_))
+        .getOrElse { throw new IllegalStateException("No configuration directory found") }
+      override val properties = new PropertiesConfiguration(cfgPath.resolve("application.properties").toFile)
     }
   }
 }

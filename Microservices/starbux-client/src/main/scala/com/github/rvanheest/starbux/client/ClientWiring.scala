@@ -23,26 +23,26 @@ import com.github.rvanheest.starbux.client.logic.{ HttpConnectionComponent, Orde
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class ClientWiring(params: Seq[String]) extends CommandLineInterfaceComponent
-  with CommandLineRunComponent
-  with OrdererComponent
-  with HttpConnectionComponent
-  with PropertiesComponent
-  with DebugEnhancedLogging {
+                                                with CommandLineRunComponent
+                                                with OrdererComponent
+                                                with HttpConnectionComponent
+                                                with ConfigurationComponent
+                                                with DebugEnhancedLogging {
 
   private lazy val home = File.home
 
-  override lazy val properties: GeneralProperties = GeneralProperties(home)
+  override lazy val configuration: Configuration = Configuration(home)
   override lazy val cli: CommandLineInterface = CommandLineInterface(params)
   override lazy val httpConnection: HttpConnection = new HttpConnection {
     private val key = "client.service.baseUrl"
-    private val value = properties.properties.getString(key)
+    private val value = configuration.properties.getString(key)
     if (!value.endsWith("/")) {
       logger.warn(s"adding a '/' to the end of property '$key'")
-      properties.properties.setProperty(key, value + "/")
-      properties.properties.save()
+      configuration.properties.setProperty(key, value + "/")
+      configuration.properties.save()
     }
 
-    val baseUrl: URL = new URL(properties.properties.getString("client.service.baseUrl"))
+    val baseUrl: URL = new URL(configuration.properties.getString("client.service.baseUrl"))
   }
   override lazy val orderer: Orderer = new Orderer {}
   override lazy val run: CommandLineRun = new CommandLineRun {}
