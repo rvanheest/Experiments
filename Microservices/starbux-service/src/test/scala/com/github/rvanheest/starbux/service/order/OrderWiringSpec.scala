@@ -33,10 +33,10 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   private val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
   private val drink4 = Drink(drink = "tea", additions = List(add3))
 
-  private val order1 = Order(Ordered, List.empty)
-  private val order2 = Order(Prepared, List(drink1))
-  private val order3 = Order(Payed, List(drink2))
-  private val order4 = Order(Served, List(drink3, drink4))
+  private val order1 = Order(Ordered, Set.empty)
+  private val order2 = Order(Prepared, Set(drink1))
+  private val order3 = Order(Payed, Set(drink2))
+  private val order4 = Order(Served, Set(drink3, drink4))
 
   "addOrder" should "insert an empty order" in {
     val expectedOrderId = 1
@@ -80,7 +80,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if the drink is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola")))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "cola")))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(UnknownItemException("Unknown drink: cola")) =>
     }
@@ -91,7 +91,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if multiple drinks are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola"), Drink(drink = "ice tea")))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "cola"), Drink(drink = "ice tea")))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(CompositeException(UnknownItemException("Unknown drink: cola") :: UnknownItemException("Unknown drink: ice tea") :: Nil)) =>
     }
@@ -102,7 +102,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if the addition is unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey"))))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "coffee", additions = List("whiskey"))))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(UnknownItemException("Unknown addition: whiskey")) =>
     }
@@ -113,7 +113,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if multiple additions are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey", "vodka"))))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "coffee", additions = List("whiskey", "vodka"))))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown addition: vodka") :: Nil)) =>
     }
@@ -124,7 +124,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if both drink and addition are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "cola", additions = List("whiskey"))))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "cola", additions = List("whiskey"))))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(UnknownItemException("Unknown drink: cola")) =>
     }
@@ -135,7 +135,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
   }
 
   it should "fail if some drinks and addition are unknown" in {
-    val invalidOrder = Order(Ordered, List(Drink(drink = "coffee", additions = List("whiskey")), Drink(drink = "cola")))
+    val invalidOrder = Order(Ordered, Set(Drink(drink = "coffee", additions = List("whiskey")), Drink(drink = "cola")))
     doTransaction(implicit connection => orderManagement.addOrder(invalidOrder)) should matchPattern {
       case Failure(CompositeException(UnknownItemException("Unknown addition: whiskey") :: UnknownItemException("Unknown drink: cola") :: Nil)) =>
     }
@@ -151,7 +151,7 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
       case Success(`expectedOrderId`) =>
     }
 
-    orderManagement.calculateCost(expectedOrderId) should matchPattern { case Success(0) => }
+    orderManagement.calculateCost(expectedOrderId) should matchPattern { case Failure(UnknownOrderException(`expectedOrderId`)) => }
   }
 
   it should "calculate the cost of an order with one drink and no additions on it" in {
@@ -179,5 +179,46 @@ class OrderWiringSpec extends TestSupportFixture with DatabaseFixture with Order
     }
 
     orderManagement.calculateCost(expectedOrderId) should matchPattern { case Success(7) => }
+  }
+
+  "getOrder" should "retrieve an empty order from the database" in {
+    val expectedOrderId = 1
+    doTransaction(implicit connection => orderManagement.addOrder(order1)) should matchPattern {
+      case Success(`expectedOrderId`) =>
+    }
+
+    orderManagement.getOrder(expectedOrderId) should matchPattern { case Success(`order1`) => }
+  }
+
+  it should "retrieve an order with one drink and no additions on it" in {
+    val expectedOrderId = 1
+    doTransaction(implicit connection => orderManagement.addOrder(order2)) should matchPattern {
+      case Success(`expectedOrderId`) =>
+    }
+
+    orderManagement.getOrder(expectedOrderId) should matchPattern { case Success(`order2`) => }
+  }
+
+  it should "retrieve an order with one drink and one addition on it" in {
+    val expectedOrderId = 1
+    doTransaction(implicit connection => orderManagement.addOrder(order3)) should matchPattern {
+      case Success(`expectedOrderId`) =>
+    }
+
+    orderManagement.getOrder(expectedOrderId) should matchPattern { case Success(`order3`) => }
+  }
+
+  it should "retrieve an order with multiple drinks and additions on them" in {
+    val expectedOrderId = 1
+    doTransaction(implicit connection => orderManagement.addOrder(order4)) should matchPattern {
+      case Success(`expectedOrderId`) =>
+    }
+
+    orderManagement.getOrder(expectedOrderId) should matchPattern { case Success(`order4`) => }
+  }
+
+  it should "fail if the order does not exist" in {
+    val orderId = 1
+    orderManagement.getOrder(orderId) should matchPattern { case Failure(UnknownOrderException(`orderId`)) => }
   }
 }

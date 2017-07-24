@@ -54,7 +54,7 @@ class ServerWiringSpec extends TestSupportFixture
   "post order" should "order nothing" in {
     val input = <order/>
 
-    failing(input) shouldBe (400, "The order did not contain any drinks")
+    failing(input) shouldBe (400, "The order did not contain any drinks.")
   }
 
   it should "order a single drink without addition" in {

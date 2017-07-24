@@ -16,10 +16,10 @@
 package com.github.rvanheest.starbux.service.order
 
 import com.github.rvanheest.starbux.order._
-import com.github.rvanheest.starbux.service.{DatabaseFixture, TestSupportFixture}
+import com.github.rvanheest.starbux.service.{ DatabaseFixture, TestSupportFixture }
 
 import scala.collection.immutable.Stream.Empty
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class DatabaseSpec extends TestSupportFixture with DatabaseFixture with DatabaseComponent {
   val database: Database = new Database {}
@@ -33,16 +33,11 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
   private val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
   private val drink4 = Drink(drink = "tea", additions = List(add3))
 
-  private val order1 = Order(Ordered, List.empty)
-  private val order2 = Order(Prepared, List(drink1))
-  private val order3 = Order(Payed, List(drink2))
-  private val order4 = Order(Served, List(drink3, drink4))
-
   "addToOrderTable" should "create a new order" in {
     val orderId = 1
     database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
 
-    inspectOrderTable should (have size 1 and contain only((orderId, 1)))
+    inspectOrderTable should (have size 1 and contain only ((orderId, 1)))
   }
 
   "addToOrderDrinkTable" should "add a drink to the order" in {
@@ -50,8 +45,8 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
     database.addToOrderTable(Prepared) shouldBe a[Success[_]]
     database.addToOrderDrinkTable(drink1, orderId) shouldBe a[Success[_]]
 
-    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
-    inspectOrderDrinkTable should (have size 1 and contain only((drink1.id, 1, 1, 1)))
+    inspectOrderTable should (have size 1 and contain only ((orderId, 2)))
+    inspectOrderDrinkTable should (have size 1 and contain only ((drink1.id, 1, 1, 1)))
   }
 
   it should "fail if the drink is unknown" in {
@@ -61,7 +56,7 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
       case Failure(UnknownItemException("Unknown drink: cola")) =>
     }
 
-    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
+    inspectOrderTable should (have size 1 and contain only ((orderId, 2)))
     inspectOrderDrinkTable shouldBe empty
   }
 
@@ -71,9 +66,9 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
     database.addToOrderDrinkTable(drink2, orderId) shouldBe a[Success[_]]
     database.addToOrderDrinkAdditionTable(add1, drink2.id) shouldBe a[Success[_]]
 
-    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
-    inspectOrderDrinkTable should (have size 1 and contain only((drink2.id, 1, 1, 1)))
-    inspectOrderDrinkAdditionsTable should (have size 1 and contain only((drink2.id, 2, 1)))
+    inspectOrderTable should (have size 1 and contain only ((orderId, 2)))
+    inspectOrderDrinkTable should (have size 1 and contain only ((drink2.id, 1, 1, 1)))
+    inspectOrderDrinkAdditionsTable should (have size 1 and contain only ((drink2.id, 2, 1)))
   }
 
   it should "fail if the addition is unknown" in {
@@ -84,8 +79,8 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
       case Failure(UnknownItemException("Unknown addition: whiskey")) =>
     }
 
-    inspectOrderTable should (have size 1 and contain only((orderId, 2)))
-    inspectOrderDrinkTable should (have size 1 and contain only((drink2.id, 1, 1, 1)))
+    inspectOrderTable should (have size 1 and contain only ((orderId, 2)))
+    inspectOrderDrinkTable should (have size 1 and contain only ((drink2.id, 1, 1, 1)))
     inspectOrderDrinkAdditionsTable shouldBe empty
   }
 
@@ -102,7 +97,7 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
     database.addToOrderDrinkTable(drink1, orderId) shouldBe a[Success[_]]
 
     inside(database.costView(orderId)) {
-      case Success(view) => view should (have size 1 and contain only((drink1.id, 1, 0)))
+      case Success(view) => view should (have size 1 and contain only ((drink1.id, 1, 0)))
     }
   }
 
@@ -113,7 +108,7 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
     database.addToOrderDrinkAdditionTable(add1, drink2.id) shouldBe a[Success[_]]
 
     inside(database.costView(orderId)) {
-      case Success(view) => view should (have size 1 and contain only((drink2.id, 1, 1)))
+      case Success(view) => view should (have size 1 and contain only ((drink2.id, 1, 1)))
     }
   }
 
@@ -127,11 +122,62 @@ class DatabaseSpec extends TestSupportFixture with DatabaseFixture with Database
     database.addToOrderDrinkAdditionTable(add3, drink4.id) shouldBe a[Success[_]]
 
     inside(database.costView(orderId)) {
-      case Success(view) => view should (have size 3 and contain inOrder (
+      case Success(view) => view should (have size 3 and contain inOrder(
         (drink3.id, 1, 1),
-//        (drink3.id, 1, 1),
+        //        (drink3.id, 1, 1),
         (drink4.id, 2, 2)
       ))
+    }
+  }
+
+  "getOrder" should "retrieve an empty order from the database" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+
+    inside(database.getOrder(orderId)) {
+      case Success(res) =>
+        res should (have size 1 and contain only (("Ordered", None, null, None)))
+    }
+  }
+
+  it should "retrieve an order with one drink and no additions on it" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink1, orderId) shouldBe a[Success[_]]
+
+    inside(database.getOrder(orderId)) {
+      case Success(res) =>
+        res should (have size 1 and contain only (("Ordered", Some(drink1.id), drink1.drink, None)))
+    }
+  }
+
+  it should "retrieve an order with one drink and one addition on it" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink2, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add1, drink2.id) shouldBe a[Success[_]]
+
+    inside(database.getOrder(orderId)) {
+      case Success(res) =>
+        res should (have size 1 and contain only (("Ordered", Some(drink2.id), drink2.drink, Some(add1))))
+    }
+  }
+
+  it should "retrieve an order with multiple drinks and additions on them" in {
+    val orderId = 1
+    database.addToOrderTable(Ordered) should matchPattern { case Success(`orderId`) => }
+    database.addToOrderDrinkTable(drink3, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add1, drink3.id) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add2, drink3.id) shouldBe a[Success[_]]
+    database.addToOrderDrinkTable(drink4, orderId) shouldBe a[Success[_]]
+    database.addToOrderDrinkAdditionTable(add3, drink4.id) shouldBe a[Success[_]]
+
+    inside(database.getOrder(orderId)) {
+      case Success(res) =>
+        res should (have size 3 and contain only(
+          ("Ordered", Some(drink3.id), drink3.drink, Some(add1)),
+          ("Ordered", Some(drink3.id), drink3.drink, Some(add2)),
+          ("Ordered", Some(drink4.id), drink4.drink, Some(add3))))
     }
   }
 }

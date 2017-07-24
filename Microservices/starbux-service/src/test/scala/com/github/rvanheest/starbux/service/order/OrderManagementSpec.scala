@@ -44,10 +44,10 @@ class OrderManagementSpec extends TestSupportFixture
   private val drink3 = Drink(drink = "coffee", additions = List(add1, add2))
   private val drink4 = Drink(drink = "tea", additions = List(add3))
 
-  private val order1 = Order(Ordered, List.empty)
-  private val order2 = Order(Prepared, List(drink1))
-  private val order3 = Order(Payed, List(drink2))
-  private val order4 = Order(Served, List(drink3, drink4))
+  private val order1 = Order(Ordered, Set.empty)
+  private val order2 = Order(Prepared, Set(drink1))
+  private val order3 = Order(Payed, Set(drink2))
+  private val order4 = Order(Served, Set(drink3, drink4))
 
   "addOrder" should "insert an empty order" in {
     val orderId = 1
@@ -90,7 +90,7 @@ class OrderManagementSpec extends TestSupportFixture
 
   it should "fail if the drink is unknown" in {
     val drink = Drink(drink = "cola")
-    val invalidOrder = Order(Ordered, List(drink))
+    val invalidOrder = Order(Ordered, Set(drink))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink, orderId, *) once() returning Failure(UnknownItemException("Unknown drink: cola"))
@@ -104,7 +104,7 @@ class OrderManagementSpec extends TestSupportFixture
   it should "fail if multiple drinks are unknown" in {
     val drink1 = Drink(drink = "cola")
     val drink2 = Drink(drink = "ice tea")
-    val invalidOrder = Order(Ordered, List(drink1, drink2))
+    val invalidOrder = Order(Ordered, Set(drink1, drink2))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink1, orderId, *) once() returning Failure(UnknownItemException("Unknown drink: cola"))
@@ -118,7 +118,7 @@ class OrderManagementSpec extends TestSupportFixture
 
   it should "fail if the addition is unknown" in {
     val drink = Drink(drink = "coffee", additions = List("whiskey"))
-    val invalidOrder = Order(Ordered, List(drink))
+    val invalidOrder = Order(Ordered, Set(drink))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink, orderId, *) once() returning Try { () }
@@ -131,7 +131,7 @@ class OrderManagementSpec extends TestSupportFixture
 
   it should "fail if multiple additions are unknown" in {
     val drink = Drink(drink = "coffee", additions = List("whiskey", "vodka"))
-    val invalidOrder = Order(Ordered, List(drink))
+    val invalidOrder = Order(Ordered, Set(drink))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink, orderId, *) once() returning Try { () }
@@ -145,7 +145,7 @@ class OrderManagementSpec extends TestSupportFixture
 
   it should "fail if both drink and addition are unknown" in {
     val drink = Drink(drink = "cola", additions = List("whiskey"))
-    val invalidOrder = Order(Ordered, List(drink))
+    val invalidOrder = Order(Ordered, Set(drink))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink, orderId, *) once() returning Failure(UnknownItemException("Unknown drink: cola"))
@@ -159,7 +159,7 @@ class OrderManagementSpec extends TestSupportFixture
   it should "fail if some drinks and addition are unknown" in {
     val drink1 = Drink(drink = "coffee", additions = List("whiskey"))
     val drink2 = Drink(drink = "cola")
-    val invalidOrder = Order(Ordered, List(drink1, drink2))
+    val invalidOrder = Order(Ordered, Set(drink1, drink2))
     val orderId = 1
     (database.addToOrderTable(_: Status)(_: Connection)) expects (Ordered, *) once() returning Try(orderId)
     (database.addToOrderDrinkTable(_: Drink, _: OrderId)(_: Connection)) expects (drink1, orderId, *) once() returning Try { () }
@@ -206,5 +206,72 @@ class OrderManagementSpec extends TestSupportFixture
     }
 
     orderManagement.calculateCost(orderId) should matchPattern { case Success(7) => }
+  }
+
+  it should "fail to calculate the cost of an order that does not exist" in {
+    val orderId = 1
+    (database.costView(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try { Nil }
+
+    orderManagement.calculateCost(orderId) should matchPattern { case Failure(UnknownOrderException(`orderId`)) => }
+  }
+
+  "getOrder" should "fail if the database can't find any orders" in {
+    val orderId = 1
+    (database.getOrder(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try { Nil }
+
+    orderManagement.getOrder(orderId) should matchPattern { case Failure(UnknownOrderException(`orderId`)) => }
+  }
+
+  it should "return an empty order" in {
+    val orderId = 1
+    (database.getOrder(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try {
+      ("Ordered", None, "", None) :: Nil
+    }
+
+    inside(orderManagement.getOrder(orderId)) {
+      case Success(Order(status, drinks)) =>
+        status shouldBe Ordered
+        drinks shouldBe empty
+    }
+  }
+
+  it should "fail if the state is unknown" in {
+    val orderId = 1
+    (database.getOrder(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try {
+      ("unknown-state", None, "", None) :: Nil
+    }
+
+    orderManagement.getOrder(orderId) should matchPattern { case Failure(UnknownOrderStateException(`orderId`)) => }
+  }
+
+  it should "group order lines based on the drinkId and return a complete order" in {
+    val orderId = 1
+    (database.getOrder(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try {
+      ("Ordered", Some(drink3.id), drink3.drink, Some(add1)) ::
+      ("Ordered", Some(drink3.id), drink3.drink, Some(add2)) ::
+      ("Ordered", Some(drink4.id), drink4.drink, Some(add3)) :: Nil
+    }
+
+    inside(orderManagement.getOrder(orderId)) {
+      case Success(Order(status, drinks)) =>
+        status shouldBe Ordered
+        drinks should (have size 2 and contain only(drink3, drink4))
+    }
+  }
+
+  it should "filter out order lines without drinkId" in {
+    val orderId = 1
+    (database.getOrder(_: OrderId)(_: Connection)) expects (orderId, *) once() returning Try {
+      ("Ordered", Some(drink3.id), drink3.drink, Some(add1)) ::
+        ("Ordered", Some(drink3.id), drink3.drink, Some(add2)) ::
+        ("Ordered", None, "foo", None) ::
+        ("Ordered", Some(drink4.id), drink4.drink, Some(add3)) :: Nil
+    }
+
+    inside(orderManagement.getOrder(orderId)) {
+      case Success(Order(status, drinks)) =>
+        status shouldBe Ordered
+        drinks should (have size 2 and contain only(drink3, drink4))
+    }
   }
 }
