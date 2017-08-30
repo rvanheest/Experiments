@@ -15,7 +15,7 @@
  */
 package com.github.rvanheest.starbux.service
 
-import java.net.URL
+import java.net.URI
 
 import com.github.rvanheest.starbux.DatabaseAccessComponent
 import com.github.rvanheest.starbux.order._
@@ -24,7 +24,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalatra._
 
 import scala.util.{ Failure, Success, Try }
-import scala.xml.{ Node, XML }
+import scala.xml.{ Node, NodeSeq, XML }
 
 trait OrderServletComponent {
   this: OrderManagementComponent with DatabaseComponent with DatabaseAccessComponent with DebugEnhancedLogging =>
@@ -33,14 +33,9 @@ trait OrderServletComponent {
 
   trait OrderServlet extends ScalatraServlet {
 
-    val baseUrl: URL
+    val baseUri: URI
 
     logger.info("Starbux Coffee Order Servlet running ...")
-
-    get("/") {
-      contentType = "text/plain"
-      Ok("Starbux Coffee Service running")
-    }
 
     def toXml(orderId: OrderId, order: Order, cost: Cost): Node = {
       <order>{
@@ -49,12 +44,31 @@ trait OrderServletComponent {
             <name>{drink.drink}</name>
             {drink.additions.map(addition => <addition>{addition}</addition>)}
           </drink>
-        })
-        <cost>{cost}</cost>
-        <next rel={baseUrl.toURI.resolve("payment").toString}
-              uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
-              type="application/xml"/>
+        }) ++ responseXml(orderId, cost)
       }</order>
+    }
+
+    private def responseXml(orderId: OrderId, cost: Cost): NodeSeq = {
+      Seq(
+        <cost>{cost}</cost>,
+        <next rel={baseUri.resolve("payment").toString}
+              uri={baseUri.resolve(s"payment/order/$orderId").toString}
+              type="application/xml"/>
+      )
+    }
+
+    def parseInput(input: Node): Try[Order] = Try {
+      val drinks = (input \ "drink").map(n => {
+        val name = (n \ "name").text
+        val additions = (n \ "addition").map(_.text).toList
+        Drink(drink = name, additions = additions)
+      }).toSet
+      Order(Ordered, drinks)
+    }
+
+    get("/") {
+      contentType = "text/plain"
+      Ok("Starbux Coffee Service running")
     }
 
     get("/:orderId") {
@@ -67,7 +81,7 @@ trait OrderServletComponent {
           } yield (order, cost)
         )
       } yield {
-        Ok(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderId").toString),
+        Ok(headers = Map("Location" -> baseUri.resolve(s"/order/$orderId").toString),
           body = toXml(orderId, order, cost))
       }
 
@@ -78,15 +92,6 @@ trait OrderServletComponent {
           case UnknownOrderStateException(msg) => InternalServerError(msg + " Consult your barista for more info.")
           case e => InternalServerError(e.getMessage)
         }
-    }
-
-    def parseInput(input: Node): Try[Order] = Try {
-      val drinks = (input \ "drink").map(n => {
-        val name = (n \ "name").text
-        val additions = (n \ "addition").map(_.text).toList
-        Drink(drink = name, additions = additions)
-      }).toSet
-      Order(Ordered, drinks)
     }
 
     post("/") {
@@ -103,16 +108,9 @@ trait OrderServletComponent {
             cost <- orderManagement.calculateCost(orderNumber)
           } yield (orderNumber, cost)
         )
-      } yield {
-        val append = Seq(
-          <cost>{cost}</cost>,
-          <next rel={baseUrl.toURI.resolve("payment").toString}
-                uri={baseUrl.toURI.resolve(s"/payment/order/$orderId").toString}
-                type="application/xml"/>
-        )
-        Created(headers = Map("Location" -> baseUrl.toURI.resolve(s"/order/$orderId").toString),
-          body = input.copy(child = input.child ++ append))
-      }
+      } yield Created(
+        headers = Map("Location" -> baseUri.resolve(s"/order/$orderId").toString),
+        body = input.copy(child = input.child ++ responseXml(orderId, cost)))
 
       response.doIfFailure { case e => logger.error(e.getMessage, e) }
         .getOrRecover {

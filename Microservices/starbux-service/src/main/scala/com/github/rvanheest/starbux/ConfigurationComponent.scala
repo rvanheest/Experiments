@@ -15,10 +15,12 @@
  */
 package com.github.rvanheest.starbux
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
 import better.files.File
 import org.apache.commons.configuration.PropertiesConfiguration
+
+import scala.util.Properties
 
 trait ConfigurationComponent {
 
@@ -30,7 +32,9 @@ trait ConfigurationComponent {
   }
 
   object Configuration {
-    def apply(home: File): Configuration = new Configuration {
+    def apply(): Configuration = new Configuration {
+      private val home = File(Properties.propOrEmpty("app.home"))
+
       override val version: String = (home / "version").contentAsString
 
       private val cfgPath = Seq(Paths.get(s"/etc/opt/starbux.nl/starbux-service/"), (home / "cfg").path)

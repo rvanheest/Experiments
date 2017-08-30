@@ -26,7 +26,7 @@ trait StarBuxWiring extends ServerWiring
 
   private lazy val home = File.home
 
-  override lazy val configuration: Configuration = Configuration(home)
+  override lazy val configuration: Configuration = Configuration()
   override lazy val databaseAccess: DatabaseAccess = new DatabaseAccess {
     override val dbDriverClassName: String = configuration.properties.getString("starbux-service.database.driver-class")
     override val dbUrl: String = configuration.properties.getString("starbux-service.database.url")

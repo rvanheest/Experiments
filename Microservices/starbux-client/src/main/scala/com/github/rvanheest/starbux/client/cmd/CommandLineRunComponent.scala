@@ -41,17 +41,15 @@ trait CommandLineRunComponent {
       val result: Try[String] = cli.subcommand match {
         case Some(cmd @ cli.order) =>
           logger.info("order a drink")
-          orderer.order(cmd.drink()).map(elem => "\n" + new PrettyPrinter(160, 2).format(elem))
+          orderer.order(cmd.drink(), cmd.additions())
+            .map(elem => "\n" + new PrettyPrinter(160, 2).format(elem))
         case None => ???
         case _ => Failure(new IllegalArgumentException(s"Unknown command: ${ cli.subcommands }"))
       }
 
-
       result
         .map(msg => s"OK: $msg")
-        .doIfFailure {
-          case NonFatal(e) => logger.error(e.getMessage, e)
-        }
+        .doIfFailure { case NonFatal(e) => logger.error(e.getMessage, e) }
         .getOrRecover(e => s"FAILED: ${ e.getMessage }")
     }
   }

@@ -15,7 +15,7 @@
  */
 package com.github.rvanheest.starbux.service.service
 
-import java.net.URL
+import java.net.{ URI, URL }
 import java.sql.Connection
 
 import com.github.rvanheest.starbux.order._
@@ -40,7 +40,7 @@ class OrderServletSpec extends TestSupportFixture
   override val database: Database = mock[Database]
   override val orderManagement: OrderManagement = mock[OrderManagement]
   override val orderServlet: OrderServlet = new OrderServlet {
-    val baseUrl: URL = new URL("http://localhost:8060/")
+    val baseUri: URI = new URI("http://localhost:8060/")
   }
 
   addServlet(orderServlet, "/*")

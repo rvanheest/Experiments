@@ -26,30 +26,34 @@ trait CommandLineInterfaceComponent {
   case class CommandLineInterface(params: Seq[String]) extends ScallopConf(params) {
     appendDefaultToDescription = true
     editBuilder(_.setHelpWidth(110))
+
     printedName = "starbux-client"
     private val _________ = " " * printedName.length
     private val SUBCOMMAND_SEPARATOR = "---\n"
-    private val description = s"""A polite module that greets you"""
+    private val description = s"A command line application to order and manage your Starbux coffee"
     private val synopsis =
-      s"""$printedName \\
-         |      <synopsis of command line parameters> \\
-         |      <...possibly continued again, or all joined on one line>""".stripMargin
+      s"""
+         |$printedName \\
+         |${ _________ } order [-a addition...] <drink>""".stripMargin
 
-    version(s"$printedName v${configuration.version}")
+    version(s"$printedName v${ configuration.version }")
     banner(
       s"""
-         |  $description
+         |$description
          |
          |Usage:
          |
-         |  $synopsis
+         |$synopsis
          |
          |Options:
          |""".stripMargin)
 
     val order = new Subcommand("order") {
       descr("make an order to the StarBux service")
-      val drink: ScallopOption[String] = trailArg("drink", "the drink to order")
+      val drink: ScallopOption[String] = trailArg(name = "drink",
+        descr = "the drink to order")
+      val additions: ScallopOption[List[String]] = opt(name = "additions", short = 'a',
+        descr = "additions in the drink", default = Some(List.empty))
       footer(SUBCOMMAND_SEPARATOR)
     }
 

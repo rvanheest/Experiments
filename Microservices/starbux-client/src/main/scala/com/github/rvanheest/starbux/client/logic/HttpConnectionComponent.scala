@@ -15,7 +15,7 @@
  */
 package com.github.rvanheest.starbux.client.logic
 
-import java.net.URL
+import java.net.URI
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
@@ -28,12 +28,13 @@ trait HttpConnectionComponent {
   val httpConnection: HttpConnection
 
   trait HttpConnection {
-    val baseUrl: URL
+    val baseUri: URI
+
+    lazy val orderUri: URI = baseUri.resolve("service").resolve("order")
 
     def order(xml: Elem): HttpResponse[String] = {
-      val url = new URL(baseUrl, "order")
-      debug(url.toString)
-      Http(url.toString)
+      debug(orderUri.toString)
+      Http(orderUri.toString)
         .postForm(Map("order" -> Utility.trim(xml).toString()).toSeq)
         .header("Content-Type", "application/xml")
         .asString

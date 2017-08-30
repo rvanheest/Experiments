@@ -15,10 +15,10 @@
  */
 package com.github.rvanheest.starbux.service
 
-import java.net.URL
+import java.net.URI
 
 import com.github.rvanheest.starbux.order.OrderWiring
-import com.github.rvanheest.starbux.{ConfigurationComponent, DatabaseAccessComponent}
+import com.github.rvanheest.starbux.{ ConfigurationComponent, DatabaseAccessComponent }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 trait ServerWiring extends OrderServletComponent with StarBuxServerComponent with OrderWiring {
@@ -27,7 +27,7 @@ trait ServerWiring extends OrderServletComponent with StarBuxServerComponent wit
   private val port = configuration.properties.getInt("service.daemon.http.port")
 
   override val orderServlet: OrderServlet = new OrderServlet {
-    override val baseUrl: URL = new URL("http", configuration.properties.getString("service.daemon.http.host"), port, "/")
+    override val baseUri: URI = new URI(configuration.properties.getString("service.daemon.http"))
   }
   override val server: StarBuxServer = new StarBuxServer(port)
 }

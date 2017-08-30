@@ -15,11 +15,13 @@
  */
 package com.github.rvanheest.starbux.client
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
 import better.files.File
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
+
+import scala.util.Properties
 
 trait ConfigurationComponent {
   this: DebugEnhancedLogging =>
@@ -28,11 +30,14 @@ trait ConfigurationComponent {
 
   trait Configuration {
     def version: String
+
     def properties: PropertiesConfiguration
   }
 
   object Configuration {
-    def apply(home: File): Configuration = new Configuration {
+    def apply(): Configuration = new Configuration {
+      private val home = File(Properties.propOrEmpty("app.home"))
+
       override lazy val version: String = (home / "version").contentAsString
 
       private val cfgPath = Seq(Paths.get(s"/etc/opt/starbux.nl/starbux-client/"), (home / "cfg").path)

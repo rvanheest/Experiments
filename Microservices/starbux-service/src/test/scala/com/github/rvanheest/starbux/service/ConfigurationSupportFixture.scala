@@ -17,18 +17,18 @@ package com.github.rvanheest.starbux.service
 
 import better.files.File
 import com.github.rvanheest.starbux.ConfigurationComponent
+import org.apache.commons.configuration.PropertiesConfiguration
 
 trait ConfigurationSupportFixture extends ConfigurationComponent {
   this: TestSupportFixture =>
 
   override val configuration: Configuration = {
-    (testDir / "version")
-      .createIfNotExists(createParents = true)
-      .write("version x.y.z")
+    val propsFile = (testDir / "cfg").createDirectories() / "application.properties"
+    File(getClass.getResource("/debug-config/application.properties").toURI).copyTo(propsFile)
 
-    (testDir / "cfg").createDirectories()
-    File(getClass.getResource("/debug-config/application.properties").toURI).copyTo(testDir / "cfg" / "application.properties")
-
-    Configuration(testDir)
+    new Configuration {
+      def version: String = "version x.y.z"
+      def properties: PropertiesConfiguration = new PropertiesConfiguration(propsFile.toJava)
+    }
   }
 }

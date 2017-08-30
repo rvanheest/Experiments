@@ -21,18 +21,20 @@ import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
 
 trait OrdererComponent {
-  this: HttpConnectionComponent
-    with DebugEnhancedLogging =>
+  this: HttpConnectionComponent with DebugEnhancedLogging =>
 
   val orderer: Orderer
 
   trait Orderer {
-    def order(drink: String): Try[Elem] = Try {
+    def order(drink: String, additions: List[String]): Try[Elem] = Try {
       trace(drink)
 
       val response = httpConnection.order {
         <order>
-          <drink>{drink}</drink>
+          <drink>
+            <name>{drink}</name>
+            {additions.map(add => <addition>{add}</addition>)}
+          </drink>
         </order>
       }
 
