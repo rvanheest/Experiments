@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Simple Polygon</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+
+      // This example creates a simple polygon representing the Bermuda Triangle.
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 18,
+          center: {lat: 52.080111, lng: 4.344089},
+          mapTypeId: 'terrain'
+        });
+
+        // Define the LatLng coordinates for the polygon's path.
+        var triangleCoords = [
+          {lat: 52.08110, lng: 4.34521},
+          {lat: 52.08071, lng: 4.34422},
+          {lat: 52.07913, lng: 4.34332},
+          {lat: 52.08110, lng: 4.34521},
+        ];
+
+        var hole = [
+          {lat: 52.080542, lng: 4.344215},
+          {lat: 52.080450, lng: 4.344323},
+          {lat: 52.080357, lng: 4.344110},
+          {lat: 52.080542, lng: 4.344215}
+        ];
+
+        // Construct the polygon.
+        var poly = new google.maps.Polygon({
+          paths: [triangleCoords, hole],
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35
+        });
+        poly.setMap(map);
+
+        var box = new google.maps.Rectangle({
+          strokeColor: '#0000ff',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#0000ff',
+          fillOpacity: 0.2,
+          map: map,
+          bounds: {
+            north: 52.08110, // max lat
+            south: 52.07913, // min lat
+            east: 4.34521,   // max lng
+            west: 4.34332    // min lng
+          }
+        });
+        box.setMap(map);
+      }
+    </script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA12unmKPvL0tFcAV1OKHvKZ-flPmBWhh8&callback=initMap">
+</script>
+</body>
+</html>
