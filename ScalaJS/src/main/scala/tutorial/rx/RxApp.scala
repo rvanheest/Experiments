@@ -22,7 +22,7 @@ object RxApp {
     b.onclick = _ => click() = click.now + 1
   }
 
-  def main(args: Array[String]): Unit = {
-    jQuery(() => setupUI())
-  }
+//  def main(args: Array[String]): Unit = {
+//    jQuery(() => setupUI())
+//  }
 }
