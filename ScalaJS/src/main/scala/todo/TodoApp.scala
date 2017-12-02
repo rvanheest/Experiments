@@ -1,6 +1,6 @@
 package todo
 
-import org.scalajs.dom.html.LI
+import monix.execution.Scheduler.Implicits.global
 import org.scalajs.jquery.{ JQuery, jQuery }
 
 import scalatags.JsDom.all._
@@ -8,34 +8,37 @@ import scalatags.JsDom.all._
 object TodoApp {
 
   def setupUI(root: JQuery): Unit = {
-    val header = h1("TODO list").render
-    val tf = input(`type` := "text", name := "item", placeholder := "TODO item").render
-    val submit = button(`type` := "submit", name := "add")("Add").render
-    val list = ul().render
+    val input = new UI.Input
+    val list = new UI.TodoList
 
-    tf.onkeyup = e => { if (e.key == "Enter") submit.click() }
-    submit.onclick = _ => {
-      list.appendChild(listItem(tf.value))
-      tf.value = ""
-    }
+    input.textfieldKeyEvents
+      .filter(_.key.toLowerCase == "enter")
+      .foreach(_ => input.clickSubmit())
+
+    input.textfieldEvents
+      .withLatestFrom(input.submitEvents) { case (text, _) => text }
+      .filter(_.trim.nonEmpty)
+      .foreach(text => {
+        list.append(listItem(text))
+        input.text = ""
+      })
 
     root.append(
-      header,
-      tf,
-      submit,
-      list
+      h1("TODO list").render,
+      input(),
+      list(),
     )
   }
 
-  def listItem(text: String): LI = {
-    val item = li(text).render
+  def listItem(text: String): UI.Todo = {
+    val item = new UI.Todo(text)
 
-    item.onclick = _ => {
-      item.style.textDecoration = item.style.textDecoration match {
-        case "line-through" => "none"
-        case _ => "line-through"
+    item.clickEvents
+      .zipWithIndex
+      .foreach {
+        case (_, index) if index % 2 == 0 => item.setDone()
+        case (_, _) => item.setNotDone()
       }
-    }
 
     item
   }

@@ -4,10 +4,6 @@ import scala.annotation.tailrec
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
-case class PreconditionsFailedException(report: String, cause: Throwable = null) extends Exception(report)
-case class ActionRunFailedException(report: String, cause: Throwable = null) extends Exception(report)
-case class ActionException(row: Int, message: String, cause: Throwable = null) extends Exception(message, cause)
-
 /*
   Note, this thing is an Applicative Functor and should therefore satisfy the corresponding laws:
     - fmap id = id
