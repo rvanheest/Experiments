@@ -15,8 +15,8 @@ object TodoApp {
       .filter(_.key.toLowerCase == "enter")
       .foreach(_ => input.clickSubmit())
 
-    input.textfieldEvents
-      .withLatestFrom(input.submitEvents) { case (text, _) => text }
+    input.submitEvents
+      .withLatestFrom(input.textfieldEvents) { case (_, text) => text }
       .filter(_.trim.nonEmpty)
       .foreach(text => {
         list.append(listItem(text))
@@ -26,7 +26,7 @@ object TodoApp {
     root.append(
       h1("TODO list").render,
       input(),
-      list(),
+      list()
     )
   }
 
@@ -43,7 +43,7 @@ object TodoApp {
     item
   }
 
-  def main(args: Array[String]): Unit = {
-    jQuery(() => setupUI(jQuery("body")))
-  }
+//  def main(args: Array[String]): Unit = {
+//    jQuery(() => setupUI(jQuery("body")))
+//  }
 }
