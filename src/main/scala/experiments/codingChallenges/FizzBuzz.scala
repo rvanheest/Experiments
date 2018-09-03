@@ -5,11 +5,15 @@ package experiments.codingChallenges
  */
 object FizzBuzz extends App {
 
+  val specials = Map(
+    3 -> "Fizz",
+    5 -> "Buzz"
+  ).map((special _).tupled)
+
   (1 to 100).map(convert).foreach(println)
 
   def convert(i: Int): String = {
-    val fs = List(special(3, "Fizz"), special(5, "Buzz"))
-    (fs :\ "")(_(i) + _) match {
+    (specials :\ "")(_(i) + _) match {
       case "" => i.toString
       case s => s
     }
