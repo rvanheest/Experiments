@@ -52,5 +52,5 @@ object Game {
 
   def readLine(): IO[String] = IO(() => StdIn.readLine())
 
-  def nextInt(upper: Int): IO[Int] = IO(() => Random.nextInt(5))
+  def nextInt(upper: Int): IO[Int] = IO(() => Random.nextInt(upper))
 }
