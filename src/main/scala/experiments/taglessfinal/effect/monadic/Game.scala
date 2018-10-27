@@ -1,4 +1,4 @@
-package experiments.effect.monadic
+package experiments.taglessfinal.effect.monadic
 
 import scala.io.StdIn
 import scala.language.postfixOps

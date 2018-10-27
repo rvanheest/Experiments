@@ -1,4 +1,4 @@
-package experiments.effect
+package experiments.taglessfinal.effect
 
 import scala.io.StdIn
 import scala.util.{ Random, Try }

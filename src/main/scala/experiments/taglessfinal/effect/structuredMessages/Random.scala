@@ -1,4 +1,4 @@
-package experiments.effect.structuredMessages
+package experiments.taglessfinal.effect.structuredMessages
 
 import scala.language.higherKinds
 

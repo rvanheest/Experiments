@@ -1,4 +1,4 @@
-package experiments.effect.abstraction
+package experiments.taglessfinal.effect.structuredMessages
 
 import scala.io.StdIn
 
@@ -13,7 +13,7 @@ object Main extends App {
   }
 
   implicit val consoleIO: Console[IO] = new Console[IO] {
-    override def println(s: String): IO[Unit] = IO(() => scala.Console.println(s))
+    override def println(msg: ConsoleOut): IO[Unit] = IO(() => scala.Console.println(msg.en))
 
     override def readLine(): IO[String] = IO(() => StdIn.readLine())
   }
@@ -24,5 +24,3 @@ object Main extends App {
 
   Game.runApplication[IO].run()
 }
-
-

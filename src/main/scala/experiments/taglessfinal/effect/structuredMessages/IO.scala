@@ -1,4 +1,4 @@
-package experiments.effect.monadic
+package experiments.taglessfinal.effect.structuredMessages
 
 case class IO[A](run: () => A) {
   def map[B](f: A => B): IO[B] = IO(() => f(run()))

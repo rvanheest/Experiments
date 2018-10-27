@@ -1,4 +1,4 @@
-package experiments.effect.abstraction
+package experiments.taglessfinal.effect.abstraction
 
 case class IO[A](run: () => A) {
   def map[B](f: A => B): IO[B] = IO(() => f(run()))

@@ -1,4 +1,4 @@
-package experiments.effect.structuredMessages
+package experiments.taglessfinal.effect.structuredMessages
 
 object Testing extends App {
 

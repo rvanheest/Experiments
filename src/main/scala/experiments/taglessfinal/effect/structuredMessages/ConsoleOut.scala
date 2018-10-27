@@ -1,4 +1,4 @@
-package experiments.effect.structuredMessages
+package experiments.taglessfinal.effect.structuredMessages
 
 sealed trait ConsoleOut {
   def en: String

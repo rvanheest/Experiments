@@ -1,4 +1,4 @@
-package experiments.effect.monadic
+package experiments.taglessfinal.effect.monadic
 
 object Main extends App {
 

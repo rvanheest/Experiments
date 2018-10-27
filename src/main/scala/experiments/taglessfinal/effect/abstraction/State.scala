@@ -1,4 +1,4 @@
-package experiments.effect.abstraction
+package experiments.taglessfinal.effect.abstraction
 
 case class State[S, A](state: S => (A, S)) {
 

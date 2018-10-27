@@ -1,7 +1,6 @@
-package experiments.effect.structuredMessages
+package experiments.taglessfinal.effect.abstraction
 
-import experiments.effect.structuredMessages.ConsoleOut._
-import experiments.effect.structuredMessages.Program.{ ProgramSyntax, from }
+import experiments.taglessfinal.effect.abstraction.Program.{ ProgramSyntax, from }
 
 import scala.language.{ higherKinds, postfixOps }
 import scala.util.Try
@@ -10,9 +9,9 @@ object Game {
 
   def runApplication[F[_] : Program : Random : Console]: F[Unit] = {
     for {
-      _ <- println(WhatIsYourName)
+      _ <- println("What is your name?")
       name <- readLine()
-      _ <- println(WelcomeToGame(name))
+      _ <- println(s"Hello, $name, welcome to the game!")
       _ <- gameLoop(name)
     } yield ()
   }
@@ -20,7 +19,7 @@ object Game {
   def gameLoop[F[_] : Program : Random : Console](name: String): F[Unit] = {
     for {
       randomNumber <- nextInt(5).map(1 +)
-      _ <- println(PleaseGuess(name))
+      _ <- println(s"Dear $name, please guess a number from 1 to 5:")
       typedNumber <- readLine()
       _ <- printResults(typedNumber, randomNumber, name)
       continue <- checkContinue(name)
@@ -31,14 +30,14 @@ object Game {
 
   def printResults[F[_] : Console](input: String, randomNumber: Int, name: String): F[Unit] = {
     parseInt(input).map {
-      case `randomNumber` => println(YouGuessedRight(name))
-      case _ => println(YouGuessedWrong(name, randomNumber))
-    } getOrElse println(ThatIsNotValid(name))
+      case `randomNumber` => println(s"You guessed right, $name!")
+      case _ => println(s"You guessed wrong, $name! The number was: $randomNumber")
+    } getOrElse println("You did not enter a number")
   }
 
   def checkContinue[F[_] : Program : Random : Console](name: String): F[Boolean] = {
     for {
-      _ <- println(DoYouWantToContinue(name))
+      _ <- println(s"Do you want to continue, $name? [y/n]")
       input <- readLine().map(_.toLowerCase)
       continue <- input match {
         case "y" | "yes" => from(true)
@@ -50,7 +49,7 @@ object Game {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
-  def println[F[_] : Console](msg: ConsoleOut): F[Unit] = Console[F].println(msg)
+  def println[F[_] : Console](s: String): F[Unit] = Console[F].println(s)
 
   def readLine[F[_] : Console](): F[String] = Console[F].readLine()
 

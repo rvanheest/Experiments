@@ -1,4 +1,4 @@
-package experiments.effect.structuredMessages
+package experiments.taglessfinal.effect.structuredMessages
 
 case class State[S, A](state: S => (A, S)) {
 

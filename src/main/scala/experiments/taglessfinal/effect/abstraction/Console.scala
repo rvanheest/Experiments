@@ -1,4 +1,4 @@
-package experiments.effect.abstraction
+package experiments.taglessfinal.effect.abstraction
 
 import scala.language.higherKinds
 
