@@ -26,7 +26,7 @@ object Game {
       _ <- printResults(typedNumber, randomNumber, name)
       continue <- checkContinue(name)
       _ <- if (continue) gameLoop(name)
-           else implicitly[Monad[F]].pure(())
+           else Monad[F].pure(())
     } yield ()
   }
 
@@ -42,8 +42,8 @@ object Game {
       _ <- println(DoYouWantToContinue(name))
       input <- readLine().map(_.toLowerCase)
       continue <- input match {
-        case "y" | "yes" => implicitly[Monad[F]].pure(true)
-        case "n" | "no" => implicitly[Monad[F]].pure(false)
+        case "y" | "yes" => Monad[F].pure(true)
+        case "n" | "no" => Monad[F].pure(false)
         case _ => checkContinue(name)
       }
     } yield continue
