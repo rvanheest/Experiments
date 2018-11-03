@@ -19,7 +19,7 @@ object Main extends App {
   }
 
   implicit val randomIO: Random[IO] = new Random[IO] {
-    override def nextInt(upper: Int): IO[Int] = IO(() => scala.util.Random.nextInt(5))
+    override def nextInt(upper: Int): IO[Int] = IO(() => scala.util.Random.nextInt(upper))
   }
 
   Game.runApplication[IO].run()
