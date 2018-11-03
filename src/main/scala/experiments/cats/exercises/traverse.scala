@@ -9,11 +9,11 @@ object traverse extends App {
 
   def parseIntValidated(s: String): ValidatedNel[NumberFormatException, Int] = Validated.catchOnly[NumberFormatException](s.toInt).toValidatedNel
 
-  println(List("1", "2", "3").traverseU(parseIntEither))
-  println(List("1", "abc", "3").traverseU(parseIntEither).isLeft)
+  println(List("1", "2", "3").traverse[Either[NumberFormatException, ?], Int](parseIntEither))
+  println(List("1", "abc", "3").traverse[Either[NumberFormatException, ?], Int](parseIntEither).isLeft)
   println
 
-  println(List("1", "2", "3").traverseU(parseIntValidated).isValid)
+  println(List("1", "2", "3").traverse[ValidatedNel[NumberFormatException, ?], Int](parseIntValidated).isValid)
   println
 
   println(List(Option(1), Option(2), Option(3)).traverse[Option, Int](x => x))
