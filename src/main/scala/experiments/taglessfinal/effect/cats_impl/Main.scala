@@ -1,4 +1,4 @@
-package experiments.taglessfinal.effect.cats
+package experiments.taglessfinal.effect.cats_impl
 
 import cats.Monad
 

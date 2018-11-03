@@ -1,4 +1,4 @@
-package experiments.taglessfinal.effect.cats
+package experiments.taglessfinal.effect.cats_impl
 
 case class IO[A](run: () => A) {
   def map[B](f: A => B): IO[B] = IO(() => f(run()))

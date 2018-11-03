@@ -1,8 +1,8 @@
-package experiments.taglessfinal.effect.cats
+package experiments.taglessfinal.effect.cats_impl
 
 import cats.Monad
-import experiments.taglessfinal.effect.cats.ConsoleOut._
-import experiments.taglessfinal.effect.cats.Monad.MonadSyntax
+import experiments.taglessfinal.effect.cats_impl.ConsoleOut._
+import experiments.taglessfinal.effect.cats_impl.Monad.MonadSyntax
 
 import scala.language.{ higherKinds, postfixOps }
 import scala.util.Try
