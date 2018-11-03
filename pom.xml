@@ -39,6 +39,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-core_2.11</artifactId>
+            <version>7.2.26</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-async_2.11</artifactId>
             <version>0.9.6</version>
