@@ -43,6 +43,16 @@
             <artifactId>scalaz-core_2.11</artifactId>
             <version>7.2.26</version>
         </dependency>
+        <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-zio_2.11</artifactId>
+            <version>0.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-zio-interop_2.11</artifactId>
+            <version>0.3.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
