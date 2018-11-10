@@ -9,10 +9,11 @@ case class Config(host: String, port: Int)
 object Config {
 
   type ConfigAsk[F[_]] = ApplicativeAsk[F, Config]
+  def ConfigAsk[F[_]](implicit F: ConfigAsk[F]): ConfigAsk[F] = F
 
-  def host[F[_] : ConfigAsk]: F[String] = implicitly[ConfigAsk[F]].reader(_.host)
+  def host[F[_] : ConfigAsk]: F[String] = ConfigAsk[F].reader(_.host)
 
-  def port[F[_] : ConfigAsk]: F[Int] = implicitly[ConfigAsk[F]].reader(_.port)
+  def port[F[_] : ConfigAsk]: F[Int] = ConfigAsk[F].reader(_.port)
 }
 
 trait ApplicativeAsk[F[_], E] {
@@ -24,7 +25,7 @@ trait ApplicativeAsk[F[_], E] {
 }
 object ApplicativeAsk {
   def constant[F[_] : Applicative, E](e: E): ApplicativeAsk[F, E] = new ApplicativeAsk[F, E] {
-    override val applicative: Applicative[F] = implicitly[Applicative[F]]
+    override val applicative: Applicative[F] = Applicative[F]
 
     override def ask: F[E] = applicative.point(e)
 

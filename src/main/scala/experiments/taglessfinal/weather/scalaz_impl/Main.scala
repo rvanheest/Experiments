@@ -30,7 +30,7 @@ object Main extends App {
   implicit val monadState: AtomicMonadState[Requests] = AtomicMonadState.create(requests)
 
   implicit val errorHandler: ErrorHandler[Effect] = new ApplicativeError[IO[Error, ?], Error] {
-    override val applicative: Applicative[IO[Error, ?]] = implicitly[Applicative[IO[Error, ?]]](ioInstances)
+    override val applicative: Applicative[IO[Error, ?]] = Applicative[IO[Error, ?]](ioInstances)
 
     override def raiseError[A](e: Error): IO[Error, A] = IO.fail(e)
   }

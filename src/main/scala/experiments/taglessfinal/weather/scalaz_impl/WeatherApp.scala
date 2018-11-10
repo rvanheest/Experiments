@@ -14,7 +14,7 @@ object WeatherApp {
     for {
       host <- Config.host
       port <- Config.port
-      _ <- implicitly[Console[F]].println(s"Using weather service at http://$host:$port \n")
+      _ <- Console[F].println(s"Using weather service at http://$host:$port \n")
       _ <- askFetchJudge
     } yield ()
   }
@@ -24,26 +24,26 @@ object WeatherApp {
       cityName <- askCity
       city <- City.cityByName(cityName)
       forcast <- fetchForcast(city)
-      _ <- implicitly[Console[F]].println(s"Forcast for $city is ${ forcast.temperature }")
+      _ <- Console[F].println(s"Forcast for $city is ${ forcast.temperature }")
       hottest <- Requests.hottestCity
-      _ <- implicitly[Console[F]].println(s"Hottest city found so far is $hottest")
+      _ <- Console[F].println(s"Hottest city found so far is $hottest")
     } yield ()
   }
 
   def askCity[F[_] : Console : Monad]: F[String] = {
     for {
-      _ <- implicitly[Console[F]].println("What is the next city")
-      cityName <- implicitly[Console[F]].readLine
+      _ <- Console[F].println("What is the next city")
+      cityName <- Console[F].readLine
     } yield cityName
   }
 
   def fetchForcast[F[_] : Weather : RequestsState : Monad](city: City): F[Forcast] = {
     for {
-      maybeForcast <- implicitly[RequestsState[F]].gets(_.get(city))
+      maybeForcast <- RequestsState[F].gets(_.get(city))
       forcast <- maybeForcast
-        .map(implicitly[Monad[F]].pure(_))
-        .getOrElse(implicitly[Weather[F]].forcast(city))
-      _ <- implicitly[RequestsState[F]].modify(_ + (city -> forcast))
+        .map(Monad[F].pure(_))
+        .getOrElse(Weather[F].forcast(city))
+      _ <- RequestsState[F].modify(_ + (city -> forcast))
     } yield forcast
   }
 }

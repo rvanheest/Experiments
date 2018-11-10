@@ -9,12 +9,13 @@ case class City(name: String) {
 }
 object City {
   type ErrorHandler[F[_]] = ApplicativeError[F, Error]
+  def ErrorHandler[F[_]](implicit F: ErrorHandler[F]): ErrorHandler[F] = F
 
   def cityByName[F[_] : Applicative : ErrorHandler](cityName: String): F[City] = {
     cityName match {
-      case "Rotterdam" => implicitly[Applicative[F]].pure(City(cityName))
-      case "Den Haag" => implicitly[Applicative[F]].pure(City(cityName))
-      case _ => implicitly[ErrorHandler[F]].raiseError(UnknownCity(cityName))
+      case "Rotterdam" => Applicative[F].pure(City(cityName))
+      case "Den Haag" => Applicative[F].pure(City(cityName))
+      case _ => ErrorHandler[F].raiseError(UnknownCity(cityName))
     }
   }
 }
@@ -23,4 +24,7 @@ trait ApplicativeError[F[_], E] {
   val applicative: Applicative[F]
 
   def raiseError[A](e: E): F[A]
+}
+object ApplicativeError {
+  def apply[F[_], E](implicit F: ApplicativeError[F, E]): ApplicativeError[F, E] = F
 }

@@ -7,3 +7,6 @@ trait Console[F[_]] {
 
   def readLine: F[String]
 }
+object Console {
+  def apply[F[_]](implicit F: Console[F]): Console[F] = F
+}

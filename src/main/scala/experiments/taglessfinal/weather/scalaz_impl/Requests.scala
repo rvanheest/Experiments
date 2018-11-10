@@ -18,9 +18,10 @@ object Requests {
   }
 
   type RequestsState[F[_]] = MonadState[F, Requests]
+  def RequestsState[F[_]](implicit F: RequestsState[F]): RequestsState[F] = F
 
   def hottestCity[F[_] : RequestsState]: F[(City, Temperature)] = {
-    implicitly[RequestsState[F]].gets(requests => {
+    RequestsState[F].gets(requests => {
       val (city, Forcast(temperature)) = Requests.hottest(requests)
       (city, temperature)
     })

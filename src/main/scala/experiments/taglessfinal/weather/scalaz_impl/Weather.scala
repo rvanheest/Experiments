@@ -14,3 +14,6 @@ class WeatherClient(host: String, port: Int) {
 trait Weather[F[_]] {
   def forcast(city: City): F[Forcast]
 }
+object Weather {
+  def apply[F[_]](implicit F: Weather[F]): Weather[F] = F
+}
