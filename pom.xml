@@ -37,6 +37,16 @@
             <artifactId>cats-core_2.11</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-mtl-core_2.11</artifactId>
+            <version>0.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-effect_2.11</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.scalaz</groupId>
