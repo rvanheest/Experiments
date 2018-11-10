@@ -1,7 +1,6 @@
 package experiments.taglessfinal.effect.scalaz_impl
 
 import experiments.taglessfinal.effect.scalaz_impl.ConsoleOut._
-import experiments.taglessfinal.effect.scalaz_impl
 import scalaz.Monad
 import scalaz.syntax.monad._
 
@@ -52,9 +51,9 @@ object Game {
 
   def parseInt(s: String): Option[Int] = Try { s.toInt }.toOption
 
-  def println[F[_] : Console](msg: ConsoleOut): F[Unit] = scalaz_impl.Console[F].println(msg)
+  def println[F[_] : Console](msg: ConsoleOut): F[Unit] = Console[F].println(msg)
 
-  def readLine[F[_] : Console](): F[String] = scalaz_impl.Console[F].readLine()
+  def readLine[F[_] : Console](): F[String] = Console[F].readLine()
 
   def nextInt[F[_] : Random](upper: Int): F[Int] = Random[F].nextInt(upper)
 }
