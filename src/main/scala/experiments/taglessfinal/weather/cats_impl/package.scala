@@ -16,4 +16,5 @@ package object cats_impl {
 
   sealed trait Error
   case class UnknownCity(city: String) extends Error
+  def unknownCity(city: String): Error = UnknownCity(city)
 }

@@ -5,6 +5,9 @@ import java.util.concurrent.atomic.AtomicReference
 import cats.data.EitherT
 import cats.effect.IO
 import cats.mtl.{ DefaultApplicativeAsk, MonadState }
+import cats.syntax.applicative._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 import cats.{ Applicative, Functor, Monad }
 import experiments.taglessfinal.weather.cats_impl.City.ErrorHandler
 import experiments.taglessfinal.weather.cats_impl.Config.ConfigAsk
@@ -22,22 +25,22 @@ object Main extends App {
   class MyApplicativeAsk[F[_] : Applicative, E](e: E) extends DefaultApplicativeAsk[F, E] {
     override val applicative: Applicative[F] = Applicative[F]
 
-    override def ask: F[E] = applicative.point(e)
+    override def ask: F[E] = e.pure
   }
 
-  class AtomicMonadState[F[_]: Monad, S](value: AtomicReference[S]) extends MonadState[F, S] {
+  class AtomicMonadState[F[_] : Monad, S](value: AtomicReference[S]) extends MonadState[F, S] {
     override val monad: Monad[F] = Monad[F]
 
-    override def get: F[S] = monad.pure(value.get())
+    override def get: F[S] = value.get().pure
 
-    override def set(s: S): F[Unit] = monad.pure(value.set(s))
+    override def set(s: S): F[Unit] = value.set(s).pure
 
-    override def inspect[A](f: S => A): F[A] = monad.map(get)(f)
+    override def inspect[A](f: S => A): F[A] = get.map(f)
 
-    override def modify(f: S => S): F[Unit] = monad.flatMap(get)(set _ compose f)
+    override def modify(f: S => S): F[Unit] = get.flatMap(f andThen set)
   }
   object AtomicMonadState {
-    def create[F[_]: Monad, S](s: S): AtomicMonadState[F, S] = new AtomicMonadState(new AtomicReference[S](s))
+    def create[F[_] : Monad, S](s: S): AtomicMonadState[F, S] = new AtomicMonadState(new AtomicReference[S](s))
   }
 
   implicit val configAsk: ConfigAsk[Effect] = new MyApplicativeAsk(config)

@@ -1,8 +1,9 @@
 package experiments.taglessfinal.weather.cats_impl
 
 import cats.Monad
-import cats.syntax.functor._
+import cats.syntax.applicative._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import experiments.taglessfinal.weather.cats_impl.City.ErrorHandler
 import experiments.taglessfinal.weather.cats_impl.Config.ConfigAsk
 import experiments.taglessfinal.weather.cats_impl.Requests.RequestsState
@@ -42,9 +43,7 @@ object WeatherApp {
   def fetchForcast[F[_] : Weather : RequestsState : Monad](city: City): F[Forcast] = {
     for {
       maybeForcast <- RequestsState[F].inspect(_.get(city))
-      forcast <- maybeForcast
-        .map(Monad[F].pure(_))
-        .getOrElse(Weather[F].forcast(city))
+      forcast <- maybeForcast.fold(Weather[F].forcast(city))(_.pure)
       _ <- RequestsState[F].modify(_ + (city -> forcast))
     } yield forcast
   }
