@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import scalaz.MonadState
 import scalaz.zio.IO
+import scalaz.zio.syntax._
 
 import scala.language.higherKinds
 
@@ -29,13 +30,13 @@ object Requests {
 }
 
 class AtomicMonadState[S](value: AtomicReference[S]) extends MonadState[IO[Error, ?], S] {
-  override def init: IO[Error, S] = IO.sync(value.get())
+  override def init: IO[Error, S] = value.get().sync
 
   override def get: IO[Error, S] = init
 
-  override def put(s: S): IO[Error, Unit] = IO.sync(value.set(s))
+  override def put(s: S): IO[Error, Unit] = value.set(s).sync
 
-  override def point[A](a: => A): IO[Error, A] = IO.point(a)
+  override def point[A](a: => A): IO[Error, A] = a.point
 
   override def map[A, B](fa: IO[Error, A])(f: A => B): IO[Error, B] = fa map f
 

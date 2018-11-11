@@ -1,6 +1,7 @@
 package experiments.taglessfinal.weather.scalaz_impl
 
 import scalaz.Applicative
+import scalaz.syntax.applicative._
 
 import scala.language.higherKinds
 
@@ -13,8 +14,8 @@ object City {
 
   def cityByName[F[_] : Applicative : ErrorHandler](cityName: String): F[City] = {
     cityName match {
-      case "Rotterdam" => Applicative[F].pure(City(cityName))
-      case "Den Haag" => Applicative[F].pure(City(cityName))
+      case "Rotterdam" => City(cityName).pure
+      case "Den Haag" => City(cityName).pure
       case _ => ErrorHandler[F].raiseError(UnknownCity(cityName))
     }
   }

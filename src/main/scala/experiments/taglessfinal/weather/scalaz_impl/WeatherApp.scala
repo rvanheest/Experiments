@@ -24,9 +24,10 @@ object WeatherApp {
       cityName <- askCity
       city <- City.cityByName(cityName)
       forcast <- fetchForcast(city)
-      _ <- Console[F].println(s"Forcast for $city is ${ forcast.temperature }")
+      _ <- Console[F].println(s"Forcast for $city is $forcast")
       hottest <- Requests.hottestCity
-      _ <- Console[F].println(s"Hottest city found so far is $hottest")
+      (hottestCity, highestTemperature) = hottest
+      _ <- Console[F].println(s"Hottest city found so far is $hottestCity with $highestTemperature")
     } yield ()
   }
 
@@ -40,9 +41,7 @@ object WeatherApp {
   def fetchForcast[F[_] : Weather : RequestsState : Monad](city: City): F[Forcast] = {
     for {
       maybeForcast <- RequestsState[F].gets(_.get(city))
-      forcast <- maybeForcast
-        .map(Monad[F].pure(_))
-        .getOrElse(Weather[F].forcast(city))
+      forcast <- maybeForcast.fold(Weather[F].forcast(city))(_.pure)
       _ <- RequestsState[F].modify(_ + (city -> forcast))
     } yield forcast
   }
