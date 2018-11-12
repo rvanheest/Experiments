@@ -1,4 +1,4 @@
-package experiments.cats.validation.form
+package experiments.cats.validation
 
 import cats.data.Validated
 import cats.syntax.either._
