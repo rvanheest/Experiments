@@ -6,16 +6,9 @@ import scala.language.implicitConversions
 
 package object prettyprint {
 
-  implicit def addFormat[E: PrettyPrint](expr: E): Object {def format: String} = {
-    new {
-      def format: String = implicitly[PrettyPrint[E]].format(expr)
-    }
-  }
+  implicit val prettyPrintNumber: PrettyPrint[base.Number] = PrettyPrint(_.value.toString)
 
-  implicit def prettyPrintNumber = new PrettyPrint[base.Number] {
-    def format(e: base.Number): String = e.value.toString
-  }
-  implicit def prettyPrintPlus[A: PrettyPrint, B: PrettyPrint] = new PrettyPrint[Plus[A, B]] {
-    def format(e: Plus[A, B]) = s"(${implicitly[PrettyPrint[A]].format(e.left)} + ${implicitly[PrettyPrint[B]].format(e.right)})"
+  implicit def prettyPrintPlus[A: PrettyPrint, B: PrettyPrint]: PrettyPrint[Plus[A, B]] = {
+    PrettyPrint(e => s"(${ PrettyPrint[A].format(e.left) } + ${ PrettyPrint[B].format(e.right) })")
   }
 }
