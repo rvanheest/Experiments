@@ -12,7 +12,7 @@ trait ExprSyntax {
 
 object ExprSyntax {
 
-  private final class ExprOps[E: Expr](e: E) {
+  private[ExprSyntax] final class ExprOps[E: Expr](e: E) {
     def evaluate: Int = Expr[E].eval(e)
   }
 }

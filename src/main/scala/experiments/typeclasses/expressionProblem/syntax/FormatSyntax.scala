@@ -11,7 +11,7 @@ trait FormatSyntax {
 }
 object FormatSyntax {
 
-  private final class PrettyPrintOps[E: PrettyPrint](expr: E) {
+  private[FormatSyntax] final class PrettyPrintOps[E: PrettyPrint](expr: E) {
     def format: String = PrettyPrint[E].format(expr)
   }
 }
