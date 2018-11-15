@@ -20,6 +20,7 @@ object PrintableExercise extends App {
   object PrintableSyntax {
     implicit class PrintableOps[A](val a: A) extends AnyVal {
       def format(implicit printable: Printable[A]): String = Printable.format(a)
+
       def print(implicit printable: Printable[A]): Unit = Printable.print(a)
     }
   }
@@ -29,9 +30,13 @@ object PrintableExercise extends App {
 
   case class Cat(name: String, age: Int, color: String)
 
-  implicit def catPrintable(implicit stringPrintable: Printable[String], intPrintable: Printable[Int]): Printable[Cat] = cat =>
-    s"${ stringPrintable.format(cat.name) } is a ${ intPrintable.format(cat.age) } year-old " +
-      s"${ stringPrintable.format(cat.color) } cat."
+  implicit def catPrintable: Printable[Cat] = cat => {
+    val name = Printable.format(cat.name)
+    val age = Printable.format(cat.age)
+    val color = Printable.format(cat.color)
+
+    s"$name is a $age year-old $color cat."
+  }
 
   val cat = Cat("Alice", 2, "black")
   Printable.print(cat)
