@@ -10,7 +10,8 @@ object ContravariantFunctor extends App {
   object Printable {
     def apply[A](implicit printable: Printable[A]): Printable[A] = printable
   }
-  def format[A](value: A)(implicit p: Printable[A]): String = p.format(value)
+
+  def format[A: Printable](value: A): String = Printable[A].format(value)
 
   implicit val stringPrintable: Printable[String] = "\"" + _ + "\""
 
