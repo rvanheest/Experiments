@@ -32,11 +32,11 @@ object TransformAndRollOutExercise extends App {
   }
 
   def tacticalReport(autobot1: String, autobot2: String): String = {
-    Await.result(canSpecialMove(autobot1, autobot2).value, 10 seconds) match {
-      case Left(msg) => s"Comm error: $msg"
-      case Right(true) => s"$autobot1 and $autobot2 are ready to roll out!"
-      case Right(false) => s"$autobot1 and $autobot2 need to recharge."
-    }
+    Await.result(canSpecialMove(autobot1, autobot2).value, 10 seconds)
+      .fold("Comm error: " +, {
+        case true => s"$autobot1 and $autobot2 are ready to roll out!"
+        case false => s"$autobot1 and $autobot2 need to recharge."
+      })
   }
 
   println(tacticalReport("Jazz", "Bumblebee")) // Jazz and Bumblebee need to recharge.
