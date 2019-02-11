@@ -1,22 +1,20 @@
 package experiments.dlist
 
-import java.util.NoSuchElementException
-
 import scala.annotation.tailrec
 
-class DList[A](f: List[A] => List[A]) {
+class DList[A](private val unDL: List[A] => List[A]) {
 
-  def run(as: List[A]): List[A] = f(as)
+  def toList: List[A] = unDL(List.empty)
 
-  def toList: List[A] = run(List.empty)
+  def ::(a: A): DList[A] = DList(a :: unDL(_))
 
-  def ::(a: A): DList[A] = DList(a :: this.run(_))
+  def :+(a: A): DList[A] = DList(unDL(_) :+ a)
 
-  def :+(a: A): DList[A] = DList(this.run(_) :+ a)
+  def :::(prefix: DList[A]): DList[A] = prefix.append(this)
 
-  def :::(xs: DList[A]): DList[A] = DList(ys => this.run(xs.run(ys)))
+  def append(xs: DList[A]): DList[A] = DList(ys => xs.unDL(this.unDL(ys)))
 
-  def list[B](b: B)(g: (A, DList[A]) => B): B = {
+  def list[B](b: => B)(g: (A, DList[A]) => B): B = {
     this.toList match {
       case Nil => b
       case x :: xs => g(x, DList.fromList(xs))
@@ -25,26 +23,24 @@ class DList[A](f: List[A] => List[A]) {
 
   def head: A = list(throw new NoSuchElementException("head of empty list"))((a, _) => a)
 
+  def headOption: Option[A] = list(Option.empty[A])((a, _) => Option(a))
+
   def tail: DList[A] = list(throw new NoSuchElementException("head of empty list"))((_, xs) => xs)
 
-  def unfoldRight[B](b: B)(g: B => Option[(A, B)]): DList[A] = {
-    g(b).fold(DList.empty[A]) { case (a, b2) => a :: unfoldRight(b2)(g) }
-  }
+  def foldRight[B](b: => B)(f: (A, B) => B): B = this.toList.foldRight(b)(f)
 
-  def foldRight[B](b: B)(g: (A, B) => B): B = this.toList.foldRight(b)(g)
+  def map[B](f: A => B): DList[B] = foldRight(DList.empty[B])(f(_) :: _)
 
-  def map[B](g: A => B): DList[B] = foldRight(DList.empty[B])(g(_) :: _)
-
-  def flatMap[B](g: A => DList[B]): DList[B] = {
-    foldRight(DList.empty[B])(g(_) ::: _)
-  }
+  def flatMap[B](g: A => DList[B]): DList[B] = foldRight(DList.empty[B])((a, bs) => bs ::: g(a))
 }
 
 object DList {
 
   def apply[A](f: List[A] => List[A]): DList[A] = new DList(f)
 
-  def fromList[A](as: List[A]): DList[A] = DList[A](xs => xs ++ as)
+  def of[A](as: A*): DList[A] = DList[A](_ ++ as)
+
+  def fromList[A](as: List[A]): DList[A] = DList[A](_ ++ as)
 
   def empty[A]: DList[A] = DList(identity)
 
@@ -54,11 +50,11 @@ object DList {
 
   def fill[A](n: Int)(a: A): DList[A] = DList(xs => {
     @tailrec
-    def go(m: Int, result: List[A]): List[A] = {
+    def go(m: Int)(result: List[A]): List[A] = {
       if (m <= 0) result
-      else go(m - 1, a :: result)
+      else go(m - 1)(a :: result)
     }
 
-    go(n, xs)
+    go(n)(xs)
   })
 }
