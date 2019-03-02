@@ -1,5 +1,7 @@
 package experiments.dlist
 
+import scala.language.postfixOps
+
 object DListDemo extends App {
 
   println(DList.of(1, 2, 3).toList)
