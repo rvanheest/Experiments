@@ -17,9 +17,10 @@ object PodcastDownloader extends App {
   val result = for {
     url <- url()
     saveLocation <- saveLocation()
+    count <- fetchCount()
     rss <- readRss(url)
-    podcast <- parseRss(rss)
-    saveDirectory = (saveLocation / podcast.title).createDirectory
+    podcast <- parseRss(rss, count)
+    saveDirectory = (saveLocation / podcast.title).createIfNotExists(asDirectory = true)
     _ <- csvReport(saveDirectory, podcast)
     _ <- downloadPodcast(saveDirectory, podcast)
   } yield ()
@@ -40,7 +41,7 @@ object PodcastDownloader extends App {
   }
 
   def saveLocation(): Try[File] = Try {
-    val destStr = StdIn.readLine("Save downloaded files at: ")
+    val destStr = StdIn.readLine("Save downloaded files at: ").trim
     val dest = File(destStr)
 
     if (dest.notExists)
@@ -52,12 +53,20 @@ object PodcastDownloader extends App {
     dest
   }
 
+  def fetchCount(): Try[Int] = {
+    val countStr = StdIn.readLine("How many entries to fetch (1, 2, 3, ..., all): ").trim.toLowerCase
+    countStr match {
+      case "all" => Success { Int.MaxValue }
+      case _ => Try { countStr.toInt } recoverWith { case _ => Failure(new IllegalArgumentException("not a number")) }
+    }
+  }
+
   def readRss(url: URL): Try[Node] = Try { XML.load(url) }
 
-  def parseRss(rss: Node): Try[Podcast] = Try {
+  def parseRss(rss: Node, itemCount: Int): Try[Podcast] = Try {
     val channel = rss \ "channel"
     val title = (channel \ "title").text
-    val items = (channel \ "item").map(parseItem)
+    val items = (channel \ "item").toStream.map(parseItem).take(itemCount).toList
 
     Podcast(title, items)
   }
@@ -82,8 +91,9 @@ object PodcastDownloader extends App {
       .withHeader("title", "date", "url", "description")
       .withDelimiter(',')
       .withRecordSeparator('\n')
+    val reportFile = (saveDirectory / s"${ podcast.title }.csv").delete(swallowIOExceptions = true)
 
-    for (fileWriter <- (saveDirectory / s"${ podcast.title }.csv").fileWriter();
+    for (fileWriter <- reportFile.fileWriter();
          printer <- csvFormat.print(fileWriter).autoClosed;
          Item(title, date, url, description) <- podcast.items) {
       printer.printRecord(title, date, url, description)
@@ -92,9 +102,14 @@ object PodcastDownloader extends App {
 
   def downloadPodcast(saveDirectory: File, podcast: Podcast): Try[Unit] = Try {
     for (Item(title, date, url, _) <- podcast.items) {
-      val file = saveDirectory / s"$date $title.mp3"
-      println(s"downloading $url to $file")
-      FileUtils.copyURLToFile(url, file.toJava)
+      val titleForFilename = title.replace(":", " -").replace("?", "")
+      val file = saveDirectory / s"$date $titleForFilename.mp3"
+      if (file.exists)
+        println(s"$file already exists, skip downloading $url")
+      else {
+        println(s"downloading $url to $file")
+        FileUtils.copyURLToFile(url, file.toJava)
+      }
     }
   }
 }
