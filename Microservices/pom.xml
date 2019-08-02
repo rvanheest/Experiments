@@ -43,42 +43,42 @@
             <!-- testing -->
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.11</artifactId>
-                <version>3.0.3</version>
+                <artifactId>scalatest_2.12</artifactId>
+                <version>3.0.8</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalamock</groupId>
-                <artifactId>scalamock-scalatest-support_2.11</artifactId>
-                <version>3.6.0</version>
+                <artifactId>scalamock_2.12</artifactId>
+                <version>4.3.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalatra</groupId>
-                <artifactId>scalatra-scalatest_2.11</artifactId>
-                <version>2.5.0</version>
+                <artifactId>scalatra-scalatest_2.12</artifactId>
+                <version>2.6.5</version>
             </dependency>
 
             <!-- Scala utils -->
             <dependency>
                 <groupId>org.rogach</groupId>
-                <artifactId>scallop_2.11</artifactId>
-                <version>2.1.1</version>
+                <artifactId>scallop_2.12</artifactId>
+                <version>3.3.1</version>
             </dependency>
             <dependency>
                 <groupId>com.jsuereth</groupId>
-                <artifactId>scala-arm_2.11</artifactId>
+                <artifactId>scala-arm_2.12</artifactId>
                 <version>2.0</version>
             </dependency>
             <dependency>
                 <groupId>nl.knaw.dans.lib</groupId>
-                <artifactId>dans-scala-lib</artifactId>
-                <version>1.2</version>
+                <artifactId>dans-scala-lib_2.12</artifactId>
+                <version>1.6.0</version>
             </dependency>
             <dependency>
                 <groupId>com.github.pathikrit</groupId>
-                <artifactId>better-files_2.11</artifactId>
-                <version>2.17.1</version>
+                <artifactId>better-files_2.12</artifactId>
+                <version>3.8.0</version>
             </dependency>
 
             <!-- Apache utils -->
@@ -102,22 +102,22 @@
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>
-                <version>9.4.0.v20161208</version>
+                <version>9.4.19.v20190610</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
-                <version>9.4.0.v20161208</version>
+                <version>9.4.19.v20190610</version>
             </dependency>
             <dependency>
                 <groupId>org.scalatra</groupId>
-                <artifactId>scalatra_2.11</artifactId>
-                <version>2.5.0</version>
+                <artifactId>scalatra_2.12</artifactId>
+                <version>2.6.5</version>
             </dependency>
             <dependency>
                 <groupId>org.scalaj</groupId>
-                <artifactId>scalaj-http_2.11</artifactId>
-                <version>2.3.0</version>
+                <artifactId>scalaj-http_2.12</artifactId>
+                <version>2.4.2</version>
             </dependency>
 
             <!-- logging -->
@@ -145,7 +145,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>2.11</version>
+                    <version>3.0</version>
                     <configuration>
                         <header>license_header.txt</header>
                         <properties>
@@ -185,19 +185,20 @@
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>4.1.1</version>
                     <executions>
                         <execution>
                             <goals>
                                 <goal>compile</goal>
                                 <goal>testCompile</goal>
+                                <goal>add-source</goal>
                                 <goal>doc-jar</goal>
                             </goals>
                         </execution>
                     </executions>
                     <configuration>
-                        <scalaCompatVersion>2.11</scalaCompatVersion>
-                        <scalaVersion>2.11.8</scalaVersion>
+                        <scalaCompatVersion>2.12</scalaCompatVersion>
+                        <scalaVersion>2.12.8</scalaVersion>
                         <args>
                             <arg>-target:jvm-1.8</arg>
                             <arg>-deprecation</arg>
@@ -209,7 +210,7 @@
                 <plugin>
                     <groupId>org.scalatest</groupId>
                     <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>1.0</version>
+                    <version>2.0.0</version>
                     <executions>
                         <execution>
                             <id>test</id>

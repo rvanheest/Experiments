@@ -41,33 +41,33 @@
         <!-- testing -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
+            <artifactId>scalatest_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalamock</groupId>
-            <artifactId>scalamock-scalatest-support_2.11</artifactId>
+            <artifactId>scalamock_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalatra</groupId>
-            <artifactId>scalatra-scalatest_2.11</artifactId>
+            <artifactId>scalatra-scalatest_2.12</artifactId>
         </dependency>
 
         <!-- Scala utils -->
         <dependency>
             <groupId>org.rogach</groupId>
-            <artifactId>scallop_2.11</artifactId>
+            <artifactId>scallop_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jsuereth</groupId>
-            <artifactId>scala-arm_2.11</artifactId>
+            <artifactId>scala-arm_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>nl.knaw.dans.lib</groupId>
-            <artifactId>dans-scala-lib</artifactId>
+            <artifactId>dans-scala-lib_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.pathikrit</groupId>
-            <artifactId>better-files_2.11</artifactId>
+            <artifactId>better-files_2.12</artifactId>
         </dependency>
 
         <!-- Apache utils -->
@@ -91,11 +91,11 @@
         </dependency>
         <dependency>
             <groupId>org.scalatra</groupId>
-            <artifactId>scalatra_2.11</artifactId>
+            <artifactId>scalatra_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scalaj</groupId>
-            <artifactId>scalaj-http_2.11</artifactId>
+            <artifactId>scalaj-http_2.12</artifactId>
         </dependency>
 
         <!-- logging -->
