@@ -8,9 +8,14 @@
     <artifactId>Experiments</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <modules>
+        <module>async-await</module>
+        <module>cats</module>
+        <module>cake-pattern</module>
         <module>Monadics</module>
+        <module>monocle</module>
+        <module>taglessfinal</module>
     </modules>
 
     <dependencies>
@@ -30,50 +35,6 @@
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-xml_2.11</artifactId>
             <version>1.0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.typelevel</groupId>
-            <artifactId>cats-core_2.11</artifactId>
-            <version>1.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.typelevel</groupId>
-            <artifactId>cats-mtl-core_2.11</artifactId>
-            <version>0.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.typelevel</groupId>
-            <artifactId>cats-effect_2.11</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-core_2.11</artifactId>
-            <version>7.2.26</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-zio_2.11</artifactId>
-            <version>0.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-zio-interop_2.11</artifactId>
-            <version>0.3.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scala-lang.modules</groupId>
-            <artifactId>scala-async_2.11</artifactId>
-            <version>0.9.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.julien-truffaut</groupId>
-            <artifactId>monocle-core_2.11</artifactId>
-            <version>1.4.0</version>
         </dependency>
 
         <dependency>
