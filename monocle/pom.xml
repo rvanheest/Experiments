@@ -15,8 +15,8 @@
     <dependencies>
         <dependency>
             <groupId>com.github.julien-truffaut</groupId>
-            <artifactId>monocle-core_2.11</artifactId>
-            <version>1.4.0</version>
+            <artifactId>monocle-core_2.12</artifactId>
+            <version>1.6.0</version>
         </dependency>
     </dependencies>
 </project>

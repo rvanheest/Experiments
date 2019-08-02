@@ -6,7 +6,5 @@ trait PrettyPrint[E] {
 object PrettyPrint {
   def apply[E](implicit E: PrettyPrint[E]): PrettyPrint[E] = E
 
-  def apply[E](f: E => String): PrettyPrint[E] = new PrettyPrint[E] {
-    def format(e: E): String = f(e)
-  }
+  def from[E](f: E => String): PrettyPrint[E] = f(_)
 }

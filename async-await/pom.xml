@@ -14,8 +14,8 @@
     <dependencies>
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
-            <artifactId>scala-async_2.11</artifactId>
-            <version>0.9.6</version>
+            <artifactId>scala-async_2.12</artifactId>
+            <version>0.9.7</version>
         </dependency>
     </dependencies>
 </project>

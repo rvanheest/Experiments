@@ -16,7 +16,7 @@ object Instantiation extends App {
   println(foo3)
 
   println(foo1 == foo2) // shouldBe true
-  println(foo1 === foo2) // shouldBe true
+  println(foo1 isSameContentAs foo2) // shouldBe true
   println(foo1 == foo3) // shouldBe false
-  println(foo1 === foo3) // shouldBe true
+  println(foo1 isSameContentAs foo3) // shouldBe true
 }

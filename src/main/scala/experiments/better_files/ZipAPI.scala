@@ -16,7 +16,7 @@ object ZipAPI extends App {
   betterFiles.zipTo(zipFile)
   zipFile.unzipTo(unzipFolder)
 
-  val equals = betterFiles === unzipFolder
+  val equals = betterFiles isSameContentAs unzipFolder
   if (equals) println("zip -> unzip equals original")
   else println("zip -> unzip did not equal original")
 }

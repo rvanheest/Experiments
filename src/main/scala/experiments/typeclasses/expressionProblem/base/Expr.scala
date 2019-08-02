@@ -6,7 +6,5 @@ trait Expr[E] {
 object Expr {
   def apply[E](implicit E: Expr[E]): Expr[E] = E
 
-  def apply[E](f: E => Int): Expr[E] = new Expr[E] {
-    def eval(e: E): Int = f(e)
-  }
+  def from[E](f: E => Int): Expr[E] = f(_)
 }
