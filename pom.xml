@@ -11,6 +11,7 @@
 
     <modules>
         <module>async-await</module>
+        <module>caching</module>
         <module>cats</module>
         <module>cake-pattern</module>
         <module>Monadics</module>
