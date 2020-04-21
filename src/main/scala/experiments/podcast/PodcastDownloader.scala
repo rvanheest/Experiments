@@ -72,7 +72,7 @@ object PodcastDownloader extends App {
   }
 
   private def parseItem(item: Node): Item = {
-    val title = (item \ "title").text
+    val title = (item \ "title").head.text
     val pubDate = parseDate((item \ "pubDate").text)
     val url = (item \ "enclosure").withFilter(_ \@ "type" == "audio/mpeg").map(n => new URL(n \@ "url")).head
     val description = (item \ "description").text
