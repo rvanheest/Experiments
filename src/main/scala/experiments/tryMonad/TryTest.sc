@@ -22,11 +22,11 @@ e1.orElse(Try(3))
 s1.orElse(throw new Exception("error on purpose"))
 e1.orElse(throw new Exception("error on purpose"))
 
-s1.recoverWith { case e => s2 }
-e1.recoverWith { case e => s2 }
+s1.recoverWith { case _ => s2 }
+e1.recoverWith { case _ => s2 }
 
-s1.recover { case e => 2 }
-e1.recover { case e => 2 }
+s1.recover { case _ => 2 }
+e1.recover { case _ => 2 }
 
 s1.ifSuccess(println)
 e1.ifSuccess(println)

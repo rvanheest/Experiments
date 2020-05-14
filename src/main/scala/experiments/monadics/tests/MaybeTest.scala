@@ -1,7 +1,8 @@
 package experiments.monadics.tests
 
-import experiments.monadics.instances.Maybe
-import experiments.monadics._
+import experiments.monadics.instances.{Maybe, Sum}
+
+import scala.language.postfixOps
 
 object MaybeTest extends App {
 
@@ -10,8 +11,18 @@ object MaybeTest extends App {
   val jf = Maybe((a: Int) => a.toDouble)
   val n = Maybe.empty[Int]
 
+  val sum1 = Sum(5)
+  val sum2 = Sum(3)
+  val sum3 = Sum.empty[Int]
+
+  println("MONOID")
+  println(Maybe(sum3).append(Maybe(sum3)))
+  println(Maybe(sum2).append(Maybe(sum3)))
+  println(Maybe(sum3).append(Maybe(sum1)))
+  println(Maybe(sum1).append(Maybe(sum2)))
+
   // functor
-  println("FUNCTOR")
+  println("\nFUNCTOR")
   println(j1.map(10 +))
   println(j1.map(i => j2.map(i +)))
   println(j1.map(_ => n))
@@ -23,10 +34,6 @@ object MaybeTest extends App {
   println("\nAPPLICATIVE")
   println(jf <*> j1)
   println(jf <*> n)
-  println(j1 *> j2)
-  println(j1 *> n)
-  println(j1 <* j2)
-  println(j1 <* n)
   println(j1 <**> jf)
 
   // alternative
@@ -48,32 +55,17 @@ object MaybeTest extends App {
   println(n >>= (i => j2.map(i +)))
   println(n >>= (i => n.map(i +)))
   println(jf >>= (f => j1.map(f(_))))
-  println(j1 >> j2)
-  println(j1 >> n)
-  println(j1 >> jf)
-  println(n >> j1)
-  println(n >> n)
-  println(j1 << j2)
-  println(j1 << n)
-  println(j1 << jf)
-  println(n << j1)
-  println(n << n)
 
   // monad for-comprehension
   println("\nMONAD FOR-COMPREHENSION")
   println(for {i <- j1; j <- j2} yield i + j)
   println(for {i <- j1; j <- n} yield i + j)
   println(for {i <- n; j <- j1} yield i + j)
-  println(for {i <- n; j <- n} yield i + i)
+  println(for {i <- n; j <- n} yield i + j)
   println(for {f <- jf; j <- j1} yield f(j))
 
   // monadplus
   println("\nMONADPLUS")
-  println(j1.mplus(j2))
-  println(j2.mplus(j1))
-  println(j1.mplus(n))
-  println(n.mplus(j1))
-  println(n.mplus(n))
   println(j1.filter(_ % 2 == 0))
   println(j2.filter(_ % 2 == 0))
   println(n.filter(_ % 2 == 0))

@@ -1,0 +1,15 @@
+# sbt target folders
+target/
+
+# eclipse project files
+/.settings
+/.classpath
+/.project
+
+# IntelliJ
+/.idea
+project/project/
+
+# node.js
+/node_modules
+package-lock.json

@@ -2,6 +2,8 @@ import experiments.typeclasses.expressionProblem.base.{Number, Plus}
 import experiments.typeclasses.expressionProblem.withNegate.Negate
 import experiments.typeclasses.expressionProblem.prettyprint._
 import experiments.typeclasses.expressionProblem.withNegatePrettyPrint._
+import experiments.typeclasses.expressionProblem.syntax.evaluate._
+import experiments.typeclasses.expressionProblem.syntax.format._
 
 import scala.language.reflectiveCalls
 

@@ -4,7 +4,7 @@ import experiments.typeclasses.expressionProblem.prettyprint.PrettyPrint
 import experiments.typeclasses.expressionProblem.withNegate.Negate
 
 package object withNegatePrettyPrint {
-  implicit def prettyPrintNegate[E: PrettyPrint] = new PrettyPrint[Negate[E]] {
-    def format(e: Negate[E]) = s"-${implicitly[PrettyPrint[E]].format(e.expr)}"
+  implicit def prettyPrintNegate[E: PrettyPrint]: PrettyPrint[Negate[E]] = {
+    PrettyPrint.from(e => s"-${PrettyPrint[E].format(e.expr)}")
   }
 }
