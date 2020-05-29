@@ -23,3 +23,7 @@
 src/main/resources/better-files
 src/main/resources/better-files-unzipped
 src/main/resources/better-files.zip
+
+# VS code
+.vscode
+classes
