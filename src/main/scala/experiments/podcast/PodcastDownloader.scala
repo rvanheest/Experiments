@@ -17,9 +17,10 @@ object PodcastDownloader extends App {
   val result = for {
     url <- url()
     saveLocation <- saveLocation()
+    skip <- fetchSkip()
     count <- fetchCount()
     rss <- readRss(url)
-    podcast <- parseRss(rss, count)
+    podcast <- parseRss(rss, count, skip)
     saveDirectory = (saveLocation / podcast.title).createIfNotExists(asDirectory = true)
     _ <- csvReport(saveDirectory, podcast)
     _ <- downloadPodcast(saveDirectory, podcast)
@@ -53,6 +54,13 @@ object PodcastDownloader extends App {
     dest
   }
 
+  def fetchSkip(): Try[Int] = {
+    val countStr = StdIn.readLine("How many entries to skip from the start (0, 1, 2, 3, ...): ").trim.toLowerCase
+    countStr match {
+      case _ => Try { countStr.toInt } recoverWith { case _ => Failure(new IllegalArgumentException("not a number")) }
+    }
+  }
+
   def fetchCount(): Try[Int] = {
     val countStr = StdIn.readLine("How many entries to fetch (1, 2, 3, ..., all): ").trim.toLowerCase
     countStr match {
@@ -63,10 +71,10 @@ object PodcastDownloader extends App {
 
   def readRss(url: URL): Try[Node] = Try { XML.load(url) }
 
-  def parseRss(rss: Node, itemCount: Int): Try[Podcast] = Try {
+  def parseRss(rss: Node, itemCount: Int, skipCount: Int): Try[Podcast] = Try {
     val channel = rss \ "channel"
     val title = (channel \ "title").text
-    val items = (channel \ "item").toStream.map(parseItem).take(itemCount).toList
+    val items = (channel \ "item").toStream.map(parseItem).drop(skipCount).take(itemCount).toList
 
     Podcast(title, items)
   }
