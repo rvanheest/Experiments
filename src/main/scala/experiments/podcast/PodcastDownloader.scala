@@ -56,7 +56,7 @@ object PodcastDownloader extends App {
   def fetchCount(): Try[Int] = {
     val countStr = StdIn.readLine("How many entries to fetch (1, 2, 3, ..., all): ").trim.toLowerCase
     countStr match {
-      case "all" => Success { Int.MaxValue }
+      case "" | "all" => Success { Int.MaxValue }
       case _ => Try { countStr.toInt } recoverWith { case _ => Failure(new IllegalArgumentException("not a number")) }
     }
   }
