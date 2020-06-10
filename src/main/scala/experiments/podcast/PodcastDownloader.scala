@@ -101,7 +101,7 @@ object PodcastDownloader extends App {
       .withRecordSeparator('\n')
     val reportFile = (saveDirectory / s"${ podcast.title }.csv").delete(swallowIOExceptions = true)
 
-    for (fileWriter <- reportFile.fileWriter();
+    for (fileWriter <- reportFile.fileWriter(append = true);
          printer <- csvFormat.print(fileWriter).autoClosed;
          Item(title, date, url, description) <- podcast.items) {
       printer.printRecord(title, date, url, description)
