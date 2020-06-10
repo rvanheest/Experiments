@@ -102,7 +102,16 @@ object PodcastDownloader extends App {
 
   def downloadPodcast(saveDirectory: File, podcast: Podcast): Try[Unit] = Try {
     for (Item(title, date, url, _) <- podcast.items) {
-      val titleForFilename = title.replace(":", " -").replace("?", "")
+      val titleForFilename = title
+        .replace("<", "")
+        .replace(">", "")
+        .replace(":", " -")
+        .replace("\"", "")
+        .replace("/", "")
+        .replace("\\", "")
+        .replace("|", "")
+        .replace("?", "")
+        .replace("*", "")
       val file = saveDirectory / s"$date $titleForFilename.mp3"
       if (file.exists)
         println(s"$file already exists, skip downloading $url")
