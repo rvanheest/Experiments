@@ -21,7 +21,7 @@ object PodcastDownloader extends App {
     count <- fetchCount()
     rss <- readRss(url)
     podcast <- parseRss(rss, count, skip)
-    saveDirectory = (saveLocation / podcast.title).createIfNotExists(asDirectory = true)
+    saveDirectory = (saveLocation / normalizeFilename(podcast.title)).createIfNotExists(asDirectory = true)
     _ <- csvReport(saveDirectory, podcast)
     _ <- downloadPodcast(saveDirectory, podcast)
   } yield ()
@@ -55,14 +55,15 @@ object PodcastDownloader extends App {
   }
 
   def fetchSkip(): Try[Int] = {
-    val countStr = StdIn.readLine("How many entries to skip from the start (0, 1, 2, 3, ...): ").trim.toLowerCase
+    val countStr = StdIn.readLine("How many entries to skip from the start (0, 1, 2, 3, ...) (default: 0): ").trim.toLowerCase
     countStr match {
+      case "" => Success(0)
       case _ => Try { countStr.toInt } recoverWith { case _ => Failure(new IllegalArgumentException("not a number")) }
     }
   }
 
   def fetchCount(): Try[Int] = {
-    val countStr = StdIn.readLine("How many entries to fetch (1, 2, 3, ..., all): ").trim.toLowerCase
+    val countStr = StdIn.readLine("How many entries to fetch (1, 2, 3, ..., all) (default: all): ").trim.toLowerCase
     countStr match {
       case "" | "all" => Success { Int.MaxValue }
       case _ => Try { countStr.toInt } recoverWith { case _ => Failure(new IllegalArgumentException("not a number")) }
@@ -99,7 +100,7 @@ object PodcastDownloader extends App {
       .withHeader("title", "date", "url", "description")
       .withDelimiter(',')
       .withRecordSeparator('\n')
-    val reportFile = (saveDirectory / s"${ podcast.title }.csv").delete(swallowIOExceptions = true)
+    val reportFile = saveDirectory / s"${ normalizeFilename(podcast.title) }.csv"
 
     for (fileWriter <- reportFile.fileWriter(append = true);
          printer <- csvFormat.print(fileWriter).autoClosed;
@@ -110,16 +111,7 @@ object PodcastDownloader extends App {
 
   def downloadPodcast(saveDirectory: File, podcast: Podcast): Try[Unit] = Try {
     for (Item(title, date, url, _) <- podcast.items) {
-      val titleForFilename = title
-        .replace("<", "")
-        .replace(">", "")
-        .replace(":", " -")
-        .replace("\"", "")
-        .replace("/", "")
-        .replace("\\", "")
-        .replace("|", "")
-        .replace("?", "")
-        .replace("*", "")
+      val titleForFilename = normalizeFilename(title)
       val file = saveDirectory / s"$date $titleForFilename.mp3"
       if (file.exists)
         println(s"$file already exists, skip downloading $url")
@@ -128,5 +120,18 @@ object PodcastDownloader extends App {
         FileUtils.copyURLToFile(url, file.toJava)
       }
     }
+  }
+  
+  private def normalizeFilename(fileName: String): String = {
+    fileName
+      .replace("<", "")
+      .replace(">", "")
+      .replace(":", " -")
+      .replace("\"", "")
+      .replace("/", "")
+      .replace("\\", "")
+      .replace("|", "")
+      .replace("?", "")
+      .replace("*", "")
   }
 }
