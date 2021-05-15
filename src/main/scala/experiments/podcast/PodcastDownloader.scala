@@ -42,8 +42,13 @@ object PodcastDownloader extends App {
   }
 
   def saveLocation(): Try[File] = Try {
-    val destStr = StdIn.readLine("Save downloaded files at: ").trim
-    val dest = File(destStr)
+    val default = if (args.length > 0) Some(args(0)) else None
+    val defaultString = default.fold("")(d => s" (default: $d)")
+    val destStr = StdIn.readLine(s"Save downloaded files at$defaultString: ").trim
+    val dest = destStr match {
+      case "" => File(default getOrElse "")
+      case file => File(file)
+    }
 
     if (dest.notExists)
       throw new IllegalArgumentException(s"download destination '$dest' does not exist")
@@ -83,7 +88,11 @@ object PodcastDownloader extends App {
   private def parseItem(item: Node): Item = {
     val title = (item \ "title").head.text
     val pubDate = parseDate((item \ "pubDate").text)
-    val url = (item \ "enclosure").withFilter(_ \@ "type" == "audio/mpeg").map(n => new URL(n \@ "url")).head
+    
+    lazy val urlFromEnclosure = (item \ "enclosure").withFilter(_ \@ "type" matches "audio/(mpeg|mp3)").map(n => new URL(n \@ "url")).headOption
+    lazy val urlFromContent = (item \ "content").withFilter(_ \@ "medium" == "audio").map(n => new URL(n \@ "url")).headOption
+    
+    val url = (urlFromEnclosure orElse urlFromContent).head
     val description = (item \ "description").text
 
     Item(title, pubDate, url, description)
@@ -103,7 +112,8 @@ object PodcastDownloader extends App {
     val reportFile = saveDirectory / s"${ normalizeFilename(podcast.title) }.csv"
 
     for (fileWriter <- reportFile.fileWriter(append = true);
-         printer <- csvFormat.print(fileWriter).autoClosed;
+         format = if (reportFile.exists) csvFormat.withSkipHeaderRecord() else csvFormat;
+         printer <- format.print(fileWriter).autoClosed;
          Item(title, date, url, description) <- podcast.items) {
       printer.printRecord(title, date, url, description)
     }
