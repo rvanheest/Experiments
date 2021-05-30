@@ -1,6 +1,7 @@
 package experiments.podcast.auto
 
 import better.files.File
+import cats.syntax.option._
 
 import java.net.URL
 import java.time.ZonedDateTime
@@ -8,10 +9,18 @@ import java.time.format.DateTimeFormatter
 import scala.util.Try
 import scala.xml.{ Node, NodeSeq, XML }
 
-case class Podcast(title: String, saveLocation: File, podcastUrl: URL, episodeNameTemplate: EpisodeNameTemplate, lastEpisode: Option[LastEpisode]) {
+case class Podcast(title: String,
+                   saveLocation: File,
+                   podcastUrl: URL,
+                   episodeNameTemplate: EpisodeNameTemplate,
+                   lastEpisode: Option[LastEpisode],
+                   skipEpisodes: Option[List[SkipEpisode]],
+                  ) {
 
   def listEpisodesToDownload(): Try[Stream[PodcastEpisode]] = {
-    readPodcastFeed() map (episodes => (lastEpisode fold episodes) (lastEpisode => episodes takeWhile (lastEpisode.identifier != _.id)))
+    readPodcastFeed()
+      .map(episodes => (lastEpisode fold episodes) (lastEpisode => episodes takeWhile (lastEpisode.identifier != _.id)))
+      .map(episodes => (skipEpisodes fold episodes) (skippers => episodes filterNot (_ matchesAny skippers)))
   }
 
   def podcastDirectory(): File = {
@@ -53,6 +62,7 @@ case class Podcast(title: String, saveLocation: File, podcastUrl: URL, episodeNa
       <podcastUrl>{podcastUrl}</podcastUrl>
       {episodeNameTemplate.toXml}
       {lastEpisode map (_.toXML) getOrElse NodeSeq.Empty}
+      {skipEpisodes map (ss => <skipEpisodes>{ss map (_.toXML)}</skipEpisodes>) getOrElse NodeSeq.Empty}
     </podcast>
   }
 }
@@ -62,6 +72,12 @@ object Podcast {
     File((xml \ "saveLocation").text.trim),
     new URL((xml \ "podcastUrl").text.trim),
     EpisodeNameTemplate.read((xml \ "episodeNameTemplate").head),
-    (xml \ "lastDownloadedEpisode").headOption map LastEpisode.read
+    (xml \ "lastDownloadedEpisode").headOption map LastEpisode.read,
+    readSkipEpisodes(xml \ "skipEpisodes" \ "skipEpisode"),
   )
+
+  private def readSkipEpisodes(xml: NodeSeq): Option[List[SkipEpisode]] = {
+    if (xml.isEmpty) none
+    else xml.map(SkipEpisode.read).toList.some
+  }
 }

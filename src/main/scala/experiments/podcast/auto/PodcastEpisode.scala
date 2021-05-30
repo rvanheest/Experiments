@@ -9,6 +9,8 @@ import scala.util.Try
 
 case class PodcastEpisode(id: String, title: String, date: String, url: URL) {
 
+  def matchesAny(skippers: List[SkipEpisode]): Boolean = skippers exists (_ matchesWith this.title)
+
   def downloadTo(saveDirectory: File, episodeNameTemplate: EpisodeNameTemplate): Try[Option[LastEpisode]] = {
     downloadTo(saveDirectory, episodeName(episodeNameTemplate))
   }
