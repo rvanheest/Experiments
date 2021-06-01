@@ -7,7 +7,12 @@ import org.apache.commons.io.FileUtils
 import java.net.URL
 import scala.util.Try
 
-case class PodcastEpisode(id: String, title: String, date: String, url: URL) {
+case class PodcastEpisode(id: String,
+                          title: String,
+                          date: String,
+                          url: URL,
+                          episodeNumber: Option[Int],
+                         ) {
 
   def matchesAny(skippers: List[SkipEpisode]): Boolean = skippers exists (_ matchesWith this.title)
 
@@ -36,6 +41,7 @@ case class PodcastEpisode(id: String, title: String, date: String, url: URL) {
     episodeNameTemplate.nameTemplate
       .replace("[date]", date)
       .replace("[title]", tt)
+      .replace("[episode]", episodeNumber.fold("")(_.toString))
   }
 
   private def normalizeFilename(fileName: String): String = {
