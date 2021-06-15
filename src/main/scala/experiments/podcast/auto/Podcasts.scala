@@ -28,9 +28,10 @@ case class Podcasts(podcasts: List[Podcast]) {
 
       for {
         episodes <- podcast.listEpisodesToDownload()
-        _ = if (episodes.isEmpty) println("no new episodes found")
+        _ = if (podcast.disabled) println("podcast disabled - not searching for new episodes")
+            else if (episodes.isEmpty) println("no new episodes found")
         lastEpisodes <- episodes.reverse traverse (_.downloadTo(dir, podcast.episodeNameTemplate))
-        streamList <- (lastEpisodes scanLeft podcast)(newLastEpisode) drop 1 map (completed :+ _) traverse savePodcastsXml(remainingPodcasts)
+        streamList <- (lastEpisodes scanLeft podcast) (newLastEpisode) drop 1 map (completed :+ _) traverse savePodcastsXml(remainingPodcasts)
       } yield streamList.lastOption getOrElse completed :+ podcast
     }
 
