@@ -45,11 +45,11 @@ case class Podcast(title: String,
   }
 
   private def parseEpisode(xml: Node): PodcastEpisode = {
-    val id = (xml \ "guid").text
-    val title = (xml \ "title").head.text
-    val pubDate = parseDate((xml \ "pubDate").text)
-    val episodeNumber = (xml \ "episode").headOption.map(_.text).withFilter(_.nonEmpty).map(_.toInt)
-    val subtitle = (xml \ "subtitle").headOption.map(_.text).filter(_.nonEmpty)
+    val id = (xml \ "guid").text.trim
+    val title = (xml \ "title").head.text.trim
+    val pubDate = parseDate((xml \ "pubDate").text.trim)
+    val episodeNumber = (xml \ "episode").headOption.map(_.text.trim).withFilter(_.nonEmpty).map(_.toInt)
+    val subtitle = (xml \ "subtitle").headOption.map(_.text.trim).filter(_.nonEmpty)
 
     lazy val urlFromEnclosure = (xml \ "enclosure").withFilter(_ \@ "type" matches "(audio|video)/(mpeg|mp3|mp4)").map(n => new URL(n \@ "url")).headOption
     lazy val urlFromContent = (xml \ "content").withFilter(_ \@ "medium" == "audio").map(n => new URL(n \@ "url")).headOption
