@@ -15,40 +15,25 @@ trait Lens[W, P] extends (W => Store[W, P]) {
     store.set(f(store.get))
   }
 
-  def andThen[Q](other: Lens[P, Q]): Lens[W, Q] = new Lens[W, Q] {
-    override def apply(w: W): Store[W, Q] = {
-      Store(other(self(w).get).get) {
-        val store = self(w)
-        (q: Q) => store.set(other(store.get).set(q))
-      }
+  def andThen[Q](other: Lens[P, Q]): Lens[W, Q] = other compose self
+
+  def compose[Q](other: Lens[Q, W]): Lens[Q, P] = q => {
+    Store(self(other(q).get).get) {
+      val store = other(q)
+      (p: P) => store.set(self(store.get).set(p))
     }
   }
 
-  def compose[Q](other: Lens[Q, W]): Lens[Q, P] = new Lens[Q, P] {
-    override def apply(q: Q): Store[Q, P] = {
-      Store(self(other(q).get).get) {
-        val store = other(q)
-        (p: P) => store.set(self(store.get).set(p))
-      }
-    }
-  }
-
-  def andThenList[PS, Q](other: Lens[PS, Q])(implicit ev: P <:< List[PS], ev2: List[PS] <:< P): Lens[W, List[Q]] = new Lens[W, List[Q]] {
-    override def apply(w: W): Store[W, List[Q]] = {
-      Store(self(w).get.map(other(_).get)) {
-        val store = self(w)
-        (qs: List[Q]) => store.set(store.get.zip(qs).map { case (oldP, q) => other(oldP).set(q) })
-      }
+  def andThenList[PS, Q](other: Lens[PS, Q])(implicit ev: P <:< List[PS], ev2: List[PS] <:< P): Lens[W, List[Q]] = w => {
+    Store(self(w).get.map(other(_).get)) {
+      val store = self(w)
+      (qs: List[Q]) => store.set(store.get.zip(qs).map { case (oldP, q) => other(oldP).set(q) })
     }
   }
 }
 
 object Lens {
-  def lens[W, P](get: W => P)(set: (W, P) => W): Lens[W, P] = {
-    new Lens[W, P] {
-      override def apply(w: W): Store[W, P] = Store(get(w))(set.curried(w))
-    }
-  }
+  def lens[W, P](get: W => P)(set: (W, P) => W): Lens[W, P] = w => Store(get(w))(set.curried(w))
 }
 
 case class Point(x: Double, y: Double)
