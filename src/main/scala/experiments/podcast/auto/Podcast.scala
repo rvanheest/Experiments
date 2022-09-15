@@ -3,6 +3,7 @@ package experiments.podcast.auto
 import better.files.File
 import cats.syntax.option._
 
+import java.io.IOException
 import java.net.URL
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -31,7 +32,12 @@ case class Podcast(title: String,
   }
 
   def readPodcastFeed(): Try[Stream[PodcastEpisode]] = {
-    Try { XML.load(podcastUrl.toInputStream) } map parseRss
+    Try { XML.load(podcastUrl.toInputStream) } map parseRss recover {
+      case e : IOException =>
+        System.err.println(s"Fout bij het lezen van RSS feed $podcastUrl: ${ e.getMessage }")
+        e.printStackTrace()
+        Stream.empty
+    }
   }
 
   private def parseRss(rss: Node): Stream[PodcastEpisode] = {

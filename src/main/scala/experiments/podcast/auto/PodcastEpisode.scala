@@ -5,6 +5,7 @@ import cats.syntax.option._
 import experiments.podcast.auto.PodcastEpisode.{ inlineTemplateRegex, pieceRegex }
 import org.apache.commons.io.FileUtils
 
+import java.io.IOException
 import java.net.URL
 import scala.util.Try
 import scala.util.matching.Regex.Match
@@ -27,13 +28,16 @@ case class PodcastEpisode(id: String,
     val file = saveDirectory / normalizeFilename(filename)
     if (file.exists) {
       println(s"$file already exists, skip downloading $url")
-      none
     }
     else {
       println(s"downloading $file from $url")
       FileUtils.copyToFile(url.toInputStream, file.toJava)
-      LastEpisode(id, date).some
     }
+    LastEpisode(id, date).some
+  }.recover {
+    case e : IOException =>
+      System.err.println(s"Fout bij het downloaden: ${ e.getMessage }")
+      none
   }
 
   def episodeName(episodeNameTemplate: EpisodeNameTemplate): String =
